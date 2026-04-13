@@ -1,0 +1,533 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{mdframed}
+\usepackage{amssymb}
+
+\geometry{margin=2.5cm}
+
+\definecolor{accessred}{RGB}{175,0,0}
+\definecolor{darkblue}{RGB}{0,70,127}
+\definecolor{lightgray}{RGB}{245,245,245}
+\definecolor{noteblue}{RGB}{230,242,255}
+\definecolor{exgreen}{RGB}{0,120,0}
+\definecolor{warnyellow}{RGB}{255,248,220}
+\definecolor{practicegreen}{RGB}{235,250,235}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{accessred}{\textbf{UT6 -- Ejercicios: Microsoft Access}}}
+\fancyhead[R]{\textcolor{gray}{\thepage}}
+\fancyfoot[C]{\textcolor{gray}{\small AOF -- Natalia Marcos Iglesias}}
+\renewcommand{\headrulewidth}{1.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accessred}\leaders\hrule height \headrulewidth\hfill}}
+
+\titleformat{\section}{\Large\bfseries\color{accessred}}{}{0em}{Sesión \thesection\ -- }[\titlerule]
+\titleformat{\subsection}{\large\bfseries\color{darkblue}}{}{0em}{\thesubsection\ }
+
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{ejercicio}[2][]{
+  colback=lightgray, colframe=darkblue,
+  title={\textbf{Ejercicio #2}},
+  fonttitle=\bfseries\color{white},
+  colbacktitle=darkblue,
+  breakable, enhanced, #1
+}
+
+\newtcolorbox{practica}[1]{
+  colback=practicegreen, colframe=exgreen,
+  title={\textbf{Práctica: #1}},
+  fonttitle=\bfseries\color{white},
+  colbacktitle=exgreen,
+  breakable, enhanced
+}
+
+\newtcolorbox{reto}{
+  colback=warnyellow, colframe=accessred,
+  title={\textbf{$\star$ Reto extra}},
+  fonttitle=\bfseries\color{white},
+  colbacktitle=accessred,
+  breakable, enhanced
+}
+
+\newtcolorbox{reflexion}{
+  colback=noteblue, colframe=darkblue!60,
+  title={\textbf{Reflexión / Debate}},
+  fonttitle=\bfseries,
+  breakable, enhanced
+}
+
+\newcommand{\tecla}[1]{\fbox{\small\texttt{#1}}}
+
+\title{
+  \vspace{-1cm}
+  {\color{accessred}\rule{\linewidth}{3pt}}\\[0.3cm]
+  {\Huge\bfseries\color{accessred} UT6: Ejercicios Prácticos\\[0.2cm]
+  Microsoft Access}\\[0.3cm]
+  {\color{accessred}\rule{\linewidth}{1pt}}\\[0.2cm]
+  {\large\color{gray} Módulo: Aplicaciones Ofimáticas (AOF)}
+}
+\author{\textbf{Natalia Marcos Iglesias}}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{tcolorbox}[colback=noteblue, colframe=darkblue, title=\textbf{Base de datos del curso: ``Tienda Informática''}]
+A lo largo de todas las sesiones trabajaremos con la base de datos \textbf{TiendaInformatica.accdb}.\\
+Esta base de datos modela una tienda de componentes informáticos y contiene las siguientes tablas:
+
+\begin{itemize}
+  \item \textbf{Clientes}: CodCliente (PK), Nombre, Apellidos, Ciudad, Teléfono, Email, FechaNacimiento
+  \item \textbf{Productos}: CodProducto (PK), Nombre, Categoria, PrecioUnidad, Stock
+  \item \textbf{Proveedores}: CodProveedor (PK), NombreEmpresa, Ciudad, Teléfono
+  \item \textbf{Pedidos}: CodPedido (PK), CodCliente (FK), FechaPedido, Enviado (Sí/No)
+  \item \textbf{DetallesPedido}: CodDetalle (PK), CodPedido (FK), CodProducto (FK), Cantidad, Descuento
+\end{itemize}
+\end{tcolorbox}
+
+\tableofcontents
+\newpage
+
+% ============================
+\section{Conceptos básicos e interfaz de Access}
+% ============================
+
+\subsection{Ejercicios teóricos}
+
+\begin{ejercicio}{1.1 -- Vocabulario de bases de datos}
+Relaciona cada término con su definición correcta:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{4cm} | p{7cm}}
+\textbf{Término} & \textbf{Definición} \\
+\hline
+Campo & a) Conjunto de todos los campos de un mismo elemento \\
+Registro & b) Identifica de forma única cada fila de una tabla \\
+Clave primaria & c) Columna que almacena un tipo de dato \\
+Clave foránea & d) Sistema de gestión de bases de datos \\
+SGBD & e) Columna que referencia a la clave primaria de otra tabla \\
+\end{tabular}
+\end{center}
+\end{ejercicio}
+
+\begin{ejercicio}{1.2 -- Identificar elementos}
+En la siguiente tabla de \textbf{CLIENTES}, señala:
+\begin{enumerate}[label=\alph*)]
+  \item ¿Cuántos registros tiene?
+  \item ¿Cuántos campos tiene?
+  \item ¿Qué campo sería la clave primaria más adecuada? ¿Por qué?
+  \item ¿Podría el campo ``Nombre'' ser clave primaria? Justifica.
+\end{enumerate}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{CodCliente} & \textbf{Nombre} & \textbf{Apellidos} & \textbf{Ciudad} & \textbf{Teléfono} \\
+\hline
+C001 & Ana & García López & Valencia & 612345678 \\
+C002 & Pedro & Martínez Gil & Madrid & 698765432 \\
+C003 & María & García López & Sevilla & 611223344 \\
+C004 & Luisa & Fernández Díaz & Valencia & 677889900 \\
+\hline
+\end{tabular}
+\end{center}
+\end{ejercicio}
+
+\begin{ejercicio}{1.3 -- Tipos de relaciones}
+Clasifica cada caso como relación 1:1, 1:N o N:M y explica por qué:
+\begin{enumerate}[label=\alph*)]
+  \item Personas -- DNI
+  \item Profesores -- Asignaturas
+  \item Estudiantes -- Cursos (un estudiante puede matricularse en varios cursos y un curso puede tener varios estudiantes)
+  \item Países -- Capital
+  \item Médicos -- Pacientes
+\end{enumerate}
+\end{ejercicio}
+
+\begin{reflexion}
+¿Para qué crees que sirve una base de datos frente a una simple hoja de cálculo de Excel? ¿Qué ventajas e inconvenientes tiene cada opción? Debatid en grupos de 3 personas durante 5 minutos.
+\end{reflexion}
+
+\subsection{Ejercicios prácticos}
+
+\begin{practica}{Explorar la interfaz de Access}
+\begin{enumerate}
+  \item Abre Microsoft Access y describe en tu cuaderno los elementos que ves en la pantalla inicial.
+  \item Crea una nueva base de datos en blanco y guárdala como \textbf{TiendaInformatica.accdb} en tu carpeta de trabajo.
+  \item Identifica y señala en pantalla: Barra de acceso rápido, Cinta de opciones, Panel de navegación, Barra de estado.
+  \item Practica contraer y expandir la cinta de opciones y el panel de navegación.
+  \item Cierra la base de datos sin cerrar Access. Vuelve a abrirla desde \menu{Recientes}.
+\end{enumerate}
+\end{practica}
+
+% ============================
+\section{Creación de tablas}
+% ============================
+
+\subsection{Ejercicios teóricos}
+
+\begin{ejercicio}{2.1 -- Tipos de datos}
+Para cada campo, indica el tipo de dato más adecuado de Access y justifica tu elección:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{5cm} | p{4cm} | p{4cm}}
+\textbf{Campo} & \textbf{Tipo de dato} & \textbf{Justificación} \\
+\hline
+DNI del cliente & & \\
+Precio de un producto & & \\
+Fecha de nacimiento & & \\
+¿Está pagada la factura? & & \\
+Descripción larga de producto & & \\
+Número de empleado (automático) & & \\
+Foto del empleado & & \\
+Código postal & & \\
+Número de unidades en stock & & \\
+\end{tabular}
+\end{center}
+\end{ejercicio}
+
+\begin{ejercicio}{2.2 -- Diseñar la estructura de una tabla}
+Diseña la estructura de la tabla \textbf{Empleados} para una empresa. Indica para cada campo: nombre, tipo de dato, tamaño y si sería clave primaria. La tabla debe almacenar: código de empleado, nombre, apellidos, fecha de nacimiento, cargo, salario mensual, foto, activo (trabaja actualmente o no), departamento.
+\end{ejercicio}
+
+\subsection{Ejercicios prácticos}
+
+\begin{practica}{Crear la tabla Clientes}
+Crea en Vista Diseño la tabla \textbf{Clientes} con los siguientes campos:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Campo} & \textbf{Tipo} & \textbf{Propiedades} \\
+\hline
+CodCliente & Texto corto & Tamaño: 5, Clave primaria \\
+Nombre & Texto corto & Tamaño: 30, Requerido: Sí \\
+Apellidos & Texto corto & Tamaño: 60, Requerido: Sí \\
+Ciudad & Texto corto & Tamaño: 40, Valor predeterminado: ``Valencia'' \\
+Teléfono & Texto corto & Tamaño: 15, Máscara: teléfono \\
+Email & Hipervínculo & \\
+FechaNacimiento & Fecha/Hora & Formato: Fecha corta \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{enumerate}[label=\alph*)]
+  \item Asigna la clave principal al campo CodCliente.
+  \item Guarda la tabla como \textbf{Clientes}.
+  \item Cambia a Vista Hoja de datos e introduce 5 registros de clientes inventados.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Crear las tablas Productos y Pedidos}
+\begin{enumerate}
+  \item Crea la tabla \textbf{Productos} con: CodProducto (PK, Autonumeración), Nombre (Texto, 100), Categoria (Texto, 30), PrecioUnidad (Moneda), Stock (Número, Entero).
+  \item Crea la tabla \textbf{Pedidos} con: CodPedido (PK, Autonumeración), CodCliente (Texto, 5), FechaPedido (Fecha/Hora), Enviado (Sí/No).
+  \item Añade una regla de validación al campo Stock: el valor no puede ser negativo. Escribe también el texto de validación apropiado.
+  \item Introduce al menos 8 productos y 5 pedidos.
+\end{enumerate}
+\end{practica}
+
+\begin{reto}
+Añade a la tabla \textbf{Clientes} un campo calculado llamado \textbf{Edad} que muestre la edad actual del cliente usando la función \texttt{Year(Date()) - Year([FechaNacimiento])}. Comprueba que funciona correctamente en Vista Hoja de datos.
+\end{reto}
+
+% ============================
+\section{Modificar tablas y propiedades}
+% ============================
+
+\begin{ejercicio}{3.1 -- Propiedades de campo}
+Indica qué propiedad de campo utilizarías en cada caso:
+\begin{enumerate}[label=\alph*)]
+  \item Quieres que el campo ``País'' muestre ``España'' automáticamente.
+  \item Necesitas que el campo ``Salario'' solo acepte valores entre 1.000 y 10.000.
+  \item Quieres que el campo ``NIF'' muestre la plantilla de entrada \texttt{00000000-X}.
+  \item Necesitas que el campo ``FechaAlta'' sea obligatorio.
+  \item Quieres que el campo ``NúmEmpleado'' aparezca como encabezado ``Número de empleado''.
+\end{enumerate}
+\end{ejercicio}
+
+\begin{practica}{Modificar la tabla Clientes}
+\begin{enumerate}
+  \item Abre la tabla \textbf{Clientes} en Vista Diseño.
+  \item Añade el campo \textbf{Descuento} (Número, Simple) con valor predeterminado 0 y regla de validación \texttt{>=0 Y <=50}, con el texto ``El descuento debe estar entre 0 y 50\%''.
+  \item Añade el campo \textbf{Activo} (Sí/No) con valor predeterminado Sí.
+  \item Cambia el título del campo \textbf{FechaNacimiento} a ``Fecha de Nacimiento''.
+  \item Cambia el índice del campo \textbf{Apellidos} a ``Sí (con duplicados)''.
+  \item Guarda los cambios e introduce datos en los nuevos campos.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Buscar y reemplazar datos}
+\begin{enumerate}
+  \item En la tabla \textbf{Clientes}, usa \tecla{Ctrl+B} para buscar todos los clientes de ``Valencia''.
+  \item Usa la función \textbf{Reemplazar} para cambiar la ciudad ``Madrid'' por ``Madrid (capital)''.
+  \item Desplázate hasta el último registro, luego al primero, usando los botones de navegación.
+\end{enumerate}
+\end{practica}
+
+% ============================
+\section{Relaciones entre tablas}
+% ============================
+
+\begin{ejercicio}{4.1 -- Diseño de relaciones}
+Para la base de datos \textbf{TiendaInformatica}, dibuja el esquema de relaciones indicando:
+\begin{itemize}
+  \item Nombre de cada tabla y sus campos.
+  \item Las relaciones entre tablas (qué campos se relacionan).
+  \item El tipo de cada relación (1:1, 1:N, N:M).
+\end{itemize}
+\end{ejercicio}
+
+\begin{practica}{Crear las relaciones}
+\begin{enumerate}
+  \item Crea también la tabla \textbf{DetallesPedido}: CodDetalle (PK, Autonumeración), CodPedido (Número, Entero largo), CodProducto (Número, Entero largo), Cantidad (Número, Entero), Descuento (Número, Simple).
+  \item Abre la ventana de Relaciones (\menu{Herramientas de base de datos > Relaciones}).
+  \item Crea las siguientes relaciones con integridad referencial:
+    \begin{itemize}
+      \item \textbf{Clientes.CodCliente} $\leftrightarrow$ \textbf{Pedidos.CodCliente} (1:N)
+      \item \textbf{Pedidos.CodPedido} $\leftrightarrow$ \textbf{DetallesPedido.CodPedido} (1:N)
+      \item \textbf{Productos.CodProducto} $\leftrightarrow$ \textbf{DetallesPedido.CodProducto} (1:N)
+    \end{itemize}
+  \item Activa la opción ``Actualizar en cascada'' en todas las relaciones.
+  \item Guarda las relaciones e introduce datos coherentes en DetallesPedido.
+\end{enumerate}
+\end{practica}
+
+\begin{ejercicio}{4.2 -- Integridad referencial}
+Responde razonadamente:
+\begin{enumerate}[label=\alph*)]
+  \item ¿Qué ocurriría si intentas insertar un pedido con un CodCliente que no existe en la tabla Clientes? ¿Y si no hay integridad referencial?
+  \item ¿Qué diferencia hay entre ``Actualizar en cascada'' y ``Eliminar en cascada''?
+  \item ¿Por qué no es buena idea poner ``Eliminar en cascada'' en todas las relaciones? Pon un ejemplo de cuándo podría ser peligroso.
+\end{enumerate}
+\end{ejercicio}
+
+% ============================
+\section{Consultas básicas}
+% ============================
+
+\begin{practica}{Consultas de selección simples}
+Crea las siguientes consultas de selección y guárdalas con el nombre indicado:
+\begin{enumerate}
+  \item \textbf{ConsClientesValencia}: Muestra nombre, apellidos y teléfono de todos los clientes de Valencia, ordenados alfabéticamente por apellidos.
+  \item \textbf{ConsProductosCara}: Muestra todos los datos de productos con precio superior a 100€, ordenados de mayor a menor precio.
+  \item \textbf{ConsPedidosPendientes}: Muestra los pedidos no enviados (Enviado = No) con su fecha, ordenados por fecha de más antiguo a más reciente.
+  \item \textbf{ConsClientesMayores}: Muestra clientes nacidos antes del 1/1/1990 con descuento mayor del 10\%.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Consultas con campos calculados}
+\begin{enumerate}
+  \item Crea la consulta \textbf{ConsPrecioIVA}: muestra CodProducto, Nombre, PrecioUnidad y un campo calculado \textbf{Precio con IVA} (PrecioUnidad * 1,21), con el encabezado ``Precio c/IVA''.
+  \item Crea la consulta \textbf{ConsValorStock}: muestra Nombre del producto, Stock y un campo calculado \textbf{ValorStock} (Stock * PrecioUnidad) que indica el valor total del stock de cada producto.
+  \item Formatea el campo ValorStock como Moneda.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Consultas con comodines}
+Crea las siguientes consultas usando el operador \textbf{Como}:
+\begin{enumerate}
+  \item \textbf{ConsNombresA}: Clientes cuyo nombre empiece por la letra ``A''.
+  \item \textbf{ConsEmailGoogle}: Clientes con email de Gmail (que contenga ``@gmail'').
+  \item \textbf{ConsProductosRAM}: Productos cuyo nombre contenga la palabra ``RAM''.
+\end{enumerate}
+\end{practica}
+
+\begin{reto}
+Crea la consulta \textbf{ConsClientesCumpleanos}: muestra los clientes que cumplen años este mes. Usa la función \texttt{Month([FechaNacimiento]) = Month(Date())}. ¡Puede ser útil para una campaña de marketing!
+\end{reto}
+
+% ============================
+\section{Consultas avanzadas}
+% ============================
+
+\begin{practica}{Consultas con parámetros}
+\begin{enumerate}
+  \item Crea la consulta \textbf{ConsBuscarCiudad}: pide al usuario una ciudad y muestra los clientes de esa ciudad.
+  \item Crea la consulta \textbf{ConsBuscarPrecio}: pide al usuario un precio máximo y muestra los productos más baratos que ese precio.
+  \item Crea la consulta \textbf{ConsBuscarFechas}: pide fecha de inicio y fecha de fin, y muestra los pedidos en ese rango de fechas.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Consultas multitabla}
+\begin{enumerate}
+  \item Crea la consulta \textbf{ConsClientesPedidos}: muestra nombre y apellidos del cliente, fecha del pedido y si está enviado.
+  \item Crea la consulta \textbf{ConsDetallesCompletos}: muestra para cada línea de pedido el nombre del cliente, la fecha del pedido, el nombre del producto, la cantidad y el descuento.
+  \item Modifica la consulta anterior para mostrar también el subtotal de cada línea: \texttt{Cantidad * PrecioUnidad * (1 - Descuento/100)}.
+\end{enumerate}
+\end{practica}
+
+\begin{ejercicio}{6.1 -- Composición externa}
+\begin{enumerate}[label=\alph*)]
+  \item ¿Cuál es la diferencia entre una composición interna y una externa?
+  \item Crea una consulta que muestre TODOS los clientes, con sus pedidos si los tienen, y NULL si no han hecho ningún pedido. (Pista: composición externa izquierda).
+  \item ¿Para qué sería útil esta consulta en una empresa real?
+\end{enumerate}
+\end{ejercicio}
+
+\begin{reto}
+Crea la consulta \textbf{ConsClientesSinPedidos}: muestra los clientes que NO han realizado ningún pedido. Usa una composición externa y el criterio ``Es Nulo'' en el campo CodPedido.
+\end{reto}
+
+% ============================
+\section{Consultas de resumen y referencias cruzadas}
+% ============================
+
+\begin{practica}{Consultas de resumen}
+Crea las siguientes consultas de resumen:
+\begin{enumerate}
+  \item \textbf{ConsResumenCiudad}: Número de clientes por ciudad, ordenado descendentemente.
+  \item \textbf{ConsEstadisticaProductos}: Para cada categoría de producto, muestra el precio mínimo, máximo, promedio y el número de productos.
+  \item \textbf{ConsVentasTotales}: Suma del importe total de cada pedido (usando DetallesPedido: Cantidad * PrecioUnidad).
+  \item \textbf{ConsTop5Productos}: Los 5 productos más vendidos (por cantidad total). Activa la propiedad ``Valores superiores'' en el diseño de la consulta.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Consulta de referencias cruzadas}
+Crea con el asistente la consulta \textbf{CruzVentasMensuales}:
+\begin{itemize}
+  \item Filas: Año del pedido.
+  \item Columnas: Mes del pedido.
+  \item Valor: Suma de importes (Cantidad * PrecioUnidad).
+\end{itemize}
+Esta consulta permitirá ver la evolución de ventas mes a mes.
+\end{practica}
+
+\begin{reflexion}
+¿Qué información de negocio podrías extraer de estas consultas de resumen? ¿Qué decisiones comerciales podrías tomar? Piensa en 3 ejemplos concretos y debátelos con tu compañero.
+\end{reflexion}
+
+% ============================
+\section{Consultas de acción}
+% ============================
+
+\begin{importante}
+\textbf{Antes de ejecutar cualquier consulta de acción}, usa la Vista Hoja de datos para revisar qué registros se verán afectados. Las consultas de acción son \textbf{irreversibles}.
+\end{importante}
+
+\begin{practica}{Consultas de acción}
+\begin{enumerate}
+  \item \textbf{Actualización}: Crea la consulta \textbf{SubirPrecio10}: sube un 10\% el precio de todos los productos de la categoría ``RAM''. Antes de ejecutar, revisa qué productos afecta.
+
+  \item \textbf{Creación de tabla}: Crea la consulta \textbf{CrearClientesVIP}: genera una nueva tabla llamada \textbf{ClientesVIP} con los clientes que tienen descuento mayor del 20\%.
+
+  \item \textbf{Datos anexados}: Crea la consulta \textbf{AnexarClientesPrueba}: añade a \textbf{ClientesVIP} los clientes con más de 3 pedidos realizados. (Tendrás que crear primero una consulta de resumen que cuente los pedidos por cliente.)
+
+  \item \textbf{Eliminación}: Crea la consulta \textbf{EliminarPedidosAntiguos}: elimina los pedidos con fecha anterior al 01/01/2020 que ya estén marcados como enviados.
+\end{enumerate}
+\end{practica}
+
+\begin{ejercicio}{8.1 -- Consultas de acción}
+Responde:
+\begin{enumerate}[label=\alph*)]
+  \item ¿Qué diferencia hay entre la consulta de creación de tabla y la de datos anexados?
+  \item ¿Qué pasa con la clave principal cuando creas una tabla nueva con una consulta de creación?
+  \item ¿Por qué es peligroso una consulta de eliminación sin criterio de búsqueda?
+  \item Si la tabla de destino tiene activada la integridad referencial, ¿qué restricciones aplican a la consulta de eliminación?
+\end{enumerate}
+\end{ejercicio}
+
+% ============================
+\section{Formularios}
+% ============================
+
+\begin{practica}{Crear formularios con el asistente}
+\begin{enumerate}
+  \item Crea con el asistente el formulario \textbf{FrmClientes} basado en la tabla Clientes. Usa distribución \emph{En columnas} e incluye todos los campos.
+  \item Crea el formulario \textbf{FrmProductos} basado en la tabla Productos, distribución \emph{Tabular}.
+  \item Usa los formularios para introducir 5 clientes y 5 productos nuevos.
+  \item Practica navegar entre registros con los botones de la barra inferior.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Personalizar un formulario en Vista Diseño}
+Modifica el formulario \textbf{FrmClientes}:
+\begin{enumerate}
+  \item Añade en el encabezado una etiqueta con el texto ``GESTIÓN DE CLIENTES'' en negrita, tamaño 16.
+  \item Cambia el color de fondo del formulario.
+  \item Reorganiza los controles: pon Nombre y Apellidos en la misma fila.
+  \item Añade un botón de comando para cerrar el formulario (usa el asistente del botón).
+  \item Cambia la propiedad \textbf{Título} del formulario a ``Ficha de Cliente''.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Formulario con subformulario}
+\begin{enumerate}
+  \item Crea el formulario \textbf{FrmPedidosCompleto}:
+    \begin{itemize}
+      \item Formulario principal basado en \textbf{Pedidos}: muestra los datos del pedido y del cliente.
+      \item Subformulario basado en \textbf{DetallesPedido}: muestra las líneas del pedido.
+    \end{itemize}
+  \item Verifica que al navegar entre pedidos el subformulario muestra correctamente los detalles de cada uno.
+  \item Añade en el pie del subformulario un campo calculado que muestre el \textbf{total del pedido}.
+\end{enumerate}
+\end{practica}
+
+\begin{reto}
+Crea un formulario de \textbf{búsqueda de clientes}: con un cuadro de texto donde el usuario escriba un nombre o ciudad, y un botón que ejecute una consulta con parámetro y muestre los resultados en un subformulario. (Pista: usa macros o VBA para ejecutar la consulta al pulsar el botón.)
+\end{reto}
+
+% ============================
+\section{Proyecto integrador final}
+% ============================
+
+\begin{tcolorbox}[colback=lightgray, colframe=accessred, title=\textbf{Proyecto Final: Base de datos completa}, colbacktitle=accessred, fonttitle=\bfseries\color{white}]
+Usando todo lo aprendido, amplía y mejora la base de datos \textbf{TiendaInformatica.accdb} con los siguientes elementos adicionales:
+\end{tcolorbox}
+
+\begin{practica}{Proyecto final -- parte 1: Tablas y relaciones}
+\begin{enumerate}
+  \item Añade la tabla \textbf{Empleados}: CodEmpleado (PK), Nombre, Apellidos, Cargo, Salario, FechaAlta.
+  \item Añade la tabla \textbf{Proveedores}: CodProveedor (PK), NombreEmpresa, Ciudad, Teléfono.
+  \item Añade el campo \textbf{CodProveedor} a la tabla Productos para saber qué proveedor suministra cada producto.
+  \item Añade el campo \textbf{CodEmpleado} a la tabla Pedidos para saber qué empleado gestionó cada pedido.
+  \item Crea todas las relaciones necesarias con integridad referencial.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Proyecto final -- parte 2: Consultas}
+Crea las siguientes consultas:
+\begin{enumerate}
+  \item \textbf{ConsInformeVentas}: muestra nombre del empleado, número de pedidos gestionados y suma total de ventas.
+  \item \textbf{ConsProductosBajoStock}: productos con stock inferior a 10 unidades, ordenados por categoría.
+  \item \textbf{ConsClientesMasActivos}: los 10 clientes que más pedidos han realizado.
+  \item \textbf{ConsFacturacion}: muestra para cada pedido el nombre del cliente, empleado responsable, fecha, número de líneas y total del pedido.
+\end{enumerate}
+\end{practica}
+
+\begin{practica}{Proyecto final -- parte 3: Formularios}
+\begin{enumerate}
+  \item Crea un formulario de \textbf{menú principal} con botones para abrir cada formulario de la aplicación.
+  \item Crea formularios completos para gestionar Empleados y Proveedores.
+  \item Personaliza el aspecto de todos los formularios con colores, fuentes y un logo de la empresa (puedes usar cualquier imagen).
+\end{enumerate}
+\end{practica}
+
+\begin{reflexion}
+\textbf{Presentación final (5 min por grupo):} Muestra al resto de la clase tu base de datos terminada. Explica las decisiones que tomaste en el diseño (tipos de datos, relaciones, consultas útiles) y qué mejorarías si tuvieras más tiempo.
+\end{reflexion}
+
+\vfill
+\begin{center}
+{\color{accessred}\rule{0.5\linewidth}{1pt}}\\[0.3cm]
+{\small\color{gray} UT6 -- Ejercicios prácticos de Microsoft Access \quad|\quad AOF}
+\end{center}
+
+\end{document}

@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relaciones entre Tablas — Microsoft Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --bg:        #07090f;
+  --surface:   #0d1117;
+  --card:      #121820;
+  --border:    #1a2535;
+  --border2:   #243044;
+  --cyan:      #00d4ff;
+  --cyan-dim:  #00d4ff22;
+  --green:     #39d98a;
+  --green-dim: #39d98a1a;
+  --amber:     #ffa940;
+  --amber-dim: #ffa9401a;
+  --red:       #ff5c5c;
+  --red-dim:   #ff5c5c1a;
+  --purple:    #c084fc;
+  --text:      #dce6f5;
+  --muted:     #5a6a84;
+  --muted2:    #8a9ab8;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --display:   'Bebas Neue', sans-serif;
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* dot grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, #1e2d3d 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+section { padding: 5rem 0; }
+
+/* ═══════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════ */
+header {
+  position: relative;
+  padding: 5rem 0 4rem;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  z-index: 1;
+}
+.header-glow {
+  position: absolute;
+  top: -80px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 300px;
+  background: radial-gradient(ellipse, #00d4ff14 0%, transparent 70%);
+  pointer-events: none;
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--cyan-dim);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  padding: 0.3rem 0.85rem;
+  border-radius: 2px;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s ease both;
+}
+.badge::before { content: '●'; font-size: 0.5rem; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+h1 {
+  font-family: var(--display);
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  color: var(--text);
+  animation: fadeUp 0.7s 0.1s ease both;
+}
+h1 span { color: var(--cyan); }
+.header-sub {
+  margin-top: 1.5rem;
+  font-size: 1.05rem;
+  color: var(--muted2);
+  max-width: 560px;
+  animation: fadeUp 0.7s 0.2s ease both;
+}
+.header-meta {
+  margin-top: 2rem;
+  display: flex; gap: 2rem; flex-wrap: wrap;
+  animation: fadeUp 0.7s 0.3s ease both;
+}
+.meta-item {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.meta-item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); flex-shrink: 0; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   NAV PILLS
+═══════════════════════════════════════════ */
+.nav-pills {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: #07090fcc;
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+.nav-pill {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--muted2);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.nav-pill:hover, .nav-pill.active {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: var(--cyan-dim);
+}
+
+/* ═══════════════════════════════════════════
+   SECTION TITLES
+═══════════════════════════════════════════ */
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--cyan);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.section-label::before { content: '// '; opacity: 0.5; }
+.section-title {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+.section-desc {
+  color: var(--muted2);
+  max-width: 640px;
+  margin-bottom: 3rem;
+}
+
+/* ═══════════════════════════════════════════
+   RELATIONSHIP CARDS (Theory)
+═══════════════════════════════════════════ */
+.rel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+}
+.rel-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.2s;
+}
+.rel-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.rel-card.one-one::before  { background: var(--green); }
+.rel-card.one-many::before { background: var(--cyan); }
+.rel-card.many-many::before{ background: var(--purple); }
+
+.rel-card:hover { transform: translateY(-3px); }
+.rel-card.one-one:hover  { border-color: var(--green); }
+.rel-card.one-many:hover { border-color: var(--cyan); }
+.rel-card.many-many:hover{ border-color: var(--purple); }
+
+.rel-type-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  padding: 0.2rem 0.7rem;
+  border-radius: 3px;
+}
+.one-one  .rel-type-badge { background: #39d98a1a; color: var(--green); }
+.one-many .rel-type-badge { background: var(--cyan-dim); color: var(--cyan); }
+.many-many .rel-type-badge{ background: #c084fc1a; color: var(--purple); }
+
+.rel-card h3 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin-bottom: 0.5rem;
+}
+.rel-card p { font-size: 0.9rem; color: var(--muted2); margin-bottom: 1.25rem; }
+
+/* SVG diagrams inside cards */
+.rel-diagram {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.rel-diagram svg { width: 100%; display: block; }
+
+.rel-example {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  border-left: 2px solid var(--border2);
+  padding-left: 0.75rem;
+  margin-top: 0.5rem;
+}
+.rel-example strong { color: var(--text); display: block; font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; }
+
+.rel-rule {
+  margin-top: 1rem;
+  background: var(--surface);
+  border-radius: 3px;
+  padding: 0.75rem 1rem;
+  font-size: 0.83rem;
+  color: var(--muted2);
+}
+.rel-rule strong { display: block; font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+.one-one  .rel-rule strong { color: var(--green); }
+.one-many .rel-rule strong { color: var(--cyan); }
+.many-many .rel-rule strong { color: var(--purple); }
+
+/* ═══════════════════════════════════════════
+   STEPS (How to create in Access)
+═══════════════════════════════════════════ */
+.steps-title {
+  font-family: var(--display);
+  font-size: 1.8rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+  color: var(--text);
+}
+.steps-title span { color: var(--amber); }
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.step-item {
+  display: flex; gap: 1rem; align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.2rem;
+  transition: border-color 0.2s;
+}
+.step-item:hover { border-color: var(--amber); }
+.step-num {
+  font-family: var(--mono);
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--amber);
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 2.2rem;
+}
+.step-text { font-size: 0.87rem; color: var(--muted2); }
+.step-text strong { display: block; color: var(--text); font-size: 0.9rem; margin-bottom: 0.2rem; }
+
+/* ═══════════════════════════════════════════
+   EXERCISES
+═══════════════════════════════════════════ */
+.exercises-list { display: flex; flex-direction: column; gap: 2.5rem; }
+
+.exercise-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.exercise-header {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.ex-num {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  background: var(--border2);
+  padding: 0.25rem 0.6rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.ex-title { font-weight: 600; font-size: 1rem; }
+.ex-diff {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 2px;
+}
+.diff-easy   { background: var(--green-dim); color: var(--green); }
+.diff-medium { background: var(--amber-dim); color: var(--amber); }
+.diff-hard   { background: #c084fc1a; color: var(--purple); }
+
+.exercise-body { padding: 1.75rem; }
+.exercise-scenario {
+  background: var(--surface);
+  border-left: 3px solid var(--cyan);
+  border-radius: 0 3px 3px 0;
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+  color: var(--muted2);
+  margin-bottom: 1.75rem;
+  line-height: 1.7;
+}
+.exercise-scenario strong { color: var(--text); }
+
+/* Ex options */
+.options-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-family: var(--mono);
+  margin-bottom: 1rem;
+}
+.options-group { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; }
+.option-btn {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.option-btn:hover:not(.disabled) {
+  border-color: var(--cyan);
+  background: var(--cyan-dim);
+  color: var(--cyan);
+}
+.option-btn .opt-key {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: var(--border2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+  min-width: 2.2rem;
+  text-align: center;
+}
+.option-btn.correct {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+}
+.option-btn.correct .opt-key { background: var(--green); color: #000; }
+.option-btn.wrong {
+  border-color: var(--red);
+  background: var(--red-dim);
+  color: var(--red);
+  opacity: 0.65;
+}
+.option-btn.disabled { cursor: default; }
+.option-btn .check-icon { margin-left: auto; font-size: 1.1rem; opacity: 0; }
+.option-btn.correct .check-icon { opacity: 1; color: var(--green); }
+.option-btn.wrong   .check-icon { opacity: 1; color: var(--red); }
+
+/* Multi-question exercises */
+.question-block { margin-bottom: 2rem; }
+.question-block + .question-block { border-top: 1px solid var(--border); padding-top: 2rem; }
+.question-text {
+  font-size: 0.92rem;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+.question-text .scenario-inline {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  padding: 0.6rem 1rem;
+  border-radius: 3px;
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--muted2);
+}
+
+/* FK exercise */
+.table-pair { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.db-table {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 180px;
+  flex: 1;
+}
+.db-table-header {
+  background: var(--border2);
+  padding: 0.5rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.db-table-header .tbl-icon { opacity: 0.5; }
+.db-table-row {
+  padding: 0.35rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted2);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.db-table-row .pk { color: var(--amber); font-size: 0.68rem; }
+.db-table-row .fk { color: var(--cyan); font-size: 0.68rem; }
+.db-table-row.highlighted { background: var(--cyan-dim); color: var(--cyan); }
+.db-table-row.add-slot {
+  background: #ffffff08;
+  border-top: 1px dashed var(--border2);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.db-table-row.add-slot:hover { background: var(--cyan-dim); color: var(--cyan); }
+.rel-connector {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 0.5rem;
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Buttons */
+.btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.btn {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.3rem;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: var(--cyan);
+  color: #000;
+}
+.btn-primary:hover { background: #00f0ff; transform: translateY(-1px); }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+}
+.btn-outline:hover { border-color: var(--amber); color: var(--amber); }
+
+/* Solution panel */
+.solution-panel {
+  display: none;
+  margin-top: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--amber);
+  border-radius: 4px;
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+}
+.solution-panel.visible { display: block; }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.solution-header {
+  background: var(--amber-dim);
+  padding: 0.75rem 1.25rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  border-bottom: 1px solid var(--amber);
+}
+.solution-body { padding: 1.25rem 1.5rem; font-size: 0.9rem; color: var(--muted2); }
+.solution-body p { margin-bottom: 0.75rem; }
+.solution-body p:last-child { margin-bottom: 0; }
+.solution-body strong { color: var(--text); }
+.sol-code {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  color: var(--cyan);
+  display: block;
+}
+.sol-list { list-style: none; padding: 0; }
+.sol-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+  display: flex; align-items: flex-start; gap: 0.6rem;
+}
+.sol-list li:last-child { border-bottom: none; }
+.sol-list li::before { content: '→'; color: var(--amber); flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════
+   TEACHER TOGGLE
+═══════════════════════════════════════════ */
+.teacher-bar {
+  position: fixed;
+  bottom: 2rem; right: 2rem;
+  z-index: 999;
+  display: flex; align-items: center; gap: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--amber);
+  border-radius: 50px;
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 30px #ffa94022;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+}
+.teacher-bar:hover { background: var(--amber-dim); box-shadow: 0 0 40px #ffa94044; }
+.teacher-bar .t-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--amber);
+  animation: pulse 2s infinite;
+}
+.teacher-bar.active { background: var(--amber); color: #000; }
+.teacher-bar.active .t-dot { background: #000; animation: none; }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2.5rem 0;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════ */
+.tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 2px;
+  margin-right: 0.35rem;
+}
+.tag-cyan   { background: var(--cyan-dim);  color: var(--cyan); }
+.tag-green  { background: var(--green-dim); color: var(--green); }
+.tag-purple { background: #c084fc1a;        color: var(--purple); }
+.tag-amber  { background: var(--amber-dim); color: var(--amber); }
+
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border2), transparent);
+  margin: 3rem 0;
+}
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ════════════════════════════════════ -->
+<header>
+  <div class="header-glow"></div>
+  <div class="container">
+    <div class="badge">Bases de Datos Ofimáticas · Access</div>
+    <h1>RELACIONES<br>entre <span>TABLAS</span></h1>
+    <p class="header-sub">Aprende a conectar tablas en Microsoft Access para construir bases de datos relacionales correctas y eficientes.</p>
+    <div class="header-meta">
+      <span class="meta-item"><span class="dot"></span> 3 tipos de relación</span>
+      <span class="meta-item"><span class="dot"></span> 4 ejercicios prácticos</span>
+      <span class="meta-item"><span class="dot"></span> Modo Profesor disponible</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ NAV ═══════════════════════════════════════ -->
+<nav>
+  <div class="container">
+    <div class="nav-pills">
+      <a href="#teoria"    class="nav-pill active">01. Teoría</a>
+      <a href="#access"    class="nav-pill">02. Cómo hacerlo en Access</a>
+      <a href="#ejercicios"class="nav-pill">03. Ejercicios</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ TEORÍA ════════════════════════════════════ -->
+<section id="teoria">
+  <div class="container">
+    <div class="section-label">Concepto fundamental</div>
+    <h2 class="section-title">TIPOS DE RELACIÓN</h2>
+    <p class="section-desc">Una relación conecta dos tablas a través de un campo común. Hay tres tipos según cuántos registros de cada tabla se pueden asociar entre sí.</p>
+
+    <div class="rel-grid">
+
+      <!-- 1:1 -->
+      <div class="rel-card one-one">
+        <div class="rel-type-badge">1 : 1</div>
+        <h3>Uno a Uno</h3>
+        <p>Cada registro de la tabla A se relaciona con <strong>exactamente uno</strong> de la tabla B, y viceversa.</p>
+        <div class="rel-diagram">
+          <svg viewBox="0 0 260 90" xmlns="http://www.w3.org/2000/svg">
+            <!-- Tabla A -->
+            <rect x="10" y="20" width="90" height="50" rx="3" fill="#141d2b" stroke="#1a2535" stroke-width="1"/>
+            <rect x="10" y="20" width="90" height="20" rx="3" fill="#243044"/>
+            <text x="55" y="33" fill="#dce6f5" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">EMPLEADOS</text>
+            <text x="22" y="53" fill="#ffa940" font-size="8" font-family="IBM Plex Mono">PK</text>
+            <text x="40" y="53" fill="#8a9ab8" font-size="8" font-family="IBM Plex Mono">IDEmpleado</text>
+            <text x="22" y="64" fill="#8a9ab8" font-size="8" font-family="IBM Plex Mono">Nombre</text>
+            <!-- Tabla B -->
+            <rect x="160" y="20" width="90" height="50" rx="3" fill="#141d2b" stroke="#1a2535" stroke-width="1"/>
+            <rect x="160" y="20" width="90" height="20" rx="3" fill="#243044"/>
+            <text x="205" y="33" fill="#dce6f5" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">EXPEDIENTE</text>
+            <text x="172" y="53" fill="#ffa940" font-size="8" font-family="IBM Plex Mono">PK</text>
+            <text x="190" y="53" fill="#8a9ab8" font-size="8" font-family="IBM Plex Mono">IDExpediente</text>
+            <text x="172" y="64" fill="#00d4ff" font-size="8" font-family="IBM Plex Mono">FK IDEmpleado</text>
+            <!-- Línea -->
+            <line x1="100" y1="45" x2="160" y2="45" stroke="#39d98a" stroke-width="2"/>
+            <!-- Patas 1:1 -->
+            <line x1="100" y1="38" x2="100" y2="52" stroke="#39d98a" stroke-width="1.5"/>
+            <line x1="160" y1="38" x2="160" y2="52" stroke="#39d98a" stroke-width="1.5"/>
+            <line x1="155" y1="38" x2="155" y2="52" stroke="#39d98a" stroke-width="1.5"/>
+            <line x1="165" y1="38" x2="165" y2="52" stroke="#39d98a" stroke-width="1.5"/>
+            <text x="130" y="38" fill="#39d98a" font-size="10" font-family="IBM Plex Mono" text-anchor="middle">1 — 1</text>
+          </svg>
+        </div>
+        <div class="rel-example">
+          <strong>Ejemplo</strong>
+          Empleados ↔ Expediente laboral<br>
+          Personas ↔ Pasaporte<br>
+          Vehículo ↔ Matrícula
+        </div>
+        <div class="rel-rule">
+          <strong>Regla de la clave foránea</strong>
+          La FK se pone en la tabla más "dependiente" o específica. Normalmente en la tabla B (la que no existiría sin la A).
+        </div>
+      </div>
+
+      <!-- 1:N -->
+      <div class="rel-card one-many">
+        <div class="rel-type-badge">1 : N</div>
+        <h3>Uno a Varios</h3>
+        <p>Un registro de la tabla A puede relacionarse con <strong>muchos</strong> de la B, pero cada registro de B solo pertenece a uno de A.</p>
+        <div class="rel-diagram">
+          <svg viewBox="0 0 260 90" xmlns="http://www.w3.org/2000/svg">
+            <!-- Tabla A -->
+            <rect x="10" y="20" width="90" height="50" rx="3" fill="#141d2b" stroke="#1a2535" stroke-width="1"/>
+            <rect x="10" y="20" width="90" height="20" rx="3" fill="#243044"/>
+            <text x="55" y="33" fill="#dce6f5" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">CLIENTES</text>
+            <text x="22" y="53" fill="#ffa940" font-size="8" font-family="IBM Plex Mono">PK</text>
+            <text x="40" y="53" fill="#8a9ab8" font-size="8" font-family="IBM Plex Mono">IDCliente</text>
+            <text x="22" y="64" fill="#8a9ab8" font-size="8" font-family="IBM Plex Mono">Nombre</text>
+            <!-- Tabla B -->
+            <rect x="160" y="5" width="90" height="80" rx="3" fill="#141d2b" stroke="#1a2535" stroke-width="1"/>
+            <rect x="160" y="5" width="90" height="18" rx="3" fill="#243044"/>
+            <text x="205" y="17" fill="#dce6f5" font-size="9" font-family="IBM Plex Mono" text-anchor="middle">PEDIDOS</text>
+            <text x="172" y="36" fill="#ffa940" font-size="8" font-family="IBM Plex Mono">PK</text>
+            <text x="190" y="36" fill="#8a9ab8" font-size="8" font-family="IBM Plex Mono">IDPedido</text>
+            <text x="172" y="48" fill="#00d4ff" font-size="8" font-family="IBM Plex Mono">FK IDCliente</text>
+            <text x="172" y="60" fill="#8a9ab8" font-size="8" font-family="IBM Plex Mono">Fecha</text>
+            <text x="172" y="72" fill="#8a9ab8" font-size="8" font-family="IBM Plex Mono">Total</text>
+            <!-- Línea -->
+            <line x1="100" y1="45" x2="160" y2="45" stroke="#00d4ff" stroke-width="2"/>
+            <!-- "1" side -->
+            <line x1="100" y1="38" x2="100" y2="52" stroke="#00d4ff" stroke-width="1.5"/>
+            <!-- "N" crow foot -->
+            <line x1="160" y1="45" x2="152" y2="37" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="160" y1="45" x2="152" y2="45" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="160" y1="45" x2="152" y2="53" stroke="#00d4ff" stroke-width="1.5"/>
+            <text x="130" y="38" fill="#00d4ff" font-size="10" font-family="IBM Plex Mono" text-anchor="middle">1 — N</text>
+          </svg>
+        </div>
+        <div class="rel-example">
+          <strong>Ejemplo</strong>
+          Clientes → Pedidos<br>
+          Categorías → Productos<br>
+          Profesores → Alumnos
+        </div>
+        <div class="rel-rule">
+          <strong>Regla de la clave foránea</strong>
+          La FK <em>siempre</em> se pone en la tabla del lado N (la tabla "muchos"). En el ejemplo, <code>IDCliente</code> va en Pedidos.
+        </div>
+      </div>
+
+      <!-- N:M -->
+      <div class="rel-card many-many">
+        <div class="rel-type-badge">N : M</div>
+        <h3>Varios a Varios</h3>
+        <p>Muchos registros de A se relacionan con muchos de B. <strong>Requiere tabla intermedia</strong> para implementarse correctamente.</p>
+        <div class="rel-diagram">
+          <svg viewBox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- A -->
+            <rect x="5" y="30" width="75" height="42" rx="3" fill="#141d2b" stroke="#1a2535" stroke-width="1"/>
+            <rect x="5" y="30" width="75" height="16" rx="3" fill="#243044"/>
+            <text x="43" y="41" fill="#dce6f5" font-size="8" font-family="IBM Plex Mono" text-anchor="middle">ALUMNOS</text>
+            <text x="14" y="57" fill="#ffa940" font-size="7" font-family="IBM Plex Mono">PK IDAlumno</text>
+            <text x="14" y="66" fill="#8a9ab8" font-size="7" font-family="IBM Plex Mono">Nombre</text>
+            <!-- Intermedia -->
+            <rect x="107" y="20" width="86" height="62" rx="3" fill="#141d2b" stroke="#c084fc55" stroke-width="1.5"/>
+            <rect x="107" y="20" width="86" height="16" rx="3" fill="#c084fc22"/>
+            <text x="150" y="31" fill="#c084fc" font-size="7.5" font-family="IBM Plex Mono" text-anchor="middle">MATRICULAS</text>
+            <text x="115" y="48" fill="#ffa940" font-size="7" font-family="IBM Plex Mono">PK IDMatricula</text>
+            <text x="115" y="58" fill="#00d4ff" font-size="7" font-family="IBM Plex Mono">FK IDAlumno</text>
+            <text x="115" y="68" fill="#00d4ff" font-size="7" font-family="IBM Plex Mono">FK IDCurso</text>
+            <text x="115" y="76" fill="#8a9ab8" font-size="7" font-family="IBM Plex Mono">Nota</text>
+            <!-- B -->
+            <rect x="220" y="30" width="75" height="42" rx="3" fill="#141d2b" stroke="#1a2535" stroke-width="1"/>
+            <rect x="220" y="30" width="75" height="16" rx="3" fill="#243044"/>
+            <text x="258" y="41" fill="#dce6f5" font-size="8" font-family="IBM Plex Mono" text-anchor="middle">CURSOS</text>
+            <text x="228" y="57" fill="#ffa940" font-size="7" font-family="IBM Plex Mono">PK IDCurso</text>
+            <text x="228" y="66" fill="#8a9ab8" font-size="7" font-family="IBM Plex Mono">Nombre</text>
+            <!-- Líneas -->
+            <line x1="80" y1="51" x2="107" y2="51" stroke="#c084fc" stroke-width="1.5"/>
+            <line x1="193" y1="51" x2="220" y2="51" stroke="#c084fc" stroke-width="1.5"/>
+            <!-- crow feet left -->
+            <line x1="80" y1="51" x2="88" y2="44" stroke="#c084fc" stroke-width="1.5"/>
+            <line x1="80" y1="51" x2="88" y2="51" stroke="#c084fc" stroke-width="1.5"/>
+            <line x1="80" y1="51" x2="88" y2="58" stroke="#c084fc" stroke-width="1.5"/>
+            <!-- crow feet right -->
+            <line x1="220" y1="51" x2="212" y2="44" stroke="#c084fc" stroke-width="1.5"/>
+            <line x1="220" y1="51" x2="212" y2="51" stroke="#c084fc" stroke-width="1.5"/>
+            <line x1="220" y1="51" x2="212" y2="58" stroke="#c084fc" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="rel-example">
+          <strong>Ejemplo</strong>
+          Alumnos ↔ Cursos (tabla: Matrículas)<br>
+          Libros ↔ Autores (tabla: Escritura)<br>
+          Pedidos ↔ Productos (tabla: Líneas)
+        </div>
+        <div class="rel-rule">
+          <strong>Regla de implementación</strong>
+          Crea una tabla intermedia con las dos FK. Esa tabla puede tener atributos propios (nota, fecha, cantidad…).
+        </div>
+      </div>
+
+    </div><!-- /rel-grid -->
+
+    <!-- Integridad referencial -->
+    <div style="background:var(--card); border:1px solid var(--border2); border-radius:4px; padding:1.75rem 2rem;">
+      <div class="section-label" style="margin-bottom:0.5rem">Regla importante</div>
+      <h3 style="font-family:var(--display); font-size:1.6rem; letter-spacing:0.05em; margin-bottom:0.75rem; color:var(--amber)">INTEGRIDAD REFERENCIAL</h3>
+      <p style="color:var(--muted2); font-size:0.9rem; max-width:720px;">
+        Al crear una relación en Access puedes activar la <strong style="color:var(--text)">Integridad Referencial</strong>. Esto impide crear registros "huérfanos": no puedes guardar un Pedido con un IDCliente que no exista en la tabla Clientes. También puedes activar <strong style="color:var(--text)">Actualización y Eliminación en cascada</strong> para propagar cambios automáticamente.
+      </p>
+      <div style="display:flex; gap:1rem; margin-top:1.25rem; flex-wrap:wrap;">
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:3px; padding:0.75rem 1rem; font-size:0.83rem; color:var(--muted2); flex:1; min-width:200px;">
+          <strong style="display:block; color:var(--green); font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">✓ Activado</strong>
+          No puedes insertar un Pedido con un cliente inexistente. Access te avisa del error.
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:3px; padding:0.75rem 1rem; font-size:0.83rem; color:var(--muted2); flex:1; min-width:200px;">
+          <strong style="display:block; color:var(--red); font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">✗ Desactivado</strong>
+          Puedes crear datos "rotos" — pedidos que apuntan a clientes borrados. Peligroso.
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:3px; padding:0.75rem 1rem; font-size:0.83rem; color:var(--muted2); flex:1; min-width:200px;">
+          <strong style="display:block; color:var(--cyan); font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">↺ Cascada</strong>
+          Si borras un Cliente, Access borra automáticamente todos sus Pedidos asociados.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ CÓMO HACERLO EN ACCESS ══════════════════════ -->
+<section id="access">
+  <div class="container">
+    <div class="section-label">Microsoft Access</div>
+    <h2 class="section-title">CÓMO CREAR<br>RELACIONES</h2>
+    <p class="section-desc">Pasos para establecer relaciones entre tablas desde la ventana de Relaciones de Access.</p>
+
+    <div class="steps-grid">
+      <div class="step-item">
+        <div class="step-num">01</div>
+        <div class="step-text"><strong>Pestaña Herramientas de base de datos</strong>Haz clic en <em>Relaciones</em> en la cinta de opciones.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">02</div>
+        <div class="step-text"><strong>Mostrar tabla</strong>Pulsa <em>Mostrar tabla</em> y añade las tablas que quieras relacionar.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">03</div>
+        <div class="step-text"><strong>Arrastra el campo</strong>Arrastra la clave primaria (PK) de la tabla "1" hasta la clave foránea (FK) de la tabla "N".</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">04</div>
+        <div class="step-text"><strong>Configurar la relación</strong>En la ventana emergente, activa <em>Exigir integridad referencial</em> si la necesitas.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">05</div>
+        <div class="step-text"><strong>Aceptar y guardar</strong>Haz clic en <em>Crear</em>. Guarda el diseño de relaciones (Ctrl + G).</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">06</div>
+        <div class="step-text"><strong>Verificar</strong>La línea entre tablas muestra "1" y "∞" en los extremos si la integridad está activa.</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:4px; padding:1.25rem 1.5rem; font-family:var(--mono); font-size:0.82rem; color:var(--muted2);">
+      <strong style="color:var(--amber); display:block; margin-bottom:0.5rem;">⚠ Antes de crear relaciones, recuerda:</strong>
+      Los campos relacionados deben tener el <strong style="color:var(--text)">mismo tipo de dato</strong> (ej. Número Entero largo en ambos lados).
+      La PK no puede tener valores nulos. Cierra las tablas antes de modificar las relaciones.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ EJERCICIOS ════════════════════════════════════ -->
+<section id="ejercicios">
+  <div class="container">
+    <div class="section-label">Práctica guiada</div>
+    <h2 class="section-title">EJERCICIOS</h2>
+    <p class="section-desc">Pon a prueba lo que has aprendido. Usa el botón <span class="tag tag-amber">Modo Profesor</span> (abajo a la derecha) para revelar todas las soluciones.</p>
+
+    <div class="exercises-list">
+
+      <!-- ═══ EJERCICIO 1 ════ -->
+      <div class="exercise-card">
+        <div class="exercise-header">
+          <span class="ex-num">EJ · 01</span>
+          <span class="ex-title">Identifica el tipo de relación</span>
+          <span class="ex-diff diff-easy">Fácil</span>
+        </div>
+        <div class="exercise-body">
+          <div class="exercise-scenario">
+            Lee cada enunciado e indica si la relación entre las dos tablas es <strong>1:1</strong>, <strong>1:N</strong> o <strong>N:M</strong>.
+          </div>
+
+          <!-- Pregunta 1.1 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>1.1</strong> — "Un <strong>Cliente</strong> puede realizar varios <strong>Pedidos</strong>, pero cada pedido pertenece a un único cliente."
+            </div>
+            <div class="options-group" id="q1-1">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q1-1">
+                <span class="opt-key">A</span> Relación 1:1<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q1-1">
+                <span class="opt-key">B</span> Relación 1:N — Un cliente tiene N pedidos<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q1-1">
+                <span class="opt-key">C</span> Relación N:M<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pregunta 1.2 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>1.2</strong> — "Cada <strong>Empleado</strong> tiene asignada una <strong>Plaza de Aparcamiento</strong> única, y cada plaza solo puede ser de un empleado."
+            </div>
+            <div class="options-group" id="q1-2">
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q1-2">
+                <span class="opt-key">A</span> Relación 1:1<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q1-2">
+                <span class="opt-key">B</span> Relación 1:N<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q1-2">
+                <span class="opt-key">C</span> Relación N:M<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pregunta 1.3 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>1.3</strong> — "Un <strong>Estudiante</strong> puede matricularse en varios <strong>Módulos</strong>, y cada módulo puede tener varios estudiantes inscritos."
+            </div>
+            <div class="options-group" id="q1-3">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q1-3">
+                <span class="opt-key">A</span> Relación 1:1<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q1-3">
+                <span class="opt-key">B</span> Relación 1:N<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q1-3">
+                <span class="opt-key">C</span> Relación N:M — Necesita tabla intermedia (Matrículas)<span class="check-icon">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pregunta 1.4 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>1.4</strong> — "Una <strong>Factura</strong> pertenece a un único <strong>Cliente</strong>, y un cliente puede tener muchas facturas."
+            </div>
+            <div class="options-group" id="q1-4">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q1-4">
+                <span class="opt-key">A</span> Relación 1:1<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q1-4">
+                <span class="opt-key">B</span> Relación 1:N — Un cliente puede tener N facturas<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q1-4">
+                <span class="opt-key">C</span> Relación N:M<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══ EJERCICIO 2 ════ -->
+      <div class="exercise-card">
+        <div class="exercise-header">
+          <span class="ex-num">EJ · 02</span>
+          <span class="ex-title">¿En qué tabla va la clave foránea?</span>
+          <span class="ex-diff diff-easy">Fácil</span>
+        </div>
+        <div class="exercise-body">
+          <div class="exercise-scenario">
+            En una relación 1:N, la <strong>FK (clave foránea)</strong> siempre va en la tabla del lado <strong>N</strong>. Para cada caso, indica en qué tabla se añadiría la FK.
+          </div>
+
+          <!-- 2.1 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>2.1</strong> — Relación: <code class="scenario-inline">PROVEEDORES (1) ──── (N) PRODUCTOS</code>
+              ¿En qué tabla añadimos el campo <strong>IDProveedor</strong> como FK?
+            </div>
+            <div class="options-group" id="q2-1">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q2-1">
+                <span class="opt-key">A</span> En la tabla PROVEEDORES<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q2-1">
+                <span class="opt-key">B</span> En la tabla PRODUCTOS (lado N)<span class="check-icon">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2.2 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>2.2</strong> — Relación: <code class="scenario-inline">DEPARTAMENTOS (1) ──── (N) EMPLEADOS</code>
+              ¿En qué tabla añadimos <strong>IDDepartamento</strong> como FK?
+            </div>
+            <div class="options-group" id="q2-2">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q2-2">
+                <span class="opt-key">A</span> En la tabla DEPARTAMENTOS<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q2-2">
+                <span class="opt-key">B</span> En la tabla EMPLEADOS (lado N)<span class="check-icon">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2.3 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>2.3</strong> — Relación: <code class="scenario-inline">PEDIDOS (N) ──── (M) PRODUCTOS</code>
+              Esta es una relación N:M. ¿Cómo se implementa?
+            </div>
+            <div class="options-group" id="q2-3">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q2-3">
+                <span class="opt-key">A</span> Se añade IDProducto en PEDIDOS y IDPedido en PRODUCTOS<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q2-3">
+                <span class="opt-key">B</span> Se crea una tabla intermedia LINEAS_PEDIDO con IDPedido e IDProducto como FK<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q2-3">
+                <span class="opt-key">C</span> No se puede implementar en Access<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Botón solución -->
+          <div class="btn-row" style="margin-top:1rem;">
+            <button class="btn btn-outline" onclick="toggleSolution('sol-ex2')">Ver solución detallada</button>
+          </div>
+          <div class="solution-panel" id="sol-ex2">
+            <div class="solution-header">⬛ Solución — Ejercicio 2</div>
+            <div class="solution-body">
+              <p><strong>Regla general:</strong> en una relación 1:N, la FK siempre va en la tabla del lado N. "El N carga con la llave del 1."</p>
+              <ul class="sol-list">
+                <li><strong>2.1</strong> — <code>IDProveedor</code> va en la tabla <strong>PRODUCTOS</strong> (un producto pertenece a un proveedor)</li>
+                <li><strong>2.2</strong> — <code>IDDepartamento</code> va en la tabla <strong>EMPLEADOS</strong> (un empleado pertenece a un departamento)</li>
+                <li><strong>2.3</strong> — Se crea <strong>LINEAS_PEDIDO</strong> con campos: IDLinea (PK), IDPedido (FK), IDProducto (FK), Cantidad, PrecioUnitario</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ EJERCICIO 3 ════ -->
+      <div class="exercise-card">
+        <div class="exercise-header">
+          <span class="ex-num">EJ · 03</span>
+          <span class="ex-title">Completa el esquema de tablas</span>
+          <span class="ex-diff diff-medium">Medio</span>
+        </div>
+        <div class="exercise-body">
+          <div class="exercise-scenario">
+            <strong>Contexto:</strong> Una <strong>librería online</strong> gestiona autores, libros y pedidos de clientes.
+            A continuación tienes el esquema parcial de las tablas. Responde a las preguntas para completarlo.
+          </div>
+
+          <!-- Diagrama de tablas -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem;">
+            <div class="db-table">
+              <div class="db-table-header"><span class="tbl-icon">⬛</span> AUTORES</div>
+              <div class="db-table-row"><span class="pk">PK</span> IDAutor</div>
+              <div class="db-table-row">Nombre</div>
+              <div class="db-table-row">Nacionalidad</div>
+            </div>
+            <div class="rel-connector">?</div>
+            <div class="db-table">
+              <div class="db-table-header"><span class="tbl-icon">⬛</span> LIBROS</div>
+              <div class="db-table-row"><span class="pk">PK</span> IDLibro</div>
+              <div class="db-table-row" style="opacity:0.4; font-style:italic;">___ ??? ___</div>
+              <div class="db-table-row">Titulo</div>
+              <div class="db-table-row">Precio</div>
+              <div class="db-table-row">IDCategoria</div>
+            </div>
+            <div class="rel-connector">—</div>
+            <div class="db-table">
+              <div class="db-table-header"><span class="tbl-icon">⬛</span> CATEGORIAS</div>
+              <div class="db-table-row"><span class="pk">PK</span> IDCategoria</div>
+              <div class="db-table-row">NombreCategoria</div>
+            </div>
+          </div>
+
+          <!-- 3.1 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>3.1</strong> — La relación entre AUTORES y LIBROS es N:M (un autor puede escribir varios libros y un libro puede tener varios autores). ¿Qué tabla intermedia necesitamos y qué campos tendría?
+            </div>
+            <div class="options-group" id="q3-1">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q3-1">
+                <span class="opt-key">A</span> Añadir IDAutor como FK en LIBROS<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q3-1">
+                <span class="opt-key">B</span> Tabla AUTORES_LIBROS con IDAutor (FK) + IDLibro (FK)<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q3-1">
+                <span class="opt-key">C</span> Añadir IDLibro como FK en AUTORES<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3.2 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>3.2</strong> — La relación entre CATEGORIAS y LIBROS es 1:N (una categoría agrupa muchos libros). ¿El campo IDCategoria que aparece en LIBROS es una...?
+            </div>
+            <div class="options-group" id="q3-2">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q3-2">
+                <span class="opt-key">A</span> Clave primaria (PK)<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q3-2">
+                <span class="opt-key">B</span> Clave foránea (FK) que referencia a CATEGORIAS<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q3-2">
+                <span class="opt-key">C</span> Un campo normal sin ninguna función especial<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3.3 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>3.3</strong> — Si borramos la categoría "Ciencia Ficción" de CATEGORIAS y hay libros que la tienen asignada, ¿qué ocurre si la integridad referencial está activa?
+            </div>
+            <div class="options-group" id="q3-3">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q3-3">
+                <span class="opt-key">A</span> Access borra también todos los libros de esa categoría automáticamente<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q3-3">
+                <span class="opt-key">B</span> Access muestra un error y no permite el borrado<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q3-3">
+                <span class="opt-key">C</span> Se borra la categoría y los libros quedan con IDCategoria nulo<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:1rem;">
+            <button class="btn btn-outline" onclick="toggleSolution('sol-ex3')">Ver solución detallada</button>
+          </div>
+          <div class="solution-panel" id="sol-ex3">
+            <div class="solution-header">⬛ Solución — Ejercicio 3</div>
+            <div class="solution-body">
+              <p><strong>Esquema completo de la librería:</strong></p>
+              <code class="sol-code">AUTORES (IDAutor PK, Nombre, Nacionalidad)
+LIBROS (IDLibro PK, Titulo, Precio, IDCategoria FK)
+CATEGORIAS (IDCategoria PK, NombreCategoria)
+AUTORES_LIBROS (IDAutor FK, IDLibro FK) — tabla intermedia N:M</code>
+              <ul class="sol-list">
+                <li><strong>3.1</strong> — La tabla intermedia se llama habitualmente AUTORES_LIBROS o ESCRIBEN. Contiene IDAutor + IDLibro como FK. La PK puede ser la combinación de ambos campos (PK compuesta) o un IDEscritura propio.</li>
+                <li><strong>3.2</strong> — IDCategoria en LIBROS es una FK. Apunta al campo IDCategoria de la tabla CATEGORIAS. Esto permite que varios libros compartan la misma categoría.</li>
+                <li><strong>3.3</strong> — Con integridad referencial activa, Access <strong>bloquea</strong> el borrado y muestra: "No se puede eliminar o cambiar el registro porque la tabla 'Libros' incluye registros relacionados". Para borrar, primero habría que reasignar o borrar esos libros. Si se activa "Eliminar en cascada", se borrarían los libros automáticamente.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ EJERCICIO 4 ════ -->
+      <div class="exercise-card">
+        <div class="exercise-header">
+          <span class="ex-num">EJ · 04</span>
+          <span class="ex-title">Diseña el esquema completo</span>
+          <span class="ex-diff diff-hard">Avanzado</span>
+        </div>
+        <div class="exercise-body">
+          <div class="exercise-scenario">
+            <strong>Contexto:</strong> Una <strong>academia de música</strong> quiere gestionar su base de datos. Estos son los datos que maneja:<br><br>
+            — Tiene <strong>profesores</strong>, cada uno especializado en uno o varios instrumentos.<br>
+            — Los <strong>alumnos</strong> se apuntan a clases de uno o varios instrumentos.<br>
+            — Cada clase tiene un <strong>instrumento</strong>, un profesor y puede tener varios alumnos.<br>
+            — Se quiere registrar la <strong>nota</strong> que cada alumno obtiene en cada clase.<br><br>
+            <strong>Tu tarea:</strong> Escribe las tablas necesarias con sus campos y las relaciones entre ellas. Después responde las preguntas.
+          </div>
+
+          <!-- 4.1 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>4.1</strong> — ¿Cuántas tablas son necesarias como mínimo para modelar bien este sistema?
+            </div>
+            <div class="options-group" id="q4-1">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q4-1">
+                <span class="opt-key">A</span> 3 tablas (Profesores, Alumnos, Clases)<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q4-1">
+                <span class="opt-key">B</span> 5 tablas (Profesores, Alumnos, Instrumentos, Clases, Matriculas_Clase)<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q4-1">
+                <span class="opt-key">C</span> 2 tablas (Profesores y Alumnos)<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4.2 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>4.2</strong> — La relación entre ALUMNOS y CLASES es N:M (un alumno puede ir a varias clases y una clase tiene varios alumnos). ¿Qué campo propio (atributo) tendría la tabla intermedia?
+            </div>
+            <div class="options-group" id="q4-2">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q4-2">
+                <span class="opt-key">A</span> El nombre del alumno y la fecha<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q4-2">
+                <span class="opt-key">B</span> La Nota (ya que es un dato del alumno EN esa clase concreta)<span class="check-icon">✓</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q4-2">
+                <span class="opt-key">C</span> No hace falta ningún campo propio<span class="check-icon">✗</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4.3 -->
+          <div class="question-block">
+            <div class="question-text">
+              <strong>4.3</strong> — Un profesor puede enseñar varios instrumentos y un instrumento puede ser enseñado por varios profesores. ¿Qué tipo de relación es?
+            </div>
+            <div class="options-group" id="q4-3">
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q4-3">
+                <span class="opt-key">A</span> 1:1<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'wrong')" data-group="q4-3">
+                <span class="opt-key">B</span> 1:N<span class="check-icon">✗</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this,'correct')" data-group="q4-3">
+                <span class="opt-key">C</span> N:M — necesita tabla intermedia PROFESORES_INSTRUMENTOS<span class="check-icon">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:1rem;">
+            <button class="btn btn-outline" onclick="toggleSolution('sol-ex4')">Ver solución completa</button>
+          </div>
+          <div class="solution-panel" id="sol-ex4">
+            <div class="solution-header">⬛ Solución — Ejercicio 4 (Academia de Música)</div>
+            <div class="solution-body">
+              <p><strong>Tablas y campos:</strong></p>
+              <code class="sol-code">PROFESORES      IDProfesor (PK), Nombre, Telefono, Email
+ALUMNOS         IDAlumno (PK), Nombre, FechaNacimiento, Telefono
+INSTRUMENTOS    IDInstrumento (PK), Nombre, Tipo (cuerda/viento/percusión)
+CLASES          IDClase (PK), IDInstrumento (FK), IDProfesor (FK), HorarioSemana, Aula
+MATRICULAS      IDMatricula (PK), IDAlumno (FK), IDClase (FK), Nota, FechaInscripcion
+PROF_INSTRUMENTO IDProfesor (FK), IDInstrumento (FK)  ← tabla N:M</code>
+              <p><strong>Relaciones:</strong></p>
+              <ul class="sol-list">
+                <li>INSTRUMENTOS (1) ── (N) CLASES — un instrumento puede tener varias clases</li>
+                <li>PROFESORES (1) ── (N) CLASES — un profesor puede dar varias clases</li>
+                <li>ALUMNOS (N) ── (M) CLASES → tabla intermedia MATRICULAS con campo <strong>Nota</strong></li>
+                <li>PROFESORES (N) ── (M) INSTRUMENTOS → tabla intermedia PROF_INSTRUMENTO</li>
+              </ul>
+              <p style="margin-top:0.75rem;"><strong>Nota pedagógica:</strong> La nota NO puede estar en ALUMNOS ni en CLASES porque depende de la combinación de los dos. Esto es un ejemplo claro de atributo de relación que justifica crear una tabla intermedia con campo propio.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /exercises-list -->
+  </div>
+</section>
+
+<!-- ═══ FOOTER ════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    Bases de Datos Ofimáticas · Unidad 6 · Microsoft Access — Material didáctico
+  </div>
+</footer>
+
+<!-- ═══ TEACHER TOGGLE ════════════════════════════ -->
+<button class="teacher-bar" id="teacherBtn" onclick="toggleTeacherMode()" title="Modo Profesor">
+  <span class="t-dot"></span>
+  <span id="teacherLabel">Modo Profesor</span>
+</button>
+
+<!-- ═══ JAVASCRIPT ════════════════════════════════ -->
+<script>
+/* ─── Multiple choice handler ─── */
+function checkAnswer(btn, result) {
+  const group = btn.dataset.group;
+  const buttons = document.querySelectorAll(`[data-group="${group}"]`);
+  buttons.forEach(b => b.classList.add('disabled'));
+  buttons.forEach(b => b.onclick = null);
+
+  if (result === 'correct') {
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('wrong');
+    // highlight the correct one
+    buttons.forEach(b => {
+      if (b.querySelector('.check-icon') && b.querySelector('.check-icon').textContent === '✓') {
+        b.classList.add('correct');
+      }
+    });
+  }
+}
+
+/* ─── Solution toggle ─── */
+function toggleSolution(id) {
+  const panel = document.getElementById(id);
+  panel.classList.toggle('visible');
+  const btn = panel.previousElementSibling.querySelector('button');
+  if (panel.classList.contains('visible')) {
+    btn.textContent = 'Ocultar solución';
+  } else {
+    btn.textContent = 'Ver solución detallada';
+    if (id === 'sol-ex4') btn.textContent = 'Ver solución completa';
+  }
+}
+
+/* ─── Teacher mode: reveal all ─── */
+let teacherMode = false;
+function toggleTeacherMode() {
+  teacherMode = !teacherMode;
+  const btn = document.getElementById('teacherBtn');
+  const label = document.getElementById('teacherLabel');
+  const panels = document.querySelectorAll('.solution-panel');
+
+  if (teacherMode) {
+    panels.forEach(p => p.classList.add('visible'));
+    btn.classList.add('active');
+    label.textContent = 'Ocultar soluciones';
+  } else {
+    panels.forEach(p => p.classList.remove('visible'));
+    btn.classList.remove('active');
+    label.textContent = 'Modo Profesor';
+  }
+}
+
+/* ─── Nav active state on scroll ─── */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-pill');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  navLinks.forEach(l => {
+    l.classList.remove('active');
+    if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

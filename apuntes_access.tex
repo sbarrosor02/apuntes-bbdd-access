@@ -1,0 +1,783 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{mdframed}
+\usepackage{amsmath}
+
+\geometry{margin=2.5cm}
+
+% Colores corporativos
+\definecolor{accessred}{RGB}{175,0,0}
+\definecolor{lightgray}{RGB}{245,245,245}
+\definecolor{darkblue}{RGB}{0,70,127}
+\definecolor{noteblue}{RGB}{230,242,255}
+\definecolor{warnyellow}{RGB}{255,248,220}
+
+% Estilo de cabecera
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{accessred}{\textbf{UT6 -- Bases de Datos Ofimáticas con Microsoft Access}}}
+\fancyhead[R]{\textcolor{gray}{\thepage}}
+\fancyfoot[C]{\textcolor{gray}{\small AOF -- Natalia Marcos Iglesias}}
+\renewcommand{\headrulewidth}{1.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accessred}\leaders\hrule height \headrulewidth\hfill}}
+
+% Estilo de secciones
+\titleformat{\section}{\Large\bfseries\color{accessred}}{}{0em}{\thesection.\quad}[\titlerule]
+\titleformat{\subsection}{\large\bfseries\color{darkblue}}{}{0em}{\thesubsection.\quad}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{darkblue}}{}{0em}{\thesubsubsection.\quad}
+
+% Cajas de nota y aviso
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{nota}{
+  colback=noteblue, colframe=darkblue,
+  title={\textbf{Nota}}, fonttitle=\bfseries,
+  breakable, enhanced
+}
+
+\newtcolorbox{importante}{
+  colback=warnyellow, colframe=accessred,
+  title={\textbf{Importante}}, fonttitle=\bfseries,
+  breakable, enhanced
+}
+
+\newtcolorbox{definicion}{
+  colback=lightgray, colframe=gray!60,
+  title={\textbf{Definición}}, fonttitle=\bfseries,
+  breakable, enhanced
+}
+
+% Estilo de código/ruta
+\newcommand{\ruta}[1]{\texttt{\small\color{darkblue}#1}}
+\newcommand{\tecla}[1]{\fbox{\small\texttt{#1}}}
+\newcommand{\menu}[1]{\textit{\textcolor{darkblue}{#1}}}
+
+% Título
+\title{
+  \vspace{-1cm}
+  {\color{accessred}\rule{\linewidth}{3pt}}\\[0.3cm]
+  {\Huge\bfseries\color{accessred} UT6: Utilización de Bases de\\[0.2cm]
+  Datos Ofimáticas}\\[0.3cm]
+  {\Large\color{darkblue} Microsoft Access}\\[0.3cm]
+  {\color{accessred}\rule{\linewidth}{1pt}}\\[0.2cm]
+  {\large\color{gray} Módulo: Aplicaciones Ofimáticas (AOF)}
+}
+\author{\textbf{Natalia Marcos Iglesias}}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\tableofcontents
+\newpage
+
+% =============================================
+\section{Conceptos básicos de bases de datos}
+% =============================================
+
+\subsection{¿Qué es una base de datos?}
+
+\begin{definicion}
+Una \textbf{base de datos} es un conjunto de datos organizados para un uso determinado. El conjunto de programas que permite gestionar esos datos se denomina \textbf{Sistema Gestor de Bases de Datos (SGBD)}.
+\end{definicion}
+
+Las bases de datos de Access utilizan la extensión \texttt{.ACCDB}. La mayoría de los SGBD modernos emplean el \textbf{modelo relacional}, en el que los datos se organizan en \textbf{tablas}.
+
+\subsection{Tablas de datos}
+
+Una \textbf{tabla} almacena información sobre un tema concreto (clientes, pedidos, productos...). Está formada por:
+
+\begin{itemize}
+  \item \textbf{Columnas/Campos}: almacenan un tipo de dato concreto (nombre, dirección, código...).
+  \item \textbf{Filas/Registros}: conjunto de todos los campos de un mismo elemento.
+\end{itemize}
+
+\subsubsection{Clave principal (Primary Key)}
+
+\begin{importante}
+Una \textbf{clave principal} es una columna (o combinación de columnas) que identifica de forma \emph{única} cada fila. No puede haber valores duplicados ni valores nulos en ella.
+\end{importante}
+
+\subsubsection{Clave foránea (Foreign Key)}
+
+Una \textbf{clave foránea} es una columna que hace referencia a la clave principal de otra tabla. Garantiza la \textbf{integridad referencial}: los datos referenciados deben existir en la tabla principal.
+
+\begin{nota}
+Una tabla tiene \textbf{una única clave primaria} y puede tener \textbf{cero o más claves foráneas}.
+\end{nota}
+
+\subsubsection{Valor NULL}
+
+El valor \texttt{NULL} indica ausencia de dato. \textbf{No es lo mismo que el valor 0 o una cadena vacía}.
+
+\subsection{Objetos de una base de datos Access}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{>{\bfseries\color{accessred}}p{3cm} p{10cm}}
+\toprule
+Objeto & Descripción \\
+\midrule
+Tabla & Almacena los datos organizados en filas y columnas. \\
+Consulta & Extrae, filtra o modifica datos de una o varias tablas. \\
+Formulario & Interfaz gráfica para introducir y visualizar datos. \\
+Informe & Presenta datos formateados para impresión o exportación. \\
+Macro & Automatiza acciones en respuesta a eventos. \\
+Módulo & Procedimientos personalizados en Visual Basic (VBA). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================
+\section{Interfaz de Microsoft Access}
+% =============================================
+
+\subsection{Pantalla inicial}
+
+Al abrir Access aparece la \textbf{vista Backstage} (pestaña Archivo) con:
+\begin{itemize}
+  \item Crear una nueva base de datos en blanco o desde plantilla.
+  \item Lista de bases de datos recientes.
+  \item Acceso a OneDrive para guardar en la nube.
+\end{itemize}
+
+\subsection{Elementos del entorno de trabajo}
+
+Una vez abierta una base de datos, el entorno de trabajo incluye:
+
+\begin{description}[leftmargin=3cm, style=nextline]
+  \item[Barra de título] Muestra el nombre del archivo. Incluye botones de minimizar, maximizar y cerrar.
+  \item[Barra de acceso rápido] Accesos directos personalizables: Guardar (\tecla{Ctrl+G}), Deshacer (\tecla{Ctrl+Z}), Rehacer.
+  \item[Cinta de opciones] Organizada en \textbf{pestañas} $\rightarrow$ \textbf{grupos} $\rightarrow$ \textbf{botones}. Notación: \menu{INICIO > Portapapeles > Pegar}.
+  \item[Panel de navegación] Muestra y gestiona todos los objetos de la base de datos.
+  \item[Área de trabajo] Zona central donde se abren los objetos.
+  \item[Barra de estado] Parte inferior; indica el estado actual y permite cambiar de vista.
+\end{description}
+
+\begin{nota}
+Pulsando \tecla{ALT} se activa el modo de acceso por teclado: aparecen letras sobre cada botón para acceder sin ratón.
+\end{nota}
+
+\subsection{La pestaña Archivo (vista Backstage)}
+
+La pestaña \textbf{ARCHIVO} abre la \textbf{vista Backstage}, con fondo granate, donde se gestionan los archivos:
+\begin{itemize}
+  \item \menu{Información}: Compactar/reparar y cifrar con contraseña.
+  \item \menu{Nuevo}: Crear nueva base de datos.
+  \item \menu{Abrir}: Abrir base de datos existente.
+  \item \menu{Guardar}: Guardar cambios.
+  \item \menu{Imprimir}: Opciones de impresión.
+  \item \menu{Cerrar}: Cerrar la base de datos sin salir de Access.
+\end{itemize}
+
+% =============================================
+\section{Gestión de bases de datos}
+% =============================================
+
+\subsection{Crear una base de datos}
+
+\begin{enumerate}
+  \item \menu{Archivo > Nuevo > Base de datos del escritorio en blanco}.
+  \item Escribir el nombre del archivo (extensión \texttt{.accdb}).
+  \item Seleccionar la ubicación haciendo clic en el icono de carpeta.
+  \item Pulsar \textbf{Crear}.
+\end{enumerate}
+
+\begin{nota}
+Al abrir, Access puede mostrar una advertencia sobre macros VBA. Si el archivo es de confianza, pulsar \textbf{Habilitar contenido}.
+\end{nota}
+
+\subsection{Abrir una base de datos existente}
+
+\begin{itemize}
+  \item Desde la lista de \textbf{Recientes} al abrir Access.
+  \item \menu{Archivo > Abrir} (o \tecla{Ctrl+A}).
+  \item Doble clic sobre el archivo \texttt{.accdb} en el explorador.
+\end{itemize}
+
+\subsection{Cerrar una base de datos}
+
+\begin{itemize}
+  \item \menu{Archivo > Cerrar} (mantiene Access abierto).
+  \item Cerrar Access directamente cierra también la base de datos.
+\end{itemize}
+
+% =============================================
+\section{Panel de navegación}
+% =============================================
+
+El \textbf{Panel de navegación} (lateral izquierdo) organiza todos los objetos de la base de datos. Se puede:
+
+\begin{itemize}
+  \item \textbf{Ocultar/mostrar}: botón de flecha en su parte superior.
+  \item \textbf{Cambiar agrupación}: clic en la cabecera del panel para elegir entre \emph{Tipo de objeto}, \emph{Fecha de creación/modificación}, \emph{Tablas y vistas relacionadas} o \emph{Personalizado}.
+  \item \textbf{Filtrar}: seleccionar qué tipo de objetos mostrar.
+  \item \textbf{Ocultar objetos individualmente}: clic derecho $\rightarrow$ \menu{Ocultar en este grupo}.
+\end{itemize}
+
+% =============================================
+\section{Creación y gestión de tablas}
+% =============================================
+
+\subsection{Crear una tabla en Vista Diseño}
+
+Para crear una tabla:
+\begin{enumerate}
+  \item \menu{Crear > Tablas > Vista Diseño}.
+  \item Definir cada campo indicando:
+    \begin{itemize}
+      \item \textbf{Nombre del campo}: identificador único en la tabla.
+      \item \textbf{Tipo de datos}: determina qué valores acepta.
+      \item \textbf{Descripción} (opcional): texto explicativo que aparece en la barra de estado.
+    \end{itemize}
+  \item Asignar la \textbf{clave principal}.
+  \item Guardar la tabla con un nombre.
+\end{enumerate}
+
+\subsection{Tipos de datos}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\bfseries\color{darkblue}}p{3.5cm} p{9cm}}
+\toprule
+Tipo & Descripción \\
+\midrule
+Texto corto & Hasta 255 caracteres. Para nombres, teléfonos, códigos. \\
+Texto largo & Más de 255 caracteres. Comentarios, descripciones largas. \\
+Número & Valores numéricos para cálculos (Byte, Entero, Entero largo, Simple, Doble, Decimal). \\
+Fecha/Hora & Fechas y horas (años 100--9999). \\
+Moneda & Valores monetarios con alta precisión (hasta 15 dígitos enteros y 4 decimales). \\
+Autonumeración & Entero largo generado automáticamente por Access. No editable. \\
+Sí/No & Valores booleanos: Sí/No, Verdadero/Falso, Activado/Desactivado. \\
+Objeto OLE & Imágenes, hojas de cálculo, documentos incrustados. Obsoleto desde Access 2007. \\
+Hipervínculo & URL o ruta de archivo. \\
+Datos adjuntos & Archivos adjuntos (imágenes, PDFs...). Más eficiente que OLE. \\
+Calculado & Campo cuyo valor resulta de una expresión sobre otros campos. \\
+Asistente búsquedas & Lista de valores o referencia a otra tabla (cuadro combinado). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Clave principal}
+
+Para asignar la clave principal:
+\begin{enumerate}
+  \item Hacer clic sobre el campo deseado en Vista Diseño.
+  \item \menu{Diseño > Herramientas > Clave principal}.
+\end{enumerate}
+
+Aparecerá una llave (\textbf{$\mathbf{\keyindicator}$}) a la izquierda del campo.
+
+\begin{importante}
+Para una \textbf{clave compuesta} (varios campos): seleccionar todos los campos con \tecla{Ctrl}+clic y luego pulsar \menu{Clave principal}.
+\end{importante}
+
+\subsection{Propiedades de los campos}
+
+En Vista Diseño, la zona inferior muestra las propiedades del campo seleccionado:
+
+\subsubsection{Tamaño del campo}
+\begin{itemize}
+  \item \textbf{Texto corto}: máximo 255 caracteres (por defecto 255).
+  \item \textbf{Número}: Byte (0--255), Entero (±32.767), Entero largo (±2.147.483.647), Simple, Doble, Decimal.
+\end{itemize}
+
+\subsubsection{Formato}
+Personaliza cómo se muestran los datos. Formatos numéricos: Número general, Moneda, Euro, Fijo, Estándar, Porcentaje, Científico. Formatos fecha: Fecha general, Fecha larga, Fecha mediana, Fecha corta, Hora larga, Hora mediana, Hora corta.
+
+\subsubsection{Máscara de entrada}
+Plantilla que guía la introducción de datos. Ejemplo: \texttt{(\_\_\_) \_\_\_-\_\_\_\_} para teléfonos. Solo funciona con tipos Texto y Fecha.
+
+\subsubsection{Título}
+Texto que aparece como encabezado de columna en lugar del nombre del campo.
+
+\subsubsection{Valor predeterminado}
+Valor que se introduce automáticamente si el usuario no escribe nada.
+
+\subsubsection{Regla de validación}
+Condición que debe cumplir el valor introducido. Ejemplo: \texttt{>=100 Y <=2000}.
+
+\subsubsection{Texto de validación}
+Mensaje de error que aparece cuando no se cumple la regla de validación.
+
+\subsubsection{Requerido}
+Si es \texttt{Sí}, el campo no puede quedar vacío.
+
+\subsubsection{Indexado}
+Mejora la velocidad de búsquedas y ordenaciones. Opciones: \emph{No}, \emph{Sí (con duplicados)}, \emph{Sí (sin duplicados)}.
+
+\subsection{Trabajar en Vista Hoja de datos}
+
+La Vista Hoja de datos permite introducir, modificar y eliminar registros:
+\begin{itemize}
+  \item \textbf{Introducir}: escribir en la primera fila vacía y pulsar \tecla{Intro} para avanzar de campo.
+  \item \textbf{Eliminar registro}: seleccionar fila $\rightarrow$ \menu{Inicio > Registros > Eliminar} o tecla \tecla{Supr}.
+  \item \textbf{Desplazarse}: barra de navegación inferior o teclado (\tecla{$\uparrow$}/\tecla{$\downarrow$} entre registros, \tecla{$\leftarrow$}/\tecla{$\rightarrow$} entre campos).
+  \item \textbf{Buscar}: \menu{Inicio > Buscar} o \tecla{Ctrl+B}.
+\end{itemize}
+
+% =============================================
+\section{Relaciones entre tablas}
+% =============================================
+
+\subsection{Tipos de relaciones}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{>{\bfseries\color{accessred}}p{3.5cm} p{9cm}}
+\toprule
+Tipo & Descripción y ejemplo \\
+\midrule
+Uno a uno (1:1) & Cada registro de A se relaciona con uno de B y viceversa. \newline\textit{Ej.: Población -- Alcalde.} \\
+Uno a varios (1:N) & Un registro de A puede relacionarse con varios de B, pero cada registro de B solo con uno de A. \newline\textit{Ej.: Población -- Habitantes.} \\
+Varios a varios (N:M) & Un registro de A puede relacionarse con varios de B y viceversa. Requiere \textbf{tabla intermedia}. \newline\textit{Ej.: Clientes -- Artículos (tabla Líneas de pedido).} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Crear una relación}
+
+\begin{enumerate}
+  \item \menu{Herramientas de base de datos > Relaciones}.
+  \item Agregar las tablas desde \menu{Mostrar tabla}.
+  \item Arrastrar el campo clave de la tabla principal hasta el campo correspondiente de la tabla secundaria.
+  \item En el cuadro \textbf{Modificar relaciones}: verificar campos, activar \textbf{Exigir integridad referencial}.
+  \item Pulsar \textbf{Crear}.
+\end{enumerate}
+
+\subsection{Integridad referencial}
+
+Al activar la integridad referencial:
+\begin{itemize}
+  \item No se puede insertar en la tabla secundaria un valor que no exista en la principal.
+  \item No se puede eliminar de la principal un registro que tenga relacionados en la secundaria (salvo con las opciones en cascada).
+\end{itemize}
+
+\textbf{Opciones en cascada:}
+\begin{description}
+  \item[Actualizar en cascada] Al cambiar la clave principal, se actualizan automáticamente todas las claves foráneas relacionadas.
+  \item[Eliminar en cascada] Al borrar un registro principal, se borran automáticamente todos los registros secundarios relacionados.
+\end{description}
+
+\begin{importante}
+El campo de unión debe ser del \textbf{mismo tipo de dato} en ambas tablas, aunque puede tener distinto nombre.
+\end{importante}
+
+\subsection{Gestionar relaciones}
+
+\begin{itemize}
+  \item \textbf{Modificar}: doble clic sobre la línea de relación.
+  \item \textbf{Eliminar}: seleccionar la línea $\rightarrow$ \tecla{Supr}.
+  \item \textbf{Agregar tabla}: \menu{Diseño > Mostrar tabla}.
+  \item \textbf{Ocultar tabla}: clic derecho $\rightarrow$ \menu{Ocultar tabla}.
+  \item \textbf{Limpiar ventana}: \menu{Diseño > Borrar diseño} (no elimina las relaciones, solo las oculta).
+  \item \textbf{Ver relaciones directas}: clic derecho sobre tabla $\rightarrow$ \menu{Mostrar directas}.
+\end{itemize}
+
+% =============================================
+\section{Consultas}
+% =============================================
+
+\subsection{Tipos de consultas}
+
+\begin{description}
+  \item[Consultas de selección] Extraen y muestran datos que cumplen ciertos criterios. Generan una tabla lógica (en memoria).
+  \item[Consultas de acción] Realizan cambios en los datos: creación de tabla, actualización, datos anexados, eliminación.
+  \item[Consultas SQL] Se definen directamente en lenguaje SQL (consultas de unión, etc.). No se estudian en este módulo.
+\end{description}
+
+\subsection{Crear una consulta en Vista Diseño}
+
+\begin{enumerate}
+  \item \menu{Crear > Consultas > Diseño de Consulta}.
+  \item Seleccionar las tablas de origen y pulsar \textbf{Agregar} $\rightarrow$ \textbf{Cerrar}.
+  \item En la \textbf{cuadrícula QBE} (zona inferior), agregar campos y definir la consulta.
+  \item Guardar con \tecla{Ctrl+G} o \menu{Archivo > Guardar}.
+  \item Ejecutar con el botón \textbf{Ejecutar} (\menu{Diseño}) o desde el Panel de Navegación (doble clic).
+\end{enumerate}
+
+\subsection{La cuadrícula QBE}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{>{\bfseries\color{darkblue}}p{2.5cm} p{10cm}}
+\toprule
+Fila & Función \\
+\midrule
+Campo & Nombre del campo o expresión calculada. \\
+Tabla & Tabla de procedencia del campo. \\
+Orden & Tipo de ordenación: Ascendente / Descendente. \\
+Mostrar & Casilla: si está activada, el campo aparece en el resultado. \\
+Criterios & Condición que deben cumplir los registros. \\
+O & Condiciones alternativas (unidas por OR). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Añadir campos}
+
+\begin{itemize}
+  \item Doble clic sobre el campo en la zona de tablas.
+  \item Arrastrar el campo desde la tabla hasta la cuadrícula.
+  \item Hacer clic en la fila Campo de una columna vacía y seleccionar de la lista.
+  \item Usar \texttt{*} para incluir todos los campos de una tabla.
+\end{itemize}
+
+\subsection{Campos calculados}
+
+Se definen con la sintaxis: \texttt{NombreColumna: expresión}
+
+Ejemplo: \texttt{Precio con IVA: [Precio]*1,21}
+
+\subsubsection{Operadores disponibles}
+
+\begin{center}
+\begin{tabular}{c l}
+\toprule
+Operador & Uso \\
+\midrule
+\texttt{+} & Suma numérica \\
+\texttt{-} & Resta \\
+\texttt{*} & Multiplicación \\
+\texttt{/} & División (resultado decimal) \\
+\texttt{\textbackslash} & División entera \\
+\texttt{\^{}} & Potencia \\
+\texttt{Mod} & Resto de la división \\
+\texttt{\&} & Concatenación de texto \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Funciones predefinidas útiles}
+
+\begin{itemize}
+  \item \texttt{Date()} / \texttt{Fecha()} --- Fecha actual.
+  \item \texttt{Now()} / \texttt{Hoy()} --- Fecha y hora actual.
+  \item \texttt{Year(fecha)} / \texttt{Año()} --- Año de una fecha.
+  \item \texttt{Month(fecha)} / \texttt{Mes()} --- Mes de una fecha.
+\end{itemize}
+
+\subsection{Criterios de búsqueda}
+
+\subsubsection{Operadores de comparación}
+
+\begin{center}
+\begin{tabular}{c l}
+\toprule
+Operador & Significado \\
+\midrule
+\texttt{=} & Igual \\
+\texttt{<>} & Distinto \\
+\texttt{<} & Menor que \\
+\texttt{<=} & Menor o igual \\
+\texttt{>} & Mayor que \\
+\texttt{>=} & Mayor o igual \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Operadores especiales}
+
+\begin{description}
+  \item[\texttt{Entre \ldots Y \ldots}] Rango de valores. Ej.: \texttt{[Precio] Entre 100 Y 500}
+  \item[\texttt{In (\ldots)}] Pertenencia a lista. Ej.: \texttt{[Ciudad] In ("Madrid";"Valencia";"Sevilla")}
+  \item[\texttt{Es Nulo}] Valor nulo. Ej.: \texttt{[Email] Es Nulo}
+  \item[\texttt{Como}] Comparación con comodines:
+    \begin{itemize}
+      \item \texttt{*} --- Cualquier cadena de caracteres.
+      \item \texttt{?} --- Un único carácter.
+      \item \texttt{\#} --- Un único dígito.
+      \item \texttt{[lista]} --- Cualquier carácter de la lista.
+    \end{itemize}
+    Ej.: \texttt{[Nombre] Como "Mar*"} (nombres que empiezan por ``Mar'').
+\end{description}
+
+\subsubsection{Operadores lógicos}
+
+\begin{itemize}
+  \item Condiciones en la \textbf{misma fila} $\rightarrow$ unidas por \textbf{Y (AND)}.
+  \item Condiciones en \textbf{filas distintas} (fila O:) $\rightarrow$ unidas por \textbf{O (OR)}.
+\end{itemize}
+
+\subsection{Consultas con parámetros}
+
+Permiten que el usuario introduzca el valor de búsqueda al ejecutar la consulta:
+
+\begin{enumerate}
+  \item En la fila Criterios, escribir el nombre del parámetro entre corchetes: \texttt{[Introduce la población]}.
+  \item Al ejecutar, Access mostrará un cuadro de diálogo pidiendo el valor.
+\end{enumerate}
+
+\begin{importante}
+El nombre del parámetro debe ir \textbf{entre corchetes} y no coincidir con ningún nombre de campo existente.
+\end{importante}
+
+\subsection{Consultas multitabla}
+
+Una consulta puede obtener datos de varias tablas. Si las tablas están relacionadas, aparecerán automáticamente combinadas (línea de unión).
+
+\subsubsection{Composición interna (INNER JOIN)}
+Solo devuelve registros que tienen correspondencia en ambas tablas.
+
+\subsubsection{Composición externa (OUTER JOIN)}
+También devuelve registros sin correspondencia en la otra tabla. Se configura haciendo doble clic sobre la línea de unión y eligiendo la opción 2 o 3 en \menu{Tipo de combinación}.
+
+% =============================================
+\section{Consultas de resumen}
+% =============================================
+
+\subsection{Definición}
+
+Las \textbf{consultas de resumen} agrupan registros y calculan estadísticas. Se activan con el botón \textbf{Totales} en la pestaña Diseño, que añade la fila \textbf{Total:} a la cuadrícula QBE.
+
+\subsection{Funciones de agregado}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\bfseries\color{darkblue}}p{2.5cm} p{9cm}}
+\toprule
+Función & Descripción \\
+\midrule
+Suma & Suma de valores numéricos. \\
+Promedio & Media aritmética. \\
+DesvEst & Desviación estándar. \\
+Var & Varianza. \\
+Mín & Valor mínimo (numérico, texto o fecha). \\
+Max & Valor máximo. \\
+Primero & Primer registro del grupo (orden cronológico de entrada). \\
+Último & Último registro del grupo. \\
+Cuenta & Cuenta de valores no nulos. Para contar todos los registros: \texttt{Cuenta(*)}. \\
+AgruparPor & Define la columna de agrupación. \\
+Expresión & Permite combinar funciones de agregado en una expresión. \\
+Dónde & Aplica un criterio de búsqueda \emph{antes} de calcular. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{nota}
+Los valores \texttt{NULL} no se cuentan en las funciones de agregado. El valor 0 sí se cuenta.
+\end{nota}
+
+\subsection{Agrupación de registros}
+
+Usando \textbf{AgruparPor}, Access forma grupos con los registros que tienen el mismo valor en el campo de agrupación. Cada grupo genera una fila en el resultado.
+
+\textit{Ejemplo}: Contar alumnos por población:
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Campo} & Población | Alumno \\
+\hline
+\textbf{Total} & AgruparPor | Cuenta \\
+\hline
+\end{tabular}
+\end{center}
+
+% =============================================
+\section{Consultas de referencias cruzadas}
+% =============================================
+
+Una \textbf{consulta de referencias cruzadas} representa datos de resumen en formato de tabla de doble entrada, con una columna de agrupación como filas y otra como columnas.
+
+Se crea con el \textbf{Asistente para consultas de referencias cruzadas} (\menu{Crear > Asistente para Consultas > Asist. consultas de tabla ref. cruzadas}):
+
+\begin{enumerate}
+  \item Elegir la tabla u origen.
+  \item Seleccionar el campo(s) de \textbf{encabezado de filas} (hasta 3).
+  \item Seleccionar el campo de \textbf{encabezado de columnas} (1 campo).
+  \item Elegir el \textbf{campo valor} y la función de agregado.
+  \item Opcionalmente, añadir suma de filas.
+  \item Asignar nombre y finalizar.
+\end{enumerate}
+
+% =============================================
+\section{Consultas de acción}
+% =============================================
+
+Las \textbf{consultas de acción} modifican los datos. Antes de ejecutarse, Access pide confirmación.
+
+\begin{importante}
+Las consultas de acción son \textbf{irreversibles} (salvo deshacer inmediato). Usa siempre la Vista Hoja de datos para revisar qué registros afectará antes de ejecutar.
+\end{importante}
+
+\subsection{Consulta de creación de tabla}
+
+Guarda el resultado de una consulta de selección en una \textbf{nueva tabla}.
+
+\begin{enumerate}
+  \item Diseñar la consulta de selección.
+  \item \menu{Diseño > Tipo de consulta > Crear tabla}.
+  \item Indicar el nombre de la nueva tabla.
+  \item Ejecutar.
+\end{enumerate}
+
+\begin{nota}
+Los campos de la nueva tabla heredan el tipo de datos pero \textbf{no} la clave principal ni los índices.
+\end{nota}
+
+\subsection{Consulta de actualización}
+
+Modifica los valores de uno o más campos en los registros que cumplen el criterio.
+
+\begin{enumerate}
+  \item \menu{Diseño > Tipo de consulta > Actualizar}.
+  \item Aparece la fila \textbf{Actualizar a:} en la cuadrícula.
+  \item Escribir la expresión del nuevo valor (campo, valor fijo o expresión).
+\end{enumerate}
+
+Ejemplo: subir un 10\% el precio: \texttt{[Precio] * 1,1}
+
+\subsection{Consulta de datos anexados}
+
+Añade registros de una tabla de origen al final de una tabla destino.
+
+\begin{enumerate}
+  \item \menu{Diseño > Tipo de consulta > Anexar}.
+  \item Indicar la tabla destino.
+  \item En la fila \textbf{Anexar a:}, indicar el campo destino correspondiente.
+\end{enumerate}
+
+\subsection{Consulta de eliminación}
+
+Borra los registros que cumplen el criterio de búsqueda.
+
+\begin{enumerate}
+  \item \menu{Diseño > Tipo de consulta > Eliminar}.
+  \item Aparece la fila \textbf{Eliminar:}.
+  \item Definir el criterio de búsqueda.
+\end{enumerate}
+
+\begin{importante}
+Si no se especifica ningún criterio, \textbf{se borran TODOS los registros} de la tabla. Los datos borrados \textbf{no se pueden recuperar}.
+\end{importante}
+
+% =============================================
+\section{Formularios}
+% =============================================
+
+\subsection{¿Para qué sirven los formularios?}
+
+Los \textbf{formularios} proporcionan una interfaz gráfica amigable para introducir, visualizar y modificar datos de tablas o consultas.
+
+\subsection{Crear un formulario}
+
+Desde \menu{Crear > Formularios}:
+
+\begin{description}
+  \item[Formulario] Crea automáticamente un formulario con todos los campos de la tabla/consulta seleccionada en el Panel de Navegación.
+  \item[Diseño del formulario] Formulario en blanco en Vista Diseño para construir manualmente.
+  \item[Formulario en blanco] Formulario vacío en Vista Presentación; permite arrastrar campos desde el Panel.
+  \item[Asistente para formularios] Guía paso a paso (recomendado).
+  \item[Navegación] Formulario tipo menú de página web.
+  \item[Más formularios] Varios elementos, Hoja de datos, Formulario dividido, Cuadro de diálogo modal.
+\end{description}
+
+\subsection{Asistente para formularios}
+
+\begin{enumerate}
+  \item Elegir tabla/consulta origen y campos a incluir.
+  \item Seleccionar distribución: \emph{En columnas}, \emph{Tabular}, \emph{Hoja de datos}, \emph{Justificado}.
+  \item Asignar título (también será el nombre del formulario).
+  \item Elegir: \emph{Abrir para ver datos} o \emph{Modificar el diseño}.
+\end{enumerate}
+
+\subsection{Vista Diseño del formulario}
+
+La Vista Diseño tiene tres secciones:
+
+\begin{description}
+  \item[Encabezado de formulario] Aparece una sola vez al inicio (títulos, logos).
+  \item[Detalle] Muestra los registros del origen (se repite por cada registro).
+  \item[Pie de formulario] Aparece una sola vez al final (totales, botones de navegación).
+\end{description}
+
+\subsection{Controles}
+
+Un \textbf{control} es cualquier elemento visual del formulario: cuadros de texto, etiquetas, botones, imágenes, listas desplegables, casillas de verificación...
+
+\subsubsection{Tipos de controles principales}
+
+\begin{itemize}
+  \item \textbf{Cuadro de texto}: muestra y edita datos de un campo.
+  \item \textbf{Etiqueta}: texto fijo descriptivo.
+  \item \textbf{Botón de comando}: ejecuta una acción (abrir formulario, ejecutar macro...).
+  \item \textbf{Cuadro combinado / Lista}: seleccionar de un conjunto de valores.
+  \item \textbf{Casilla de verificación}: campo Sí/No.
+  \item \textbf{Imagen}: imagen decorativa o de fondo.
+  \item \textbf{Subformulario}: formulario anidado para mostrar datos relacionados (relación 1:N).
+\end{itemize}
+
+\subsubsection{Trabajar con controles}
+
+\begin{itemize}
+  \item \textbf{Seleccionar}: clic sobre el control. Para varios: \tecla{Ctrl}+clic o arrastrar un rectángulo de selección.
+  \item \textbf{Mover}: arrastrar (mueve control + etiqueta). Arrastrar desde el cuadrado gris superior izquierdo mueve solo uno.
+  \item \textbf{Cambiar tamaño}: arrastrar los controladores de tamaño (cuadrados pequeños).
+  \item \textbf{Copiar/Pegar}: \tecla{Ctrl+C} / \tecla{Ctrl+V}.
+  \item \textbf{Eliminar}: \tecla{Supr}.
+\end{itemize}
+
+\subsection{Subformularios}
+
+Los \textbf{subformularios} muestran registros relacionados (tabla secundaria) dentro del formulario principal. Son ideales para relaciones \textbf{uno a varios}.
+
+\textit{Ejemplo}: Formulario Cursos con subformulario Alumnos matriculados.
+
+El formulario principal y el subformulario están vinculados automáticamente por los campos de relación.
+
+\subsection{Propiedades del formulario}
+
+Principales propiedades accesibles desde \menu{Diseño > Hoja de Propiedades}:
+
+\begin{description}
+  \item[Pestaña Formato] Título, vista predeterminada (Un único formulario / Formularios continuos / Hoja de datos / Formulario dividido), barras de desplazamiento, botones de navegación...
+  \item[Pestaña Datos] Origen del registro, filtro, ordenación, Entrada de datos, Permitir agregar/eliminar/editar...
+  \item[Pestaña Otras] Emergente, Modal, Ciclo de TAB...
+\end{description}
+
+% =============================================
+\section{Resumen de atajos de teclado}
+% =============================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\ttfamily}p{4cm} p{8cm}}
+\toprule
+\textnormal{\textbf{Atajo}} & \textbf{Acción} \\
+\midrule
+Ctrl+G & Guardar \\
+Ctrl+Z & Deshacer \\
+Ctrl+A & Abrir base de datos \\
+Ctrl+B & Buscar \\
+Ctrl+C & Copiar \\
+Ctrl+V & Pegar \\
+Ctrl+X & Cortar \\
+Alt & Activar acceso por teclado en la cinta \\
+F4 & Desplegar lista en campo \\
+F5 & Ir a número de registro \\
+Supr & Eliminar selección \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vfill
+\begin{center}
+{\color{accessred}\rule{0.5\linewidth}{1pt}}\\[0.3cm]
+{\small\color{gray} UT6 -- Bases de Datos Ofimáticas con Microsoft Access \quad|\quad AOF}
+\end{center}
+
+\end{document}

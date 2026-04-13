@@ -1,0 +1,975 @@
+\documentclass[12pt,a4paper]{article}
+
+%% ── Codificación y fuentes ────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+
+%% ── Página ────────────────────────────────────────────────────────
+\usepackage[margin=2cm, top=2.5cm, bottom=2.5cm, headheight=25pt]{geometry}
+
+%% ── Tipografía y colores ──────────────────────────────────────────
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{amsmath}
+
+%% ── Cabecera/pie ──────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+%% ── Cajas ─────────────────────────────────────────────────────────
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+%% ── Iconos ────────────────────────────────────────────────────────
+\usepackage{fontawesome5}
+
+%% ── Diagramas ─────────────────────────────────────────────────────
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, shapes.geometric, matrix, fit, backgrounds, babel}
+
+%% ══════════════════════════════════════════════════════════════════
+%% COLORES
+%% ══════════════════════════════════════════════════════════════════
+\definecolor{accessred}{RGB}{175,0,0}
+\definecolor{darkblue}{RGB}{0,70,127}
+\definecolor{lightblue}{RGB}{210,230,255}
+\definecolor{darkgreen}{RGB}{0,110,0}
+\definecolor{lightgreen}{RGB}{220,250,220}
+\definecolor{chalkwhite}{RGB}{248,248,242}
+\definecolor{chalk}{RGB}{238,238,232}
+\definecolor{chalkyellow}{RGB}{255,252,180}
+\definecolor{chalkred}{RGB}{255,210,210}
+\definecolor{board}{RGB}{30,80,50}
+\definecolor{timercolor}{RGB}{200,70,0}
+\definecolor{actcolor}{RGB}{0,120,170}
+\definecolor{theorycolor}{RGB}{90,0,110}
+\definecolor{practcolor}{RGB}{0,110,55}
+\definecolor{tipcolor}{RGB}{160,80,0}
+\definecolor{warncolor}{RGB}{150,0,0}
+\definecolor{graylight}{RGB}{248,248,248}
+
+%% ══════════════════════════════════════════════════════════════════
+%% CABECERA
+%% ══════════════════════════════════════════════════════════════════
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{accessred}{\textbf{Guión docente — Sesiones 1 y 2}}}
+\fancyhead[R]{\textcolor{gray}{\small UT6: Microsoft Access · AOF}}
+\fancyfoot[C]{\textcolor{gray}{\small\thepage}}
+\renewcommand{\headrulewidth}{1.5pt}
+\renewcommand{\headrule}{%
+  \hbox to\headwidth{\color{accessred}\leaders\hrule height\headrulewidth\hfill}}
+
+%% ══════════════════════════════════════════════════════════════════
+%% SECCIONES
+%% ══════════════════════════════════════════════════════════════════
+\titleformat{\section}{\LARGE\bfseries\color{accessred}}{}{0em}{}[\color{accessred}\titlerule]
+\titleformat{\subsection}{\large\bfseries\color{darkblue}}{}{0em}{}
+
+%% ══════════════════════════════════════════════════════════════════
+%% CAJAS TCOLORBOX
+%% ══════════════════════════════════════════════════════════════════
+\newtcolorbox{timebox}[1]{
+  colback=timercolor!10, colframe=timercolor,
+  fonttitle=\bfseries\color{white}, colbacktitle=timercolor,
+  title={#1}, left=6pt, right=6pt, breakable, enhanced}
+
+\newtcolorbox{actbox}[1]{
+  colback=actcolor!8, colframe=actcolor,
+  fonttitle=\bfseries\color{white}, colbacktitle=actcolor,
+  title={#1}, breakable, enhanced}
+
+\newtcolorbox{theorybox}[1]{
+  colback=theorycolor!7, colframe=theorycolor,
+  fonttitle=\bfseries\color{white}, colbacktitle=theorycolor,
+  title={#1}, breakable, enhanced}
+
+\newtcolorbox{practbox}[1]{
+  colback=practcolor!8, colframe=practcolor,
+  fonttitle=\bfseries\color{white}, colbacktitle=practcolor,
+  title={#1}, breakable, enhanced}
+
+\newtcolorbox{boardbox}[1]{
+  colback=board!92, colframe=board!50!black,
+  fonttitle=\bfseries\color{chalkyellow}, colbacktitle=board!80!black,
+  title={#1}, breakable, enhanced, boxrule=2pt}
+
+\newtcolorbox{nota}[1][]{
+  colback=chalkyellow!50, colframe=orange!70,
+  left=4pt, right=4pt, top=2pt, bottom=2pt,
+  breakable, enhanced, sharp corners, #1}
+
+\newtcolorbox{aviso}[1][]{
+  colback=warncolor!8, colframe=warncolor,
+  left=4pt, right=4pt, top=2pt, bottom=2pt,
+  breakable, enhanced, sharp corners, #1}
+
+%% ══════════════════════════════════════════════════════════════════
+%% COMANDOS AUXILIARES
+%% ══════════════════════════════════════════════════════════════════
+\newcommand{\tiempo}[1]{%
+  \vspace{4pt}
+  \begin{tcolorbox}[
+    colback=timercolor!12, colframe=timercolor,
+    left=4pt, right=4pt, top=3pt, bottom=3pt,
+    boxrule=1pt, sharp corners, breakable, enhanced]
+  \textbf{\large\textcolor{timercolor}{\faIcon{clock}\quad #1}}
+  \end{tcolorbox}\vspace{2pt}}
+
+\newcommand{\tecla}[1]{\fbox{\small\texttt{#1}}}
+
+%% ══════════════════════════════════════════════════════════════════
+%% ESTILOS TIKZ GLOBALES
+%% ══════════════════════════════════════════════════════════════════
+\tikzset{
+  obj/.style={
+    rounded corners=7pt, minimum width=3.2cm, minimum height=1.0cm,
+    align=center, font=\small\bfseries, draw, very thick},
+  flecha/.style={-{Latex[length=3.5mm]}, very thick, darkblue},
+  etiq/.style={font=\footnotesize\bfseries},
+}
+
+%% ══════════════════════════════════════════════════════════════════
+\begin{document}
+%% ══════════════════════════════════════════════════════════════════
+
+%% ── PORTADA ──────────────────────────────────────────────────────
+\begin{tcolorbox}[
+  colback=accessred!5, colframe=accessred,
+  boxrule=3pt, arc=4pt, left=12pt, right=12pt, top=10pt, bottom=10pt,
+  breakable, enhanced]
+\begin{center}
+  {\color{accessred}\rule{\linewidth}{2pt}}\\[4pt]
+  {\large\bfseries\color{accessred}
+    Guión Docente — Sesiones 1 y 2\\[4pt]
+    \large UT6: Microsoft Access}\\[6pt]
+  {\normalsize\color{darkblue} Módulo: Aplicaciones Ofimáticas (AOF)}\\[4pt]
+  {\color{accessred}\rule{\linewidth}{1pt}}\\[8pt]
+  \begin{tabular}{>{\centering\arraybackslash}p{4cm}
+                  >{\centering\arraybackslash}p{4cm}
+                  >{\centering\arraybackslash}p{4cm}}
+    \textbf{Sesión 1} & \textbf{Sesión 2} & \textbf{Total} \\[2pt]
+    \small Conceptos básicos\\e interfaz &
+    \small Crear tablas:\\Vista Diseño &
+    \small 2 $\times$ 60\,min \\
+  \end{tabular}
+\end{center}
+\end{tcolorbox}
+
+\bigskip
+
+\begin{tcolorbox}[colback=graylight, colframe=gray!40, sharp corners,
+                  left=4pt, right=4pt, top=4pt, bottom=4pt,
+                  breakable, enhanced]
+\small\textbf{Leyenda:}\quad
+\textcolor{timercolor}{\faIcon{clock}} Tiempo\quad
+\textcolor{actcolor}{\faIcon{bolt}} Activador\quad
+\textcolor{theorycolor}{\faIcon{chalkboard-teacher}} Teoría\quad
+\textcolor{practcolor}{\faIcon{laptop}} Práctica\quad
+\textcolor{board!60!black}{\faIcon{chalkboard}} Pizarra\quad
+\textcolor{tipcolor}{\faIcon{lightbulb}} Consejo\quad
+\textcolor{warncolor}{\faIcon{exclamation-triangle}} Atención
+\end{tcolorbox}
+
+\newpage
+
+%% ════════════════════════════════════════════════════════════════
+\section{\faIcon{database}\quad Sesión 1 · Conceptos básicos e interfaz}
+%% ════════════════════════════════════════════════════════════════
+
+\begin{tcolorbox}[colback=accessred!5, colframe=accessred, sharp corners,
+                  breakable, enhanced, left=6pt, right=6pt]
+\textbf{Objetivos:}~
+Entender qué es una base de datos y para qué sirve \textbf{·}
+Conocer los 6 objetos de Access \textbf{·}
+Familiarizarse con la interfaz.
+\end{tcolorbox}
+
+%% ── 0‑5 min ──────────────────────────────────────────────────────
+\tiempo{0 – 5 min \normalfont\normalsize | \faIcon{bolt} Activador}
+
+\begin{actbox}{\faIcon{bolt}\quad Activador — «¿Para qué usamos datos?» (5 min)}
+Pregunta: \textit{«¿Cuántas veces al día usáis una base de datos sin saberlo?»}
+
+\medskip
+Escribe en la pizarra lo que digan y dibuja el diagrama siguiente:
+
+\begin{center}
+\begin{tikzpicture}[node distance=0cm]
+  \node[circle, fill=accessred!80, draw=accessred!60!black,
+        text=white, font=\bfseries\small, minimum size=1.8cm,
+        align=center] (c) {BBDD\\en tu\\vida};
+
+  \node[rounded corners=4pt, fill=chalkyellow, draw=orange!70,
+        font=\small\bfseries, minimum width=1.9cm, minimum height=0.65cm,
+        align=center] (sp) at (90:3.2cm)  {Spotify};
+  \node[rounded corners=4pt, fill=chalkyellow, draw=orange!70,
+        font=\small\bfseries, minimum width=1.9cm, minimum height=0.65cm,
+        align=center] (nf) at (45:3.2cm)  {Netflix};
+  \node[rounded corners=4pt, fill=chalkyellow, draw=orange!70,
+        font=\small\bfseries, minimum width=1.9cm, minimum height=0.65cm,
+        align=center] (ba) at (0:3.2cm)   {Tu banco};
+  \node[rounded corners=4pt, fill=chalkyellow, draw=orange!70,
+        font=\small\bfseries, minimum width=1.9cm, minimum height=0.65cm,
+        align=center] (md) at (315:3.2cm) {Médico};
+  \node[rounded corners=4pt, fill=chalkyellow, draw=orange!70,
+        font=\small\bfseries, minimum width=1.9cm, minimum height=0.65cm,
+        align=center, text width=1.7cm] (ti) at (270:3.2cm) {Tienda online};
+  \node[rounded corners=4pt, fill=chalkyellow, draw=orange!70,
+        font=\small\bfseries, minimum width=1.9cm, minimum height=0.65cm,
+        align=center] (ig) at (225:3.2cm) {Instagram};
+  \node[rounded corners=4pt, fill=chalkyellow, draw=orange!70,
+        font=\small\bfseries, minimum width=1.9cm, minimum height=0.65cm,
+        align=center, text width=1.7cm] (co) at (180:3.2cm) {Notas cole};
+  \node[rounded corners=4pt, fill=chalkyellow, draw=orange!70,
+        font=\small\bfseries, minimum width=1.9cm, minimum height=0.65cm,
+        align=center, text width=1.7cm] (gm) at (135:3.2cm) {Google Maps};
+
+  \foreach \n in {sp,nf,ba,md,ti,ig,co,gm}
+    \draw[->, gray!50, thick] (c) -- (\n);
+\end{tikzpicture}
+\end{center}
+
+\textit{«Todo esto es una base de datos. Hoy vais a aprender a construir una.»}
+\end{actbox}
+
+%% ── 5‑20 min ─────────────────────────────────────────────────────
+\tiempo{5 – 20 min \normalfont\normalsize | \faIcon{chalkboard-teacher} Teoría: conceptos básicos}
+
+\begin{theorybox}{\faIcon{chalkboard-teacher}\quad Conceptos clave (15 min)}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Base de datos}: conjunto de datos organizados para un fin.
+  \item \textbf{SGBD}: software que gestiona esos datos. Access es un SGBD.
+  \item Modelo relacional: datos en \textbf{tablas} relacionadas. Extensión: \texttt{.accdb}
+  \item \textbf{Clave primaria (PK)}: identifica de forma única cada fila.
+  \item \textbf{Clave foránea (FK)}: apunta a la PK de otra tabla.
+  \item \textbf{NULL}: ausencia de dato (distinto de 0 o cadena vacía).
+\end{itemize}
+
+\medskip
+Dibuja en la pizarra las \textbf{Pizarras 1, 2 y 3} que siguen.
+\end{theorybox}
+
+%% ── PIZARRA 1 ─────────────────────────────────────────────────────
+\begin{boardbox}{\faIcon{chalkboard}\quad PIZARRA 1 — Anatomía de una tabla}
+
+% ── Tabla con colores ──
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|>{\columncolor{chalkyellow!60}}c|c|c|c|}
+\hline
+\rowcolor{darkblue!80}
+\color{white}\bfseries\faIcon{key}~CodCliente &
+\color{white}\bfseries Nombre &
+\color{white}\bfseries Apellidos &
+\color{white}\bfseries Ciudad \\
+\hline
+\rowcolor{chalkwhite} C001 & Ana   & García López   & Valencia \\
+\rowcolor{chalk}      C002 & Pedro & Martínez Gil   & Madrid   \\
+\rowcolor{chalkwhite} C003 & María & García López   & Sevilla  \\
+\rowcolor{chalk}      C004 & Luisa & Fernández Díaz & Valencia \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{tikzpicture}[overlay, remember picture]
+\end{tikzpicture}
+
+\vspace{4pt}
+% ── Anotaciones ──
+\begin{center}
+\begin{tikzpicture}
+  \node[draw=darkblue, fill=lightblue!40, rounded corners=5pt,
+        minimum width=3cm, font=\small, align=center, inner sep=5pt]
+    (campo) at (0,0) {\textbf{\textcolor{darkblue}{CAMPO}}\\(columna)\\{\footnotesize Mismo tipo\\en toda la columna}};
+
+  \node[draw=accessred, fill=chalkred!40, rounded corners=5pt,
+        minimum width=3cm, font=\small, align=center, inner sep=5pt,
+        right=2cm of campo]
+    (registro) {\textbf{\textcolor{accessred}{REGISTRO}}\\(fila)\\{\footnotesize Todos los datos\\de un elemento}};
+
+  \node[draw=orange!80, fill=chalkyellow!70, rounded corners=5pt,
+        minimum width=3cm, font=\small, align=center, inner sep=5pt,
+        right=2cm of registro]
+    (pk) {\textbf{\textcolor{orange!80!black}{\faIcon{key}~CLAVE PK}}\\{\footnotesize Único · No nulo\\No repetible}};
+\end{tikzpicture}
+\end{center}
+
+\begin{nota}
+\small\textbf{Pregunta al grupo:} ¿Podría «Apellidos» ser clave primaria?
+\textit{No: C001 y C003 tienen los mismos apellidos.}
+¿Y «Nombre»? \textit{No: puede haber dos «María».}
+\end{nota}
+\end{boardbox}
+
+%% ── PIZARRA 2 ─────────────────────────────────────────────────────
+\begin{boardbox}{\faIcon{chalkboard}\quad PIZARRA 2 — Relación Clientes $\rightarrow$ Pedidos}
+
+\begin{center}
+\begin{tikzpicture}
+
+  %% ── Tabla CLIENTES (izquierda) ──
+  \node[fill=darkblue!75, text=white, font=\bfseries\small,
+        minimum width=5cm, minimum height=0.65cm]
+    (hC) at (0,0) {CLIENTES};
+
+  % Fila PK
+  \node[fill=chalkyellow!70, draw=orange!70, minimum width=5cm,
+        minimum height=0.55cm, font=\small\bfseries] (c1) at (0,-0.6)
+    {\faIcon{key}~CodCliente \quad {\footnotesize\normalfont Texto corto}};
+
+  % Filas normales
+  \node[fill=chalkwhite, draw=gray!30, minimum width=5cm,
+        minimum height=0.55cm, font=\small] (c2) at (0,-1.15)
+    {Nombre \hfill {\footnotesize Texto corto}};
+  \node[fill=chalk, draw=gray!30, minimum width=5cm,
+        minimum height=0.55cm, font=\small] (c3) at (0,-1.70)
+    {Apellidos \hfill {\footnotesize Texto corto}};
+  \node[fill=chalkwhite, draw=gray!30, minimum width=5cm,
+        minimum height=0.55cm, font=\small] (c4) at (0,-2.25)
+    {Ciudad \hfill {\footnotesize Texto corto}};
+  \node[fill=chalk, draw=gray!30, minimum width=5cm,
+        minimum height=0.55cm, font=\small] (c5) at (0,-2.80)
+    {FechaNacimiento \hfill {\footnotesize Fecha/Hora}};
+
+  %% ── Tabla PEDIDOS (derecha) ──
+  \node[fill=darkgreen!70, text=white, font=\bfseries\small,
+        minimum width=5cm, minimum height=0.65cm]
+    (hP) at (7.5,0) {PEDIDOS};
+
+  % Fila PK
+  \node[fill=chalkyellow!70, draw=orange!70, minimum width=5cm,
+        minimum height=0.55cm, font=\small\bfseries] (p1) at (7.5,-0.6)
+    {\faIcon{key}~CodPedido \quad {\footnotesize\normalfont Autonumeración}};
+
+  % Fila FK
+  \node[fill=chalkred!50, draw=accessred!60, minimum width=5cm,
+        minimum height=0.55cm, font=\small\bfseries,
+        text=accessred!80!black] (p2) at (7.5,-1.15)
+    {\faIcon{link}~CodCliente \quad {\footnotesize\normalfont Texto corto}};
+
+  % Filas normales
+  \node[fill=chalk, draw=gray!30, minimum width=5cm,
+        minimum height=0.55cm, font=\small] (p3) at (7.5,-1.70)
+    {FechaPedido \hfill {\footnotesize Fecha/Hora}};
+  \node[fill=chalkwhite, draw=gray!30, minimum width=5cm,
+        minimum height=0.55cm, font=\small] (p4) at (7.5,-2.25)
+    {Enviado \hfill {\footnotesize Sí/No}};
+
+  %% ── Línea de relación ──
+  \draw[very thick, -{Latex[length=4mm]}, darkblue!70]
+    (c1.east) .. controls (3.5,-0.6) and (4.0,-1.15) .. (p2.west);
+
+  \node[font=\bfseries\small, text=darkblue] at (2.8,-0.3) {1};
+  \node[font=\bfseries\small, text=darkblue] at (5.0,-1.4) {N};
+
+  %% ── Leyenda ──
+  \node[fill=chalkyellow!70, draw=orange!70, minimum width=0.5cm,
+        minimum height=0.4cm] (lk) at (0,-3.6) {};
+  \node[font=\footnotesize, right=0.15cm of lk] {\faIcon{key} Clave primaria (PK)};
+
+  \node[fill=chalkred!50, draw=accessred!60, minimum width=0.5cm,
+        minimum height=0.4cm] (lfk) at (4.5,-3.6) {};
+  \node[font=\footnotesize, right=0.15cm of lfk]
+    {\faIcon{link} Clave foránea (FK)};
+
+\end{tikzpicture}
+\end{center}
+
+\begin{nota}
+\small\textbf{Explica:}
+CodCliente en PEDIDOS es FK porque «apunta» a un cliente de la tabla CLIENTES.
+Un cliente puede tener muchos pedidos $\Rightarrow$ relación \textbf{1 a N (uno a varios)}.
+\end{nota}
+\end{boardbox}
+
+%% ── PIZARRA 3: NULL vs 0 ──────────────────────────────────────────
+\begin{boardbox}{\faIcon{chalkboard}\quad PIZARRA 3 — NULL vs. 0}
+
+\begin{center}
+\begin{tikzpicture}
+  \node[draw=accessred, fill=chalkred!30, rounded corners=8pt,
+        minimum width=5cm, minimum height=2cm,
+        align=center, font=\normalsize, inner sep=8pt] (n) at (0,0)
+    {\textbf{\textcolor{accessred}{NULL}}\\[4pt]
+     «No tengo ese dato»\\[2pt]
+     \textit{\small «No sé su edad»}};
+
+  \node[draw=darkgreen!70, fill=lightgreen!50, rounded corners=8pt,
+        minimum width=5cm, minimum height=2cm,
+        align=center, font=\normalsize, inner sep=8pt,
+        right=2.5cm of n] (z)
+    {\textbf{\textcolor{darkgreen}{0}}\\[4pt]
+     «El dato existe y vale cero»\\[2pt]
+     \textit{\small «Tiene 0 hijos»}};
+
+  \node[font=\Huge\bfseries, text=accessred]
+    at ($(n.east)!0.5!(z.west)$) {$\neq$};
+\end{tikzpicture}
+\end{center}
+\end{boardbox}
+
+%% ── PIZARRA 4: Los 6 objetos ──────────────────────────────────────
+\begin{boardbox}{\faIcon{chalkboard}\quad PIZARRA 4 — Los 6 objetos de Access}
+
+\begin{center}
+\begin{tikzpicture}
+  %% Centro
+  \node[circle, fill=accessred!80, draw=accessred!60!black,
+        text=white, font=\bfseries\small, minimum size=1.8cm,
+        align=center] (c) {ACCESS\\DB};
+
+  %% Los 6 objetos
+  \node[obj, fill=lightblue!60,   draw=darkblue,     above=2.0cm of c]
+    (tabla) {\faIcon{table}\\Tabla\\{\footnotesize\normalfont Almacena datos}};
+
+  \node[obj, fill=lightgreen!60,  draw=darkgreen!70,
+        above right=1.2cm and 2.6cm of c]
+    (consulta) {\faIcon{search}\\Consulta\\{\footnotesize\normalfont Filtra y calcula}};
+
+  \node[obj, fill=chalkyellow!70, draw=orange!70,    right=3.4cm of c]
+    (form) {\faIcon{window-maximize}\\Formulario\\{\footnotesize\normalfont Interfaz visual}};
+
+  \node[obj, fill=chalkred!40,    draw=accessred!60,
+        below right=1.2cm and 2.6cm of c]
+    (informe) {\faIcon{print}\\Informe\\{\footnotesize\normalfont Para imprimir}};
+
+  \node[obj, fill=gray!20,        draw=gray!60,      below=2.0cm of c]
+    (macro) {\faIcon{robot}\\Macro\\{\footnotesize\normalfont Automatiza acciones}};
+
+  \node[obj, fill=gray!15,        draw=gray!50,
+        below left=1.2cm and 2.6cm of c]
+    (modulo) {\faIcon{code}\\Módulo\\{\footnotesize\normalfont Código VBA}};
+
+  %% Flechas al centro
+  \foreach \n in {tabla,consulta,form,informe,macro,modulo}
+    \draw[<->, thick, gray!50] (c) -- (\n);
+
+  %% Flechas de dependencia
+  \draw[->, thick, darkblue!60, dashed, bend left=25]
+    (tabla) to node[above, font=\footnotesize, text=darkblue]{base} (consulta);
+  \draw[->, thick, darkblue!60, dashed, bend left=15]
+    (tabla) to (form);
+  \draw[->, thick, darkblue!60, dashed, bend right=15]
+    (tabla) to (informe);
+\end{tikzpicture}
+\end{center}
+
+\begin{nota}
+\small Las \textbf{tablas} son la base de todo.
+Consultas, formularios e informes se construyen \emph{siempre} sobre tablas.
+\textbf{En este módulo}: tabla, consulta y formulario.
+\end{nota}
+\end{boardbox}
+
+%% ── 20‑35 min ────────────────────────────────────────────────────
+\tiempo{20 – 35 min \normalfont\normalsize | \faIcon{chalkboard-teacher} Interfaz de Access}
+
+\begin{theorybox}{\faIcon{chalkboard-teacher}\quad Demo en proyector — Interfaz (15 min)}
+
+Recorre en directo con el proyector y señala cada elemento:
+\begin{enumerate}[leftmargin=1.8em]
+  \item Pantalla inicial: crear en blanco, plantillas, recientes.
+  \item Abrir \texttt{TiendaInformatica.accdb}.
+  \item Señalar cada elemento del entorno (ver \textbf{Pizarra 5}).
+  \item Demo de la cinta: pestaña $\rightarrow$ grupo $\rightarrow$ botón.
+        Notación: \texttt{INICIO > Portapapeles > Pegar}.
+  \item Vista Backstage: pestaña \textbf{Archivo}.
+\end{enumerate}
+
+\begin{tcolorbox}[colback=actcolor!10, colframe=actcolor, sharp corners,
+                  left=4pt, right=4pt, top=2pt, bottom=2pt,
+                  breakable, enhanced]
+\faIcon{bolt}\;\textbf{Actividad rápida (2 min):}
+¿Cuántas formas hay de guardar en Access?
+El primero en encontrar 3 formas distintas gana un punto.\\
+\textit{(Ctrl+G · botón Guardar en barra de acceso rápido · Archivo > Guardar)}
+\end{tcolorbox}
+\end{theorybox}
+
+%% ── PIZARRA 5 ─────────────────────────────────────────────────────
+\begin{boardbox}{\faIcon{chalkboard}\quad PIZARRA 5 — Elementos de la interfaz de Access}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.93, font=\small]
+
+  %% Marco general de la ventana
+  \fill[gray!12] (0,0) rectangle (14,9);
+  \draw[gray!50, very thick] (0,0) rectangle (14,9);
+
+  %% 1. Barra de título
+  \fill[gray!45] (0,8.4) rectangle (14,9);
+  \node[font=\footnotesize\bfseries, text=white] at (7,8.7)
+    {TiendaInformatica : Base de datos (Access)};
+  \draw[->, red!70!black, thick] (7,9.45) -- (7,9.05)
+    node[above, at start, font=\footnotesize\bfseries, text=red!70!black]
+    {\textbf{1.} Barra de título};
+
+  %% 2. Barra de acceso rápido
+  \fill[gray!38] (0,8.0) rectangle (2.4,8.4);
+  \node[font=\tiny, text=white] at (1.2,8.2)
+    {\faIcon{save}\quad\faIcon{undo}\quad\faIcon{redo}};
+  \draw[->, darkblue, thick] (-0.9,8.2) -- (-0.05,8.2)
+    node[left, at start, font=\footnotesize\bfseries, text=darkblue, align=right]
+    {\textbf{2.} Barra acceso\\rápido};
+
+  %% 3. Cinta de opciones
+  \fill[accessred!12] (0,7.1) rectangle (14,8.0);
+  % pestañas
+  \foreach \xp/\nm in {0.55/ARCHIVO, 1.65/INICIO, 2.65/CREAR,
+                        3.75/{DAT.EXT.}, 5.1/{H.BBDD}}{
+    \fill[white] (\xp-0.5,7.65) rectangle (\xp+0.55,8.0);
+    \node[font=\tiny\bfseries] at (\xp+0.02,7.82) {\nm};
+  }
+  % grupos en cinta
+  \foreach \xg/\gn in {0.9/{Portapapeles}, 2.2/{Vistas},
+                        3.5/{Ordenar}, 4.9/{Registros}, 6.2/{Buscar}}{
+    \draw[gray!40] (\xg,7.14) rectangle (\xg+1.1,7.62);
+    \node[font=\tiny, text=gray!60] at (\xg+0.55,7.2) {\gn};
+    \foreach \bx in {0.15,0.45,0.75}{
+      \fill[lightblue!70] (\xg+\bx,7.32) rectangle (\xg+\bx+0.24,7.56);
+    }
+  }
+  \draw[->, accessred, thick] (14.8,7.55) -- (14.05,7.55)
+    node[right, at start, font=\footnotesize\bfseries, text=accessred, align=left]
+    {\textbf{3.} Cinta de opciones\\(pestañas $\to$ grupos)};
+
+  %% 4. Panel de navegación
+  \fill[white] (0,0.4) rectangle (2.8,7.1);
+  \draw[gray!40] (0,0.4) rectangle (2.8,7.1);
+  \fill[darkblue!70] (0,6.7) rectangle (2.8,7.1);
+  \node[font=\tiny\bfseries, text=white] at (1.4,6.9)
+    {Todos los objetos Access};
+  \foreach \yp/\ic/\lb in {
+    6.4/{\faIcon{table}}/{Tablas},
+    5.8/{\faIcon{search}}/{Consultas},
+    5.2/{\faIcon{window-maximize}}/{Formularios},
+    4.6/{\faIcon{print}}/{Informes}}{
+    \fill[gray!10] (0.1,\yp-0.22) rectangle (2.7,\yp+0.22);
+    \node[font=\tiny\bfseries, text=darkblue] at (0.5,\yp) {\ic};
+    \node[font=\tiny] at (1.6,\yp) {\lb};
+  }
+  \draw[->, darkgreen!70, thick] (-0.9,5.5) -- (-0.05,5.5)
+    node[left, at start, font=\footnotesize\bfseries, text=darkgreen!70, align=right]
+    {\textbf{4.} Panel de\\navegación};
+
+  %% 5. Área de trabajo
+  \fill[white] (2.9,0.4) rectangle (13.9,7.0);
+  \draw[gray!35] (2.9,0.4) rectangle (13.9,7.0);
+  % pestaña de tabla
+  \fill[lightblue!35] (2.9,6.6) rectangle (5.0,7.0);
+  \node[font=\tiny\bfseries] at (3.95,6.8) {\faIcon{table}~Clientes};
+  % cabecera tabla
+  \fill[darkblue!70] (3.0,6.15) rectangle (13.8,6.58);
+  \foreach \xh/\hd in {4.0/{CodCliente}, 6.3/{Nombre},
+                        8.7/{Apellidos}, 11.2/{Ciudad}}{
+    \node[font=\tiny\bfseries, text=white] at (\xh,6.36) {\hd};
+  }
+  % filas de datos
+  \foreach \yi/\bgc/\cod/\nm/\ap/\ci in {
+    1/chalkwhite/C001/Ana/García/Valencia,
+    2/chalk/C002/Pedro/Martínez/Madrid,
+    3/chalkwhite/C003/María/Fernández/Sevilla}{
+    \fill[\bgc] (3.0,{6.15-\yi*0.45}) rectangle (13.8,{6.15-\yi*0.45+0.43});
+    \node[font=\tiny] at (4.0,{6.15-\yi*0.45+0.215}) {\texttt{\cod}};
+    \node[font=\tiny] at (6.3,{6.15-\yi*0.45+0.215}) {\nm};
+    \node[font=\tiny] at (8.7,{6.15-\yi*0.45+0.215}) {\ap};
+    \node[font=\tiny] at (11.2,{6.15-\yi*0.45+0.215}) {\ci};
+  }
+  \draw[->, gray!55, thick] (14.8,4.5) -- (13.95,4.5)
+    node[right, at start, font=\footnotesize\bfseries, text=gray!55, align=left]
+    {\textbf{5.} Área de\\trabajo};
+
+  %% 6. Barra de estado
+  \fill[gray!35] (0,0) rectangle (14,0.4);
+  \node[font=\tiny, text=white] at (3.0,0.2) {Vista: Hoja de datos};
+  \foreach \xb in {11.4,12.0,12.6,13.2}{
+    \fill[gray!60] (\xb-0.2,0.08) rectangle (\xb+0.2,0.32);
+  }
+  \draw[->, timercolor, thick] (-0.9,0.2) -- (-0.05,0.2)
+    node[left, at start, font=\footnotesize\bfseries, text=timercolor, align=right]
+    {\textbf{6.} Barra de\\estado};
+
+\end{tikzpicture}
+\end{center}
+\end{boardbox}
+
+%% ── 35‑55 min ────────────────────────────────────────────────────
+\tiempo{35 – 55 min \normalfont\normalsize | \faIcon{laptop} Práctica}
+
+\begin{practbox}{\faIcon{laptop}\quad Práctica (20 min) — Explorar la interfaz}
+\begin{enumerate}[leftmargin=1.8em]
+  \item Abrir Access y crear \texttt{TiendaInformatica.accdb} en la carpeta personal.
+  \item Identificar en pantalla cada uno de los 6 elementos de la Pizarra 5.
+  \item Contraer y expandir el panel de navegación y la cinta de opciones.
+  \item Ejercicio 1.1 del cuaderno (vocabulario).
+  \item Ejercicio 1.2 del cuaderno (analizar la tabla de clientes).
+\end{enumerate}
+
+\begin{aviso}
+\faIcon{exclamation-triangle}\;
+\textbf{Circula por las mesas.}
+Los elementos más difíciles de localizar son la barra de acceso rápido y la barra de estado.
+\end{aviso}
+\end{practbox}
+
+%% ── 55‑60 min ────────────────────────────────────────────────────
+\tiempo{55 – 60 min \normalfont\normalsize | Cierre y debate}
+
+\begin{actbox}{\faIcon{comments}\quad Cierre — Debate rápido (5 min)}
+\textit{«¿Qué ventajas tiene Access frente a Excel para gestionar datos de una tienda?»}
+
+\medskip
+\begin{center}
+\begin{tabular}{p{5.5cm} p{5.5cm}}
+\hline
+\rowcolor{lightblue!40}
+\textbf{\textcolor{darkblue}{Access \faIcon{database}}} &
+\textbf{\textcolor{darkgreen}{Excel \faIcon{table}}} \\
+\hline
+$\bullet$ Múltiples tablas relacionadas &
+$\bullet$ Más fácil de aprender \\
+\rowcolor{gray!8}
+$\bullet$ Sin duplicar datos &
+$\bullet$ Gráficos integrados \\
+$\bullet$ Consultas potentes &
+$\bullet$ Cálculos ad-hoc \\
+\rowcolor{gray!8}
+$\bullet$ Formularios para usuarios &
+$\bullet$ Todo visible a la vez \\
+$\bullet$ Integridad de datos &
+$\bullet$ Más extendido en empresas \\
+\hline
+\end{tabular}
+\end{center}
+
+\medskip
+\textbf{Anticipa la sesión 2:}
+\textit{«La próxima sesión creamos nuestras primeras tablas y veréis por qué un teléfono NUNCA debe ser de tipo Número.»}
+\end{actbox}
+
+%% ════════════════════════════════════════════════════════════════
+\newpage
+\section{\faIcon{table}\quad Sesión 2 · Crear tablas: Vista Diseño}
+%% ════════════════════════════════════════════════════════════════
+
+\begin{tcolorbox}[colback=accessred!5, colframe=accessred, sharp corners,
+                  breakable, enhanced, left=6pt, right=6pt]
+\textbf{Objetivos:}~
+Crear tablas en Vista Diseño \textbf{·}
+Elegir correctamente el tipo de dato \textbf{·}
+Asignar clave principal y guardar la tabla.
+\end{tcolorbox}
+
+%% ── 0‑5 min ──────────────────────────────────────────────────────
+\tiempo{0 – 5 min \normalfont\normalsize | \faIcon{bolt} Repaso exprés}
+
+\begin{actbox}{\faIcon{bolt}\quad Repaso (5 min) — Preguntas orales al azar}
+\begin{enumerate}[leftmargin=1.8em]
+  \item ¿Qué es un campo? ¿Y un registro?
+  \item ¿Puede haber dos clientes con el mismo CodCliente? ¿Por qué?
+  \item ¿Cuántos objetos tiene una base de datos Access? Nómbralos.
+  \item ¿Qué diferencia hay entre NULL y el valor 0?
+\end{enumerate}
+\textit{Si alguien responde muy bien, pídele que pase a la pizarra a dibujar una tabla rápida.}
+\end{actbox}
+
+%% ── 5‑20 min ─────────────────────────────────────────────────────
+\tiempo{5 – 20 min \normalfont\normalsize | \faIcon{chalkboard-teacher} Tipos de datos}
+
+\begin{theorybox}{\faIcon{chalkboard-teacher}\quad Teoría (15 min) — Tipos de datos}
+
+\textbf{Regla de oro:} el tipo de dato determina qué valores puede almacenar el campo y cuánto espacio ocupa.
+
+\begin{tcolorbox}[colback=actcolor!10, colframe=actcolor, sharp corners,
+                  left=4pt, right=4pt, top=2pt, bottom=2pt,
+                  breakable, enhanced]
+\faIcon{bolt}\;\textbf{Juego rápido (3 min):}
+dicta 10 campos, los alumnos apuntan el tipo correcto en su cuaderno.
+Corrección oral a continuación.
+\end{tcolorbox}
+
+Dibuja en la pizarra la \textbf{Pizarra 6} que sigue.
+\end{theorybox}
+
+%% ── PIZARRA 6 ─────────────────────────────────────────────────────
+\begin{boardbox}{\faIcon{chalkboard}\quad PIZARRA 6 — Tipos de datos de Access}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{
+    >{\bfseries\color{darkblue}}p{3.0cm}
+    p{2.8cm}
+    X
+    >{\itshape\color{gray!70!black}\small}p{3.2cm}}
+\toprule
+\normalfont\bfseries\color{white}\cellcolor{darkblue!80} Tipo &
+\cellcolor{darkblue!80}\color{white}\bfseries Tamaño &
+\cellcolor{darkblue!80}\color{white}\bfseries Úsalo cuando\ldots &
+\cellcolor{darkblue!80}\color{white}\bfseries Ejemplo \\
+\midrule
+\rowcolor{chalkwhite}
+Texto corto & hasta 255 car. & texto, códigos, teléfonos, CP &
+  Nombre, DNI, CP \\
+\rowcolor{chalk}
+Texto largo & hasta 1\,GB & descripciones largas &
+  Observaciones \\
+\rowcolor{chalkwhite}
+Número & Byte/Entero/Doble & cálculos matemáticos &
+  Stock, Cantidad \\
+\rowcolor{chalk}
+Fecha / Hora & 8 bytes & fechas y horas &
+  FechaNacimiento \\
+\rowcolor{chalkwhite}
+Moneda & 8 bytes & importes, precios &
+  PrecioUnidad \\
+\rowcolor{chalk}
+Autonumeración & 4 bytes & código auto (ideal para PK) &
+  CodPedido \\
+\rowcolor{chalkwhite}
+Sí / No & 1 bit & datos booleanos &
+  Enviado, Activo \\
+\rowcolor{chalk}
+Datos adjuntos & variable & archivos e imágenes &
+  FotoProducto \\
+\rowcolor{chalkwhite}
+Hipervínculo & variable & URL, ruta de archivo &
+  WebEmpresa \\
+\rowcolor{chalk}
+Calculado & según expr. & resultado de expresión &
+  Precio $\times$ Cantidad \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{aviso}
+\faIcon{exclamation-triangle}\;\textbf{Error clásico:}
+El teléfono y el código postal son \textbf{Texto corto}, nunca Número.
+El \texttt{0} inicial desaparece si usas Número (\texttt{698765432} $\to$ ¡pierdes el prefijo!).
+Además, no se hacen cálculos con ellos.
+\end{aviso}
+\end{boardbox}
+
+%% ── 20‑30 min ────────────────────────────────────────────────────
+\tiempo{20 – 30 min \normalfont\normalsize | \faIcon{chalkboard-teacher} Demo en proyector}
+
+\begin{theorybox}{\faIcon{chalkboard-teacher}\quad Demo — Vista Diseño paso a paso (10 min)}
+\begin{enumerate}[leftmargin=1.8em]
+  \item \texttt{Crear > Tablas > Vista Diseño}
+  \item Escribir nombre del campo, elegir tipo, añadir descripción (opcional).
+  \item Repetir para cada campo.
+  \item Asignar clave principal: clic en el campo
+        $\rightarrow$ \texttt{Diseño > Clave principal}. Aparece la llave \faIcon{key}.
+  \item Guardar: \tecla{Ctrl+G} $\rightarrow$ nombre $\rightarrow$ Aceptar.
+  \item Abrir en Vista Hoja de datos e introducir 2 registros.
+\end{enumerate}
+
+Dibuja en la pizarra la \textbf{Pizarra 7}.
+\end{theorybox}
+
+%% ── PIZARRA 7 ─────────────────────────────────────────────────────
+\begin{boardbox}{\faIcon{chalkboard}\quad PIZARRA 7 — Vista Diseño anotada}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|>{\columncolor{chalkyellow!60}\bfseries\small\color{orange!80!black}}p{3.2cm}
+                |>{\small\color{darkblue}\bfseries}p{2.8cm}
+                |>{\small\itshape\color{gray!60!black}}p{5.5cm}|}
+\hline
+\rowcolor{darkblue!80}
+\color{white}\bfseries\normalsize\normalfont Nombre del campo &
+\color{white}\bfseries\normalsize\normalfont Tipo de datos &
+\color{white}\bfseries\normalsize\normalfont Descripción (opcional) \\
+\hline
+\faIcon{key}~CodCliente   & Texto corto   & Código único del cliente \\
+\hline
+\rowcolor{chalk}
+Nombre           & Texto corto   & Nombre de pila \\
+\hline
+Apellidos        & Texto corto   & Apellidos completos \\
+\hline
+\rowcolor{chalk}
+Ciudad           & Texto corto   & Ciudad de residencia \\
+\hline
+FechaNacimiento  & Fecha / Hora  & Fecha de nacimiento \\
+\hline
+\rowcolor{chalk}
+Activo           & Sí / No       & ¿Sigue siendo cliente activo? \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{8pt}
+\begin{center}
+\begin{tikzpicture}[node distance=0.4cm]
+  \node[draw=orange!80, fill=chalkyellow!60, rounded corners=5pt,
+        font=\small, align=center, inner sep=6pt, minimum width=3cm] (pk)
+    {\faIcon{key}~\textbf{Clave primaria}\\{\footnotesize Fila con fondo amarillo}\\{\footnotesize Único $\cdot$ No nulo}};
+
+  \node[draw=darkblue, fill=lightblue!40, rounded corners=5pt,
+        font=\small, align=center, inner sep=6pt, minimum width=3.5cm,
+        right=1.5cm of pk] (prop)
+    {\textbf{Propiedades del campo}\\{\footnotesize (zona inferior)}\\{\footnotesize Tamaño, Formato, Máscara,}\\{\footnotesize Valor predeterminado\ldots}};
+
+  \node[draw=darkgreen!70, fill=lightgreen!40, rounded corners=5pt,
+        font=\small, align=center, inner sep=6pt, minimum width=3cm,
+        right=1.5cm of prop] (tipo)
+    {\textbf{Tipo de datos}\\{\footnotesize Cambia las propiedades}\\{\footnotesize disponibles en el panel}\\{\footnotesize inferior}};
+\end{tikzpicture}
+\end{center}
+\end{boardbox}
+
+%% ── PIZARRA 8: Flujo crear tabla ──────────────────────────────────
+\begin{boardbox}{\faIcon{chalkboard}\quad PIZARRA 8 — Flujo completo: crear una tabla}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.6cm and 0.7cm]
+  \node[obj, fill=darkblue!70, draw=darkblue!50!black, text=white,
+        minimum width=2.8cm] (s1)
+    {\faIcon{plus-circle}\\Crear\\Vista Diseño};
+
+  \node[obj, fill=darkblue!50, draw=darkblue!40!black, text=white,
+        minimum width=2.8cm, right=0.8cm of s1] (s2)
+    {\faIcon{keyboard}\\Definir campos\\(nombre + tipo)};
+
+  \node[obj, fill=darkgreen!60, draw=darkgreen!40!black, text=white,
+        minimum width=2.8cm, right=0.8cm of s2] (s3)
+    {\faIcon{key}\\Clave\\principal};
+
+  \node[obj, fill=tipcolor, draw=tipcolor!50!black, text=white,
+        minimum width=2.8cm, right=0.8cm of s3] (s4)
+    {\faIcon{save}\\Guardar\\\tecla{Ctrl+G}};
+
+  \node[obj, fill=accessred!70, draw=accessred!50!black, text=white,
+        minimum width=2.8cm, right=0.8cm of s4] (s5)
+    {\faIcon{table}\\Vista Hoja\\de datos};
+
+  \foreach \a/\b in {s1/s2, s2/s3, s3/s4, s4/s5}
+    \draw[flecha] (\a) -- (\b);
+
+  \node[font=\footnotesize, text=gray, below=0.3cm of s2, align=center]
+    {Un campo\\por fila};
+  \node[font=\footnotesize, text=orange!80!black, below=0.3cm of s3, align=center]
+    {Aparece\\la llave \faIcon{key}};
+  \node[font=\footnotesize, text=tipcolor, below=0.3cm of s4, align=center]
+    {Nombre\\de la tabla};
+  \node[font=\footnotesize, text=accessred, below=0.3cm of s5, align=center]
+    {Introducir\\datos};
+\end{tikzpicture}
+\end{center}
+\end{boardbox}
+
+%% ── 30‑57 min ────────────────────────────────────────────────────
+\tiempo{30 – 57 min \normalfont\normalsize | \faIcon{laptop} Práctica guiada}
+
+\begin{practbox}{\faIcon{laptop}\quad Práctica (27 min) — Crear las tablas de TiendaInformatica}
+
+\textbf{Parte 1 (12 min): Tabla Clientes}
+\begin{itemize}[leftmargin=1.8em]
+  \item Seguir la ficha del cuaderno de ejercicios (sesión 2).
+  \item Asignar PK al campo CodCliente.
+  \item Introducir 5 registros en Vista Hoja de datos.
+\end{itemize}
+
+\textbf{Parte 2 (10 min): Tabla Productos}
+\begin{itemize}[leftmargin=1.8em]
+  \item CodProducto (Autonumeración, PK), Nombre (Texto, 100), Categoria (Texto, 30),
+        PrecioUnidad (Moneda), Stock (Número entero).
+  \item Introducir 5 productos.
+\end{itemize}
+
+\textbf{Parte 3 (5 min): «Caza el error»} — Por parejas:
+
+\begin{center}
+\begin{tcolorbox}[colback=chalkred!20, colframe=accessred, sharp corners,
+                  left=6pt, right=6pt, breakable, enhanced]
+\small Mostrar en el proyector esta tabla mal diseñada.
+En 3 minutos encuentran todos los errores. La pareja que más encuentre y los justifique, gana.
+
+\medskip
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{darkblue!60}
+\color{white}\bfseries Campo & \color{white}\bfseries Tipo asignado & \color{white}\bfseries ¿Error? \\
+\hline
+Teléfono & Número & \rule{3cm}{0.4pt} \\
+\hline
+\rowcolor{chalk}
+Código postal & Número & \rule{3cm}{0.4pt} \\
+\hline
+Precio & Texto corto & \rule{3cm}{0.4pt} \\
+\hline
+\rowcolor{chalk}
+FechaNacimiento & Texto corto & \rule{3cm}{0.4pt} \\
+\hline
+Descripción larga & Texto corto (50) & \rule{3cm}{0.4pt} \\
+\hline
+\rowcolor{chalk}
+Activo (sí o no) & Número & \rule{3cm}{0.4pt} \\
+\hline
+\end{tabular}
+\end{tcolorbox}
+\end{center}
+
+\begin{aviso}
+\faIcon{exclamation-triangle}\;\textbf{Errores comunes a vigilar durante la práctica:}
+\begin{itemize}[leftmargin=1.5em, itemsep=1pt]
+  \item Usar Número para el teléfono o el código postal.
+  \item No asignar clave principal antes de guardar.
+  \item Confundir Moneda con Número para precios.
+  \item Texto corto para campos de más de 255 caracteres.
+\end{itemize}
+\end{aviso}
+\end{practbox}
+
+%% ── 57‑60 min ────────────────────────────────────────────────────
+\tiempo{57 – 60 min \normalfont\normalsize | Cierre}
+
+\begin{actbox}{\faIcon{comments}\quad Cierre (3 min)}
+\textit{«¿Por qué el tipo de dato de un campo es tan importante?
+¿Qué podría pasar si guardamos el precio de un producto como Texto corto?»}
+
+\smallskip
+\textbf{Respuesta esperada:} Access lo tratará como texto — no podrá sumar totales,
+calcular medias ni aplicar descuentos.
+
+\medskip
+\textbf{Anticipa la sesión 3:}
+\textit{«La próxima sesión añadiremos propiedades a los campos: validaciones,
+valores por defecto, máscaras\ldots{} Vuestras tablas se volverán a prueba de errores.»}
+\end{actbox}
+
+%% ── NOTAS FINALES ────────────────────────────────────────────────
+\vspace{6pt}
+\begin{tcolorbox}[colback=graylight, colframe=gray!40,
+                  title=\textbf{Notas y recursos para el docente},
+                  colbacktitle=gray!50, fonttitle=\bfseries\color{white},
+                  breakable, enhanced]
+\small
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item \textbf{Archivo de práctica:} preparar \texttt{TiendaInformatica\_plantilla.accdb}
+        con las tablas vacías para alumnos que se queden atrás.
+  \item \textbf{Referencia libre:} \texttt{aulaclic.es/access-2019}
+        — todo el contenido en español.
+  \item \textbf{Si el tiempo aprieta:} omitir «Caza el error» y dejarlo como tarea.
+  \item \textbf{Si el tiempo sobra:} reto extra del cuaderno (campo calculado Edad).
+  \item \textbf{Material imprimible:} las pizarras pueden imprimirse en A3
+        y dejarse en el aula como referencia visual permanente.
+\end{itemize}
+\end{tcolorbox}
+
+\vfill
+\begin{center}
+{\color{accessred}\rule{0.4\linewidth}{1pt}}\\[4pt]
+{\small\color{gray} Guión docente UT6 · Sesiones 1 y 2 · Microsoft Access · AOF}
+\end{center}
+
+\end{document}

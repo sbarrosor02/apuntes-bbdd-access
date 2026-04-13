@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeonRace DB — Reto de Diseño</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #060810;
+  --s1:        #0b0d1a;
+  --s2:        #0f1220;
+  --card:      #131627;
+  --border:    #1c2038;
+  --border2:   #252a4a;
+  --accent:    #7c6dfa;
+  --acc-dim:   #7c6dfa18;
+  --acc2:      #fa6d6d;
+  --acc2-dim:  #fa6d6d18;
+  --green:     #4dffa6;
+  --green-dim: #4dffa610;
+  --amber:     #ffcd4d;
+  --amb-dim:   #ffcd4d12;
+  --cyan:      #4dd9ff;
+  --cya-dim:   #4dd9ff12;
+  --text:      #dde2ff;
+  --muted:     #4a5080;
+  --muted2:    #7a84b0;
+  --sans:      'Space Grotesk', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+  --display:   'Bebas Neue', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% -10%, #7c6dfa0a 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Layout ── */
+.page { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
+.two-col { display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ── Header ── */
+header {
+  padding: 3rem 0 2.5rem;
+  border-bottom: 1px solid var(--border2);
+  position: relative; z-index: 1;
+}
+.top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.studio-badge {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--acc-dim);
+  border: 1px solid var(--accent);
+  padding: 0.35rem 0.8rem;
+}
+.difficulty-badge {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--acc2);
+  background: var(--acc2-dim);
+  border: 1px solid var(--acc2);
+  padding: 0.35rem 0.8rem;
+  letter-spacing: 0.1em;
+}
+.diff-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--acc2); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+h1 {
+  font-family: var(--display);
+  font-size: clamp(3rem, 7vw, 6rem);
+  letter-spacing: 0.06em;
+  line-height: 0.9;
+  color: var(--text);
+}
+h1 .acc { color: var(--accent); }
+.header-sub {
+  margin-top: 1rem;
+  color: var(--muted2);
+  font-size: 0.95rem;
+  max-width: 580px;
+}
+.score-strip {
+  margin-top: 1.75rem;
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+}
+.score-item {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  padding: 0.6rem 1.1rem;
+  display: flex; flex-direction: column;
+}
+.score-label { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.15rem; }
+.score-val { font-family: var(--mono); font-size: 1.1rem; font-weight: 700; color: var(--amber); }
+.score-val.green { color: var(--green); }
+.score-val.accent { color: var(--accent); }
+
+/* ── Sticky sidebar (briefing) ── */
+.briefing-panel {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  position: sticky;
+  top: 1.5rem;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+.panel-header {
+  padding: 1rem 1.25rem;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; gap: 0.6rem;
+  position: sticky; top: 0; z-index: 5;
+}
+.panel-icon { font-size: 1rem; }
+.panel-title { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); }
+.panel-body { padding: 1.25rem; }
+
+/* Briefing sections */
+.brief-section { margin-bottom: 1.5rem; }
+.brief-section:last-child { margin-bottom: 0; }
+.brief-tag {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.brief-tag::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+.brief-text { font-size: 0.85rem; color: var(--muted2); line-height: 1.7; }
+.brief-text strong { color: var(--text); }
+.brief-text em { color: var(--amber); font-style: normal; }
+
+.req-list { list-style: none; padding: 0; margin-top: 0.5rem; }
+.req-list li {
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.83rem;
+  color: var(--muted2);
+  display: flex; align-items: flex-start; gap: 0.5rem;
+  line-height: 1.5;
+}
+.req-list li:last-child { border-bottom: none; }
+.req-num {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--accent);
+  background: var(--acc-dim);
+  padding: 0.1rem 0.35rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.hint-btn {
+  display: flex; align-items: center; gap: 0.5rem;
+  width: 100%;
+  background: var(--amb-dim);
+  border: 1px solid var(--amber);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--amber);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.5rem;
+  transition: all 0.2s;
+  text-align: left;
+}
+.hint-btn:hover { background: #ffcd4d1e; }
+.hint-btn .hb-cost { margin-left: auto; opacity: 0.6; }
+.hint-content {
+  display: none;
+  margin-top: 0.6rem;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.82rem;
+  color: var(--muted2);
+  animation: fadeIn 0.3s ease;
+}
+.hint-content.show { display: block; }
+.hint-content strong { color: var(--amber); }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Builder panel (right) ── */
+.builder-panel { position: relative; z-index: 1; padding: 1.5rem 0; }
+.builder-title {
+  font-family: var(--display);
+  font-size: 1.8rem;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.builder-title span { color: var(--accent); }
+.builder-desc { font-size: 0.85rem; color: var(--muted2); margin-bottom: 1.75rem; }
+
+/* Table cards */
+.tables-list { display: flex; flex-direction: column; gap: 1rem; }
+.table-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.table-card:focus-within { border-color: var(--accent); }
+.table-card-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border2);
+}
+.table-name-input {
+  background: transparent;
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  outline: none;
+  flex: 1;
+  min-width: 0;
+}
+.table-name-input::placeholder { color: var(--muted); text-transform: none; font-weight: 400; }
+.table-name-input:focus { color: var(--text); }
+.del-table-btn {
+  background: none; border: none;
+  font-size: 0.9rem; color: var(--muted);
+  cursor: pointer; padding: 0.25rem 0.4rem;
+  transition: color 0.2s; border-radius: 3px;
+  flex-shrink: 0;
+}
+.del-table-btn:hover { color: var(--acc2); background: var(--acc2-dim); }
+
+/* Fields inside table */
+.fields-list { padding: 0.5rem 0; }
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 70px auto;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.field-row:last-child { border-bottom: none; }
+.field-input, .field-select {
+  background: transparent;
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text);
+  outline: none;
+  padding: 0.3rem 0.4rem;
+  width: 100%;
+  transition: background 0.15s;
+  border-radius: 2px;
+}
+.field-input:focus, .field-select:focus { background: #ffffff08; }
+.field-input::placeholder { color: var(--muted); }
+.field-select { color: var(--cyan); cursor: pointer; }
+.field-select option { background: var(--s1); color: var(--text); }
+
+.field-null-btn {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.field-null-btn.nn { border-color: var(--acc2); color: var(--acc2); background: var(--acc2-dim); }
+.field-null-btn.ok { border-color: var(--muted); color: var(--muted); }
+
+.del-field-btn {
+  background: none; border: none;
+  font-size: 0.75rem; color: var(--muted);
+  cursor: pointer; padding: 0.2rem 0.35rem;
+  transition: color 0.15s; flex-shrink: 0;
+}
+.del-field-btn:hover { color: var(--acc2); }
+
+.pk-toggle {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+  margin-right: 0.25rem;
+}
+.pk-toggle.active { border-color: var(--amber); color: var(--amber); background: var(--amb-dim); }
+.fk-toggle {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+.fk-toggle.active { border-color: var(--cyan); color: var(--cyan); background: var(--cya-dim); }
+
+.add-field-row {
+  padding: 0.4rem 0.75rem;
+  display: flex;
+}
+.add-field-btn {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: none;
+  border: 1px dashed var(--border2);
+  color: var(--muted);
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+  border-radius: 2px;
+}
+.add-field-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--acc-dim); }
+
+/* Add table button */
+.add-table-wrap { margin-top: 1rem; }
+.add-table-btn {
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  width: 100%;
+  padding: 0.85rem;
+  background: none;
+  border: 2px dashed var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.add-table-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--acc-dim); }
+
+/* ── Validation ── */
+.validation-toolbar {
+  display: flex; gap: 0.75rem; flex-wrap: wrap;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--border2);
+  margin-top: 1.5rem;
+}
+.btn {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 3px;
+}
+.btn:active { transform: translateY(1px); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: #9280fc; box-shadow: 0 0 20px #7c6dfa44; }
+.btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--muted2); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: transparent; border: 1px solid var(--acc2); color: var(--acc2); }
+.btn-danger:hover { background: var(--acc2-dim); }
+.btn-green { background: var(--green); color: #000; }
+.btn-green:hover { background: #6fffbf; }
+
+/* ── Results panel ── */
+.results-panel {
+  display: none;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 1.5rem;
+  animation: fadeIn 0.4s ease;
+}
+.results-panel.show { display: block; }
+.rp-header {
+  padding: 1rem 1.25rem;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.rp-title { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; }
+.rp-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+
+.result-table-block {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.rtb-header {
+  padding: 0.6rem 1rem;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+.rtb-name { color: var(--amber); font-weight: 700; text-transform: uppercase; }
+.rtb-status { margin-left: auto; font-size: 0.62rem; padding: 0.2rem 0.55rem; border-radius: 2px; }
+.rtb-ok   { background: var(--green-dim); color: var(--green); }
+.rtb-warn { background: var(--amb-dim);   color: var(--amber); }
+.rtb-err  { background: var(--acc2-dim);  color: var(--acc2); }
+
+.result-field-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.4rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+.result-field-row:last-child { border-bottom: none; }
+.rfr-icon { font-size: 0.75rem; flex-shrink: 0; width: 1.2rem; text-align: center; }
+.rfr-name { flex: 1; }
+.rfr-ok   { color: var(--green); }
+.rfr-warn { color: var(--amber); }
+.rfr-miss { color: var(--acc2); }
+.rfr-note { font-size: 0.7rem; color: var(--muted2); margin-left: auto; }
+
+.overall-score {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 1rem;
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+}
+.os-label { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.25rem; }
+.os-val { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; }
+.os-message { font-size: 0.85rem; color: var(--muted2); max-width: 380px; }
+
+/* ── Solution modal ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: #00000088;
+  backdrop-filter: blur(6px);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: scaleIn 0.3s ease;
+}
+@keyframes scaleIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+.modal-header {
+  padding: 1.1rem 1.5rem;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; gap: 0.75rem;
+  position: sticky; top: 0; z-index: 5;
+}
+.modal-close {
+  margin-left: auto;
+  background: none; border: none; color: var(--muted2);
+  font-size: 1.2rem; cursor: pointer; padding: 0.2rem 0.5rem;
+  transition: color 0.2s;
+}
+.modal-close:hover { color: var(--acc2); }
+.modal-body { padding: 1.5rem; }
+
+.sol-table { margin-bottom: 2rem; }
+.sol-table-name {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.sol-table-name span { font-size: 0.7rem; color: var(--muted); font-weight: 400; }
+.sol-fields { display: flex; flex-direction: column; gap: 0; background: var(--card); border: 1px solid var(--border2); border-radius: 3px; overflow: hidden; }
+.sol-field {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.7fr 2fr;
+  gap: 0;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  align-items: center;
+}
+.sol-field:last-child { border-bottom: none; }
+.sol-field:first-child { background: var(--s2); }
+.sol-field .sf-name { color: var(--text); }
+.sol-field .sf-name .pk { color: var(--amber); font-size: 0.6rem; margin-right: 0.3rem; }
+.sol-field .sf-name .fk { color: var(--cyan); font-size: 0.6rem; margin-right: 0.3rem; }
+.sol-field .sf-type { color: var(--accent); }
+.sol-field .sf-null { color: var(--acc2); font-size: 0.7rem; }
+.sol-field .sf-why  { color: var(--muted2); font-size: 0.72rem; }
+.sol-field .sf-null.opt { color: var(--muted); }
+
+/* ── Utils ── */
+.divider { height: 1px; background: linear-gradient(to right, transparent, var(--border2), transparent); margin: 2rem 0; }
+.info-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+.chip-acc { background: var(--acc-dim); color: var(--accent); border: 1px solid var(--accent); }
+.chip-grn { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+.chip-amb { background: var(--amb-dim); color: var(--amber); border: 1px solid var(--amber); }
+.chip-red { background: var(--acc2-dim); color: var(--acc2); border: 1px solid var(--acc2); }
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 1.75rem 0;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+/* Field legend row */
+.legend-row {
+  display: grid; grid-template-columns: 1fr 120px 70px auto;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.legend-row span {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ════════════════════════════════════════ -->
+<header>
+  <div class="page">
+    <div class="top-bar">
+      <div class="studio-badge">⬡ NeonRace Interactive · Test de Diseño BD</div>
+      <div class="difficulty-badge"><span class="diff-dot"></span> NIVEL: DESAFÍO</div>
+    </div>
+    <h1>DISEÑA LA BD<br>DE <span class="acc">NEON</span>RACE</h1>
+    <p class="header-sub">Tu estudio ha recibido el encargo de un cliente. Tienes el documento de requisitos. Tú decides las tablas y los campos — sin pistas iniciales.</p>
+    <div class="score-strip">
+      <div class="score-item">
+        <span class="score-label">Tablas creadas</span>
+        <span class="score-val accent" id="counterTables">0</span>
+      </div>
+      <div class="score-item">
+        <span class="score-label">Campos definidos</span>
+        <span class="score-val accent" id="counterFields">0</span>
+      </div>
+      <div class="score-item">
+        <span class="score-label">Última puntuación</span>
+        <span class="score-val green" id="lastScore">—</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ MAIN ══════════════════════════════════════════ -->
+<main class="page" style="padding-top:2rem; padding-bottom:4rem;">
+<div class="two-col">
+
+  <!-- ══ SIDEBAR: BRIEFING ══ -->
+  <aside class="briefing-panel">
+    <div class="panel-header">
+      <span class="panel-icon">📋</span>
+      <span class="panel-title">Documento de Requisitos</span>
+    </div>
+    <div class="panel-body">
+
+      <div class="brief-section">
+        <div class="brief-tag">El cliente</div>
+        <div class="brief-text">
+          <strong>NeonRace Interactive</strong> es un estudio indie que está desarrollando un videojuego de carreras futuristas online. Han contratado a tu equipo para diseñar e implementar su base de datos.
+        </div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-tag">El juego</div>
+        <div class="brief-text">
+          Los jugadores crean cuentas y dentro de ellas pueden tener <strong>una o varias naves</strong> personalizadas. Las naves tienen estadísticas propias: velocidad máxima, resistencia de escudo y color.
+          <br><br>
+          El juego tiene distintos <strong>circuitos</strong> (pistas) repartidos por diferentes planetas. Cada circuito tiene una longitud, un número de vueltas y un código de dificultad.
+          <br><br>
+          Se organizan <strong>carreras</strong> en esos circuitos. Una carrera tiene fecha y hora de inicio, y un estado (programada, en curso, finalizada). Varias naves participan en cada carrera.
+          <br><br>
+          Al terminar cada carrera, el sistema registra el <strong>resultado</strong> de cada participante: en qué posición quedó, el tiempo total que tardó y los puntos que ganó.
+        </div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-tag">Requisitos funcionales</div>
+        <ul class="req-list">
+          <li><span class="req-num">R1</span>El sistema debe saber a qué jugador pertenece cada nave.</li>
+          <li><span class="req-num">R2</span>Se necesita poder consultar el historial completo de carreras de una nave.</li>
+          <li><span class="req-num">R3</span>Debe ser posible ver la clasificación global de pilotos por puntos totales acumulados.</li>
+          <li><span class="req-num">R4</span>Un jugador puede suspenderse sin perder sus datos de partidas anteriores.</li>
+          <li><span class="req-num">R5</span>Los circuitos se reutilizan en varias carreras a lo largo del tiempo.</li>
+          <li><span class="req-num">R6</span>Una carrera puede tener entre 2 y 20 naves participando.</li>
+          <li><span class="req-num">R7</span>Dos naves de distinto jugador pueden tener el mismo nombre.</li>
+        </ul>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-tag">Restricciones técnicas</div>
+        <div class="brief-text">
+          Base de datos relacional (Microsoft Access). Se exige integridad referencial en todas las relaciones. Los campos que se puedan calcular <em>no deben almacenarse</em>. Ninguna tabla puede tener columnas numeradas (p. ej. <em>Nave1, Nave2...</em>).
+        </div>
+      </div>
+
+      <div class="brief-section">
+        <div class="brief-tag">Pistas (coste: reputación)</div>
+
+        <button class="hint-btn" onclick="toggleHint('h1')">
+          💡 Pista 1 — ¿Cuántas tablas necesito?
+          <span class="hb-cost">−10 pts</span>
+        </button>
+        <div class="hint-content" id="h1">
+          <strong>5 tablas.</strong> Piensa en los sustantivos del briefing: entidades que tienen sus propios datos y no son simplemente atributos de otra entidad.
+        </div>
+
+        <button class="hint-btn" onclick="toggleHint('h2')" style="margin-top:0.4rem;">
+          💡 Pista 2 — ¿Qué tabla intermedia necesito?
+          <span class="hb-cost">−15 pts</span>
+        </button>
+        <div class="hint-content" id="h2">
+          La relación entre <strong>Carreras</strong> y <strong>Naves</strong> es N:M. Necesitas una tabla que registre la participación de cada nave en cada carrera y guarde los datos de esa participación concreta (posición, tiempo, puntos).
+        </div>
+
+        <button class="hint-btn" onclick="toggleHint('h3')" style="margin-top:0.4rem;">
+          💡 Pista 3 — ¿Qué campos NO guardar?
+          <span class="hb-cost">−10 pts</span>
+        </button>
+        <div class="hint-content" id="h3">
+          El <strong>total de puntos acumulados</strong> de un piloto es la suma de todos sus resultados — no lo guardes en JUGADORES. La <strong>duración de la carrera</strong> puede calcularse si tienes hora inicio y fin. El <strong>número de participantes</strong> es un COUNT.
+        </div>
+
+        <button class="hint-btn" onclick="toggleHint('h4')" style="margin-top:0.4rem;">
+          💡 Pista 4 — Las 5 tablas
+          <span class="hb-cost">−20 pts</span>
+        </button>
+        <div class="hint-content" id="h4">
+          <strong>JUGADORES · NAVES · CIRCUITOS · CARRERAS · RESULTADOS</strong><br>
+          Las FK conectan: NAVES→JUGADORES, CARRERAS→CIRCUITOS, RESULTADOS→CARRERAS + NAVES.
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ══ BUILDER ══ -->
+  <div class="builder-panel">
+    <div class="builder-title">Tu <span>Esquema</span></div>
+    <p class="builder-desc">Añade las tablas que necesites. Para cada campo indica nombre, tipo, si admite nulos y si es PK/FK. Cuando termines, pulsa <strong>Validar diseño</strong>.</p>
+
+    <div class="tables-list" id="tablesList"></div>
+
+    <div class="add-table-wrap">
+      <button class="add-table-btn" onclick="addTable()">+ Añadir tabla</button>
+    </div>
+
+    <!-- Results -->
+    <div class="results-panel" id="resultsPanel">
+      <div class="rp-header">
+        <span style="font-size:1.1rem;">📊</span>
+        <span class="rp-title" style="color:var(--accent);">Resultado de la validación</span>
+        <span class="info-chip chip-acc" style="margin-left:auto;" id="resultTime">—</span>
+      </div>
+      <div class="rp-body" id="resultsBody"></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="validation-toolbar">
+      <button class="btn btn-accent" onclick="validateDesign()">Validar diseño</button>
+      <button class="btn btn-outline" onclick="clearAll()">Limpiar todo</button>
+      <button class="btn btn-danger" onclick="showSolution()">Ver solución completa</button>
+    </div>
+  </div>
+
+</div><!-- /two-col -->
+</main>
+
+<!-- ═══ MODAL SOLUCIÓN ════════════════════════════════ -->
+<div class="modal-overlay" id="solutionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:1rem;">🏆</span>
+      <span style="font-family:var(--mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--amber);">Solución Completa — NeonRace BD</span>
+      <button class="modal-close" onclick="closeSolution()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="sol-table">
+        <div class="sol-table-name">🧑 JUGADORES <span>— quién juega</span></div>
+        <div class="sol-fields">
+          <div class="sol-field"><span class="sf-name" style="color:var(--muted);font-size:0.68rem;">CAMPO</span><span class="sf-type" style="color:var(--muted);font-size:0.68rem;">TIPO</span><span class="sf-null" style="color:var(--muted);font-size:0.68rem;">NULO</span><span class="sf-why" style="color:var(--muted);font-size:0.68rem;">POR QUÉ EXISTE</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="pk">PK</span>IDJugador</span><span class="sf-type">Autonumérico</span><span class="sf-null">NO</span><span class="sf-why">Identifica cada cuenta de forma única</span></div>
+          <div class="sol-field"><span class="sf-name">NombreUsuario</span><span class="sf-type">Texto(50)</span><span class="sf-null">NO</span><span class="sf-why">Alias público del jugador</span></div>
+          <div class="sol-field"><span class="sf-name">Email</span><span class="sf-type">Texto(100)</span><span class="sf-null">NO</span><span class="sf-why">Login y contacto (único en la tabla)</span></div>
+          <div class="sol-field"><span class="sf-name">ContrasenaHash</span><span class="sf-type">Texto(255)</span><span class="sf-null">NO</span><span class="sf-why">Autenticación cifrada</span></div>
+          <div class="sol-field"><span class="sf-name">FechaRegistro</span><span class="sf-type">Fecha/Hora</span><span class="sf-null">NO</span><span class="sf-why">Antigüedad y auditorías</span></div>
+          <div class="sol-field"><span class="sf-name">CuentaActiva</span><span class="sf-type">Sí/No</span><span class="sf-null">NO</span><span class="sf-why">Suspender sin borrar historial (R4)</span></div>
+        </div>
+      </div>
+
+      <div class="sol-table">
+        <div class="sol-table-name">🚀 NAVES <span>— las naves de cada jugador</span></div>
+        <div class="sol-fields">
+          <div class="sol-field"><span class="sf-name" style="color:var(--muted);font-size:0.68rem;">CAMPO</span><span class="sf-type" style="color:var(--muted);font-size:0.68rem;">TIPO</span><span class="sf-null" style="color:var(--muted);font-size:0.68rem;">NULO</span><span class="sf-why" style="color:var(--muted);font-size:0.68rem;">POR QUÉ EXISTE</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="pk">PK</span>IDNave</span><span class="sf-type">Autonumérico</span><span class="sf-null">NO</span><span class="sf-why">Identifica cada nave (R7: mismos nombres posibles)</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="fk">FK</span>IDJugador</span><span class="sf-type">Número</span><span class="sf-null">NO</span><span class="sf-why">¿A qué jugador pertenece? (R1)</span></div>
+          <div class="sol-field"><span class="sf-name">NombreNave</span><span class="sf-type">Texto(60)</span><span class="sf-null">NO</span><span class="sf-why">Nombre visible de la nave</span></div>
+          <div class="sol-field"><span class="sf-name">Modelo</span><span class="sf-type">Texto(40)</span><span class="sf-null">NO</span><span class="sf-why">Tipo de nave (afecta habilidades)</span></div>
+          <div class="sol-field"><span class="sf-name">VelocidadMax</span><span class="sf-type">Número entero</span><span class="sf-null">NO</span><span class="sf-why">Estadística de rendimiento</span></div>
+          <div class="sol-field"><span class="sf-name">ResistenciaEscudo</span><span class="sf-type">Número entero</span><span class="sf-null">NO</span><span class="sf-why">Estadística defensiva</span></div>
+          <div class="sol-field"><span class="sf-name">ColorHex</span><span class="sf-type">Texto(7)</span><span class="sf-null opt">SÍ</span><span class="sf-why">Personalización visual (#FF3A2D)</span></div>
+        </div>
+      </div>
+
+      <div class="sol-table">
+        <div class="sol-table-name">🌍 CIRCUITOS <span>— las pistas del juego</span></div>
+        <div class="sol-fields">
+          <div class="sol-field"><span class="sf-name" style="color:var(--muted);font-size:0.68rem;">CAMPO</span><span class="sf-type" style="color:var(--muted);font-size:0.68rem;">TIPO</span><span class="sf-null" style="color:var(--muted);font-size:0.68rem;">NULO</span><span class="sf-why" style="color:var(--muted);font-size:0.68rem;">POR QUÉ EXISTE</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="pk">PK</span>IDCircuito</span><span class="sf-type">Autonumérico</span><span class="sf-null">NO</span><span class="sf-why">Identifica cada pista</span></div>
+          <div class="sol-field"><span class="sf-name">NombreCircuito</span><span class="sf-type">Texto(80)</span><span class="sf-null">NO</span><span class="sf-why">Nombre visible de la pista</span></div>
+          <div class="sol-field"><span class="sf-name">Planeta</span><span class="sf-type">Texto(50)</span><span class="sf-null">NO</span><span class="sf-why">Localización en el universo del juego</span></div>
+          <div class="sol-field"><span class="sf-name">LongitudKm</span><span class="sf-type">Decimal</span><span class="sf-null">NO</span><span class="sf-why">Longitud del circuito en km</span></div>
+          <div class="sol-field"><span class="sf-name">NumeroVueltas</span><span class="sf-type">Número entero</span><span class="sf-null">NO</span><span class="sf-why">Vueltas por carrera en este circuito</span></div>
+          <div class="sol-field"><span class="sf-name">CodigoDificultad</span><span class="sf-type">Texto(2)</span><span class="sf-null">NO</span><span class="sf-why">E/M/D — para matchmaking y filtros</span></div>
+        </div>
+      </div>
+
+      <div class="sol-table">
+        <div class="sol-table-name">🏁 CARRERAS <span>— sesiones de juego organizadas</span></div>
+        <div class="sol-fields">
+          <div class="sol-field"><span class="sf-name" style="color:var(--muted);font-size:0.68rem;">CAMPO</span><span class="sf-type" style="color:var(--muted);font-size:0.68rem;">TIPO</span><span class="sf-null" style="color:var(--muted);font-size:0.68rem;">NULO</span><span class="sf-why" style="color:var(--muted);font-size:0.68rem;">POR QUÉ EXISTE</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="pk">PK</span>IDCarrera</span><span class="sf-type">Autonumérico</span><span class="sf-null">NO</span><span class="sf-why">Identifica cada evento de carrera</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="fk">FK</span>IDCircuito</span><span class="sf-type">Número</span><span class="sf-null">NO</span><span class="sf-why">¿En qué pista se corre? (R5: circuitos reutilizados)</span></div>
+          <div class="sol-field"><span class="sf-name">FechaHoraInicio</span><span class="sf-type">Fecha/Hora</span><span class="sf-null">NO</span><span class="sf-why">Cuándo empieza — para programación</span></div>
+          <div class="sol-field"><span class="sf-name">Estado</span><span class="sf-type">Texto(12)</span><span class="sf-null">NO</span><span class="sf-why">Programada / En curso / Finalizada</span></div>
+        </div>
+      </div>
+
+      <div class="sol-table">
+        <div class="sol-table-name">📊 RESULTADOS <span>— tabla N:M (participaciones)</span></div>
+        <div class="sol-fields">
+          <div class="sol-field"><span class="sf-name" style="color:var(--muted);font-size:0.68rem;">CAMPO</span><span class="sf-type" style="color:var(--muted);font-size:0.68rem;">TIPO</span><span class="sf-null" style="color:var(--muted);font-size:0.68rem;">NULO</span><span class="sf-why" style="color:var(--muted);font-size:0.68rem;">POR QUÉ EXISTE</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="pk">PK</span>IDResultado</span><span class="sf-type">Autonumérico</span><span class="sf-null">NO</span><span class="sf-why">Identifica cada participación</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="fk">FK</span>IDCarrera</span><span class="sf-type">Número</span><span class="sf-null">NO</span><span class="sf-why">¿En qué carrera? (R2, R6)</span></div>
+          <div class="sol-field"><span class="sf-name"><span class="fk">FK</span>IDNave</span><span class="sf-type">Número</span><span class="sf-null">NO</span><span class="sf-why">¿Qué nave participó?</span></div>
+          <div class="sol-field"><span class="sf-name">Posicion</span><span class="sf-type">Número entero</span><span class="sf-null">NO</span><span class="sf-why">Clasificación final (1.º, 2.º...)</span></div>
+          <div class="sol-field"><span class="sf-name">TiempoTotalSeg</span><span class="sf-type">Decimal</span><span class="sf-null">NO</span><span class="sf-why">Duración de la carrera para esa nave</span></div>
+          <div class="sol-field"><span class="sf-name">PuntosGanados</span><span class="sf-type">Número entero</span><span class="sf-null">NO</span><span class="sf-why">Puntos de esta carrera — NO guardar total acumulado (R3)</span></div>
+        </div>
+        <div style="padding:0.75rem 1rem; background:var(--s2); font-size:0.78rem; color:var(--muted2); border-top:1px solid var(--border);">
+          <strong style="color:var(--amber);">⚠ Nota:</strong> Los puntos totales del piloto (R3) se obtienen con <span style="font-family:var(--mono); font-size:0.75rem; color:var(--accent);">SELECT SUM(PuntosGanados) FROM RESULTADOS WHERE IDNave IN (SELECT IDNave FROM NAVES WHERE IDJugador=?)</span> — no se guarda en JUGADORES.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="page">NEONRACE INTERACTIVE · RETO DE DISEÑO DE BASE DE DATOS · APLICACIONES OFIMÁTICAS</div>
+</footer>
+
+<!-- ═══ JAVASCRIPT ══════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────────────
+   SOLUTION MODEL — fuzzy matching
+───────────────────────────────────────────────────── */
+const SOLUTION = {
+  tables: [
+    {
+      names: ['jugadores','jugador','players','player','usuarios','usuario','users'],
+      label: 'JUGADORES',
+      minFields: 4,
+      requiredFields: [
+        { names: ['idjugador','id_jugador','idusuario','idplayer','id'], type: 'pk', label: 'IDJugador (PK)' },
+        { names: ['nombreusuario','nombre_usuario','username','alias','nombre','nick'], type: 'text', label: 'NombreUsuario' },
+        { names: ['email','correo','mail'], type: 'text', label: 'Email' },
+        { names: ['cuentaactiva','cuenta_activa','activo','activa','estado','banned','ban'], type: 'bool', label: 'CuentaActiva (Sí/No)' },
+        { names: ['fecharegistro','fecha_registro','fechacreacion','createdat','registrado'], type: 'date', label: 'FechaRegistro' }
+      ]
+    },
+    {
+      names: ['naves','nave','ships','ship','vehiculos','vehiculo','coches'],
+      label: 'NAVES',
+      minFields: 4,
+      requiredFields: [
+        { names: ['idnave','id_nave','idship','id'], type: 'pk', label: 'IDNave (PK)' },
+        { names: ['idjugador','id_jugador','idusuario','idpropietario','owner'], type: 'fk', label: 'IDJugador (FK)' },
+        { names: ['nombrenave','nombre_nave','nombre','name','alias'], type: 'text', label: 'NombreNave' },
+        { names: ['velocidad','velocidadmax','speed','maxspeed','vel'], type: 'num', label: 'VelocidadMax' },
+        { names: ['escudo','resistencia','shield','defensa','hp'], type: 'num', label: 'ResistenciaEscudo' }
+      ]
+    },
+    {
+      names: ['circuitos','circuito','circuit','circuits','pistas','pista','tracks','track','mapas','mapa'],
+      label: 'CIRCUITOS',
+      minFields: 3,
+      requiredFields: [
+        { names: ['idcircuito','id_circuito','idtrack','idpista','id'], type: 'pk', label: 'IDCircuito (PK)' },
+        { names: ['nombre','nombrecircuito','nombre_circuito','name'], type: 'text', label: 'NombreCircuito' },
+        { names: ['planeta','planet','mundo','world','location'], type: 'text', label: 'Planeta' },
+        { names: ['dificultad','difficulty','nivel','level','codigo'], type: 'text', label: 'CodigoDificultad' }
+      ]
+    },
+    {
+      names: ['carreras','carrera','race','races','partidas','partida','sesiones','sesion','events','evento'],
+      label: 'CARRERAS',
+      minFields: 3,
+      requiredFields: [
+        { names: ['idcarrera','id_carrera','idrace','idpartida','id'], type: 'pk', label: 'IDCarrera (PK)' },
+        { names: ['idcircuito','id_circuito','idtrack','idpista'], type: 'fk', label: 'IDCircuito (FK)' },
+        { names: ['fechahora','fecha','fecha_hora','fechainicio','date','datetime','inicio'], type: 'date', label: 'FechaHoraInicio' },
+        { names: ['estado','status','estado_carrera'], type: 'text', label: 'Estado' }
+      ]
+    },
+    {
+      names: ['resultados','resultado','results','result','participaciones','participacion','clasificacion','lineas'],
+      label: 'RESULTADOS',
+      minFields: 4,
+      requiredFields: [
+        { names: ['idresultado','id_resultado','idparticipacion','id'], type: 'pk', label: 'IDResultado (PK)' },
+        { names: ['idcarrera','id_carrera','idrace'], type: 'fk', label: 'IDCarrera (FK)' },
+        { names: ['idnave','id_nave','idship'], type: 'fk', label: 'IDNave (FK)' },
+        { names: ['posicion','position','puesto','lugar','rank'], type: 'num', label: 'Posicion' },
+        { names: ['tiempo','tiempototal','tiempo_total','totaltime','duracion'], type: 'num', label: 'TiempoTotal' },
+        { names: ['puntos','puntosganados','points','score'], type: 'num', label: 'PuntosGanados' }
+      ]
+    }
+  ]
+};
+
+/* ─────────────────────────────────────────────────────
+   TABLE BUILDER STATE
+───────────────────────────────────────────────────── */
+let tableId = 0;
+let hintPenalty = 0;
+
+function norm(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function addTable(name = '') {
+  const id = ++tableId;
+  const list = document.getElementById('tablesList');
+  const el = document.createElement('div');
+  el.className = 'table-card';
+  el.id = 'table-' + id;
+  el.innerHTML = `
+    <div class="table-card-header">
+      <span style="font-size:1rem; opacity:0.5;">⊞</span>
+      <input class="table-name-input" placeholder="Nombre de la tabla (ej: JUGADORES)" value="${name}"
+        oninput="updateCounters()" onblur="this.value=this.value.toUpperCase()">
+      <button class="del-table-btn" onclick="removeTable(${id})" title="Eliminar tabla">✕</button>
+    </div>
+    <div class="legend-row">
+      <span>Campo</span><span>Tipo</span><span>Nulo</span><span style="opacity:0">·</span>
+    </div>
+    <div class="fields-list" id="fields-${id}"></div>
+    <div class="add-field-row">
+      <button class="add-field-btn" onclick="addField(${id})">+ añadir campo</button>
+    </div>
+  `;
+  list.appendChild(el);
+  updateCounters();
+  // add default PK field
+  addField(id, true);
+}
+
+function removeTable(id) {
+  const el = document.getElementById('table-' + id);
+  if (el) el.remove();
+  updateCounters();
+}
+
+let fieldId = 0;
+function addField(tableId, isPK = false) {
+  const fid = ++fieldId;
+  const list = document.getElementById('fields-' + tableId);
+  if (!list) return;
+  const row = document.createElement('div');
+  row.className = 'field-row';
+  row.id = 'field-' + fid;
+  row.innerHTML = `
+    <div style="display:flex;align-items:center;gap:0.3rem;min-width:0;">
+      <button class="pk-toggle${isPK?' active':''}" onclick="togglePK(${fid})" title="Marcar como PK">${isPK?'PK':'PK'}</button>
+      <button class="fk-toggle" onclick="toggleFK(${fid})" title="Marcar como FK">FK</button>
+      <input class="field-input" placeholder="NombreCampo" style="flex:1;min-width:0;"
+        oninput="updateCounters()">
+    </div>
+    <select class="field-select">
+      <option value="auto">Autonumérico</option>
+      <option value="text">Texto</option>
+      <option value="num">Número entero</option>
+      <option value="dec">Decimal</option>
+      <option value="date">Fecha/Hora</option>
+      <option value="bool">Sí/No</option>
+      <option value="memo">Memo</option>
+    </select>
+    <button class="field-null-btn nn" onclick="toggleNull(${fid})" id="null-${fid}">NO</button>
+    <button class="del-field-btn" onclick="removeField(${fid})">✕</button>
+  `;
+  list.appendChild(row);
+  updateCounters();
+}
+
+function removeField(fid) {
+  const el = document.getElementById('field-' + fid);
+  if (el) el.remove();
+  updateCounters();
+}
+
+function togglePK(fid) {
+  const btn = document.querySelector(`#field-${fid} .pk-toggle`);
+  btn.classList.toggle('active');
+}
+function toggleFK(fid) {
+  const btn = document.querySelector(`#field-${fid} .fk-toggle`);
+  btn.classList.toggle('active');
+}
+function toggleNull(fid) {
+  const btn = document.getElementById('null-' + fid);
+  if (btn.textContent.trim() === 'NO') {
+    btn.textContent = 'SÍ'; btn.classList.remove('nn'); btn.classList.add('ok');
+  } else {
+    btn.textContent = 'NO'; btn.classList.remove('ok'); btn.classList.add('nn');
+  }
+}
+
+function updateCounters() {
+  const tables = document.querySelectorAll('.table-card').length;
+  const fields = document.querySelectorAll('.field-row').length;
+  document.getElementById('counterTables').textContent = tables;
+  document.getElementById('counterFields').textContent = fields;
+}
+
+function clearAll() {
+  if (!confirm('¿Limpiar todo el diseño y empezar de cero?')) return;
+  document.getElementById('tablesList').innerHTML = '';
+  document.getElementById('resultsPanel').classList.remove('show');
+  document.getElementById('lastScore').textContent = '—';
+  tableId = 0; fieldId = 0; hintPenalty = 0;
+  updateCounters();
+}
+
+/* ─────────────────────────────────────────────────────
+   VALIDATION ENGINE
+───────────────────────────────────────────────────── */
+function validateDesign() {
+  const cards = document.querySelectorAll('.table-card');
+  if (cards.length === 0) {
+    alert('Añade al menos una tabla antes de validar.'); return;
+  }
+
+  // Parse student design
+  const studentTables = [];
+  cards.forEach(card => {
+    const nameEl = card.querySelector('.table-name-input');
+    const name = nameEl ? nameEl.value.trim() : '';
+    const fields = [];
+    card.querySelectorAll('.field-row').forEach(row => {
+      const nameInput = row.querySelector('.field-input');
+      const typeSelect = row.querySelector('.field-select');
+      const isPK = row.querySelector('.pk-toggle')?.classList.contains('active');
+      const isFK = row.querySelector('.fk-toggle')?.classList.contains('active');
+      if (nameInput && nameInput.value.trim()) {
+        fields.push({
+          name: nameInput.value.trim(),
+          type: typeSelect ? typeSelect.value : 'text',
+          pk: isPK, fk: isFK
+        });
+      }
+    });
+    studentTables.push({ name, fields });
+  });
+
+  // Score
+  let totalPoints = 0;
+  let maxPoints = 0;
+  const tableResults = [];
+
+  SOLUTION.tables.forEach(solTable => {
+    maxPoints += solTable.minFields * 10;
+    // Find matching student table
+    const found = studentTables.find(st => solTable.names.includes(norm(st.name)));
+    if (!found) {
+      tableResults.push({ label: solTable.label, status: 'missing', fields: [], note: 'Tabla no encontrada en tu diseño' });
+      return;
+    }
+
+    const fieldResults = [];
+    let tableScore = 0;
+
+    solTable.requiredFields.forEach(rf => {
+      const match = found.fields.find(f => rf.names.includes(norm(f.name)));
+      if (match) {
+        tableScore += 10;
+        totalPoints += 10;
+        // Check type
+        const typeOk = checkType(match.type, rf.type, match.pk, match.fk);
+        fieldResults.push({
+          label: rf.label, status: typeOk ? 'ok' : 'warn',
+          note: typeOk ? 'Tipo correcto' : `Revisa el tipo — esperado: ${typeLabel(rf.type)}`
+        });
+      } else {
+        fieldResults.push({ label: rf.label, status: 'miss', note: 'Campo no encontrado' });
+      }
+    });
+
+    // Check for obviously wrong fields (PuntosTotal, KDRatio, etc.)
+    const badFields = found.fields.filter(f => {
+      const n = norm(f.name);
+      return ['puntostotal','totalpoints','puntosacumulados','puntosglobales','kdrating','duracion','numerojugadores'].includes(n);
+    });
+
+    const status = tableScore >= solTable.minFields * 8 ? 'ok' :
+                   tableScore >= solTable.minFields * 4 ? 'warn' : 'err';
+    tableResults.push({
+      label: solTable.label + ' → ' + found.name.toUpperCase(),
+      status, fields: fieldResults,
+      badFields: badFields.map(b => b.name)
+    });
+  });
+
+  // Detect redundancy errors: NombreJugador in non-JUGADORES table
+  studentTables.forEach(st => {
+    const isPlayerTable = SOLUTION.tables[0].names.includes(norm(st.name));
+    if (!isPlayerTable) {
+      st.fields.forEach(f => {
+        const n = norm(f.name);
+        if (['nombrejugador','username','nombreusuario'].includes(n)) {
+          totalPoints -= 15; // penalty
+        }
+      });
+    }
+  });
+
+  // Final score
+  const pct = Math.max(0, Math.round((totalPoints / maxPoints) * 100));
+  const adjustedScore = Math.max(0, pct - hintPenalty);
+
+  renderResults(tableResults, adjustedScore, totalPoints, maxPoints);
+  document.getElementById('lastScore').textContent = adjustedScore + '%';
+}
+
+function checkType(studentType, expectedGroup, isPK, isFK) {
+  if (expectedGroup === 'pk') return studentType === 'auto' || isPK;
+  if (expectedGroup === 'fk') return studentType === 'num' || studentType === 'auto' || isFK;
+  if (expectedGroup === 'text') return studentType === 'text' || studentType === 'memo';
+  if (expectedGroup === 'num') return studentType === 'num' || studentType === 'dec' || studentType === 'auto';
+  if (expectedGroup === 'date') return studentType === 'date';
+  if (expectedGroup === 'bool') return studentType === 'bool';
+  if (expectedGroup === 'dec') return studentType === 'dec' || studentType === 'num';
+  return true;
+}
+
+function typeLabel(g) {
+  const map = { pk:'Autonumérico', fk:'Número', text:'Texto', num:'Número entero', dec:'Decimal', date:'Fecha/Hora', bool:'Sí/No' };
+  return map[g] || g;
+}
+
+function renderResults(tableResults, score, got, max) {
+  const panel = document.getElementById('resultsPanel');
+  const body = document.getElementById('resultsBody');
+  panel.classList.add('show');
+
+  const now = new Date().toLocaleTimeString('es-ES');
+  document.getElementById('resultTime').textContent = now;
+
+  const scoreColor = score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--acc2)';
+  const scoreMsg = score >= 90 ? '¡Diseño excelente! Tienes una comprensión muy sólida del modelo relacional.' :
+                   score >= 70 ? 'Buen diseño. Revisa los campos marcados en amarillo y las tablas en rojo.' :
+                   score >= 50 ? 'Hay varias tablas o campos importantes que faltan. Relee los requisitos R1–R7.' :
+                   'El diseño necesita trabajo. Pide la pista 4 para orientarte.';
+
+  let html = `
+    <div class="overall-score">
+      <div>
+        <div class="os-label">Puntuación final</div>
+        <div class="os-val" style="color:${scoreColor}">${score}%</div>
+        <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:0.2rem;">${got}/${max} puntos brutos${hintPenalty>0?' · −'+hintPenalty+'% por pistas':''}</div>
+      </div>
+      <div class="os-message">${scoreMsg}</div>
+    </div>
+  `;
+
+  tableResults.forEach(tr => {
+    const statusClass = tr.status === 'ok' ? 'rtb-ok' : tr.status === 'warn' ? 'rtb-warn' : 'rtb-err';
+    const statusLabel = tr.status === 'ok' ? '✓ OK' : tr.status === 'warn' ? '⚠ REVISAR' : tr.status === 'missing' ? '✕ FALTA' : '✕ MEJORAR';
+
+    let fieldsHtml = '';
+    (tr.fields || []).forEach(f => {
+      const icon = f.status === 'ok' ? '✓' : f.status === 'warn' ? '⚠' : '✕';
+      const cls = f.status === 'ok' ? 'rfr-ok' : f.status === 'warn' ? 'rfr-warn' : 'rfr-miss';
+      fieldsHtml += `<div class="result-field-row">
+        <span class="rfr-icon ${cls}">${icon}</span>
+        <span class="rfr-name ${cls}">${f.label}</span>
+        <span class="rfr-note">${f.note}</span>
+      </div>`;
+    });
+
+    if (tr.status === 'missing') {
+      fieldsHtml = `<div class="result-field-row"><span class="rfr-icon rfr-miss">✕</span><span class="rfr-miss">Esta tabla no aparece en tu diseño</span></div>`;
+    }
+
+    if (tr.badFields && tr.badFields.length > 0) {
+      fieldsHtml += `<div class="result-field-row" style="background:var(--acc2-dim);">
+        <span class="rfr-icon rfr-miss">⚠</span>
+        <span class="rfr-miss">Campo(s) derivado(s) detectado(s): <strong>${tr.badFields.join(', ')}</strong></span>
+        <span class="rfr-note">No guardar valores calculables</span>
+      </div>`;
+    }
+
+    html += `<div class="result-table-block">
+      <div class="rtb-header">
+        <span class="rtb-name">${tr.label}</span>
+        <span class="rtb-status ${statusClass}">${statusLabel}</span>
+      </div>
+      ${fieldsHtml}
+    </div>`;
+  });
+
+  // Check for extra tables not in solution
+  const studentCards = document.querySelectorAll('.table-card');
+  studentCards.forEach(card => {
+    const nameEl = card.querySelector('.table-name-input');
+    const name = nameEl ? nameEl.value.trim() : '';
+    if (!name) return;
+    const inSolution = SOLUTION.tables.some(st => st.names.includes(norm(name)));
+    if (!inSolution) {
+      html += `<div class="result-table-block">
+        <div class="rtb-header">
+          <span class="rtb-name">${name.toUpperCase()}</span>
+          <span class="rtb-status rtb-warn">⚠ NO ESPERADA</span>
+        </div>
+        <div class="result-field-row">
+          <span class="rfr-icon rfr-warn">⚠</span>
+          <span class="rfr-warn">Esta tabla no forma parte del modelo esperado. ¿Seguro que es necesaria?</span>
+        </div>
+      </div>`;
+    }
+  });
+
+  body.innerHTML = html;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ─────────────────────────────────────────────────────
+   HINTS
+───────────────────────────────────────────────────── */
+const hintCosts = { h1: 10, h2: 15, h3: 10, h4: 20 };
+const hintsUsed = {};
+
+function toggleHint(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+  if (el.classList.contains('show') && !hintsUsed[id]) {
+    hintsUsed[id] = true;
+    hintPenalty += hintCosts[id];
+  }
+}
+
+/* ─────────────────────────────────────────────────────
+   SOLUTION MODAL
+───────────────────────────────────────────────────── */
+function showSolution() {
+  if (!confirm('¿Seguro que quieres ver la solución completa? Se recomienda intentarlo primero.')) return;
+  document.getElementById('solutionModal').classList.add('show');
+}
+function closeSolution() {
+  document.getElementById('solutionModal').classList.remove('show');
+}
+document.getElementById('solutionModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSolution();
+});
+
+/* ─────────────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────────────── */
+window.addEventListener('load', () => {
+  // Start with two empty tables to give a head start
+  addTable('');
+  addTable('');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultas SQL — Microsoft Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#090a10;--s1:#0e1018;--s2:#13151f;--card:#161923;
+  --border:#1d2035;--border2:#282d4a;
+  --or:#ff9500;--or-dim:#ff950018;--or2:#ffbd4d;
+  --pink:#ff4d8f;--pk-dim:#ff4d8f15;
+  --blue:#4d9fff;--bl-dim:#4d9fff15;
+  --green:#3dffa0;--gr-dim:#3dffa015;
+  --purple:#c084fc;--pu-dim:#c084fc15;
+  --text:#e4e8ff;--muted:#454a70;--muted2:#7880b0;
+  --sans:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;flex-direction:column;}
+
+/* ── Top bar ── */
+#topbar{
+  display:flex;align-items:center;height:50px;flex-shrink:0;
+  background:var(--s1);border-bottom:2px solid var(--border2);z-index:200;
+}
+.tb-logo{
+  padding:0 1.2rem;font-family:var(--mono);font-size:0.68rem;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--or);border-right:1px solid var(--border2);
+  height:100%;display:flex;align-items:center;gap:0.5rem;flex-shrink:0;white-space:nowrap;
+}
+.tb-logo-dot{width:6px;height:6px;border-radius:50%;background:var(--or);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+.lesson-tabs{display:flex;height:100%;flex:1;overflow-x:auto;scrollbar-width:none;}
+.lesson-tabs::-webkit-scrollbar{display:none;}
+.lt{
+  display:flex;align-items:center;gap:0.5rem;padding:0 1.1rem;height:100%;
+  font-size:0.8rem;font-weight:700;color:var(--muted2);cursor:pointer;
+  border-right:1px solid var(--border);border-bottom:3px solid transparent;
+  border-top:none;border-left:none;background:none;
+  transition:all 0.18s;white-space:nowrap;flex-shrink:0;
+}
+.lt:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+.lt.active{color:var(--or);border-bottom-color:var(--or);background:var(--or-dim);}
+.lt .ln{
+  font-family:var(--mono);font-size:0.52rem;background:var(--border2);
+  padding:0.12rem 0.4rem;border-radius:2px;color:var(--muted);
+}
+.lt.active .ln{background:var(--or-dim);color:var(--or);}
+.lt.done .ln{background:var(--gr-dim);color:var(--green);}
+.lt.done{color:var(--green);}
+.tb-end{
+  padding:0 1rem;height:100%;display:flex;align-items:center;
+  border-left:1px solid var(--border2);flex-shrink:0;
+}
+.xp-chip{
+  font-family:var(--mono);font-size:0.62rem;padding:0.3rem 0.75rem;
+  background:var(--or-dim);border:1px solid var(--or);color:var(--or);border-radius:3px;
+}
+
+/* ── Main layout ── */
+#main{flex:1;display:flex;overflow:hidden;}
+
+/* ── Left: Theory panel ── */
+#theory{
+  width:340px;flex-shrink:0;
+  background:var(--s1);border-right:1px solid var(--border2);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.theory-header{
+  padding:1rem 1.2rem;background:var(--s2);border-bottom:1px solid var(--border2);flex-shrink:0;
+}
+.th-eyebrow{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--or);margin-bottom:0.3rem;}
+.th-title{font-size:1.2rem;font-weight:800;color:var(--text);line-height:1.1;}
+.th-title em{color:var(--or);font-style:normal;}
+.th-desc{font-size:0.8rem;color:var(--muted2);margin-top:0.4rem;line-height:1.5;}
+.theory-body{flex:1;overflow-y:auto;padding:1.1rem 1.2rem;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+
+/* Theory sections */
+.t-section{margin-bottom:1.5rem;}
+.t-section:last-child{margin-bottom:0;}
+.ts-label{
+  font-family:var(--mono);font-size:0.56rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;
+}
+.ts-label::after{content:'';flex:1;height:1px;background:var(--border2);}
+.ts-text{font-size:0.82rem;color:var(--muted2);line-height:1.65;}
+.ts-text strong{color:var(--text);}
+.ts-text em{color:var(--or);font-style:normal;}
+
+/* SQL snippet */
+.sql-snippet{
+  background:#000;border:1px solid var(--border2);border-radius:3px;
+  padding:0.75rem 0.9rem;margin:0.7rem 0;
+  font-family:var(--mono);font-size:0.77rem;line-height:1.8;
+  cursor:pointer;transition:border-color 0.2s;position:relative;
+}
+.sql-snippet:hover{border-color:var(--or);}
+.sql-snippet::after{
+  content:'↑ clic para cargar';position:absolute;bottom:0.3rem;right:0.6rem;
+  font-size:0.55rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;
+}
+.k{color:#ff7b72;}   /* keyword */
+.f{color:#79c0ff;}   /* function */
+.s{color:#a5d6ff;}   /* string/value */
+.t{color:var(--or);} /* table */
+.c{color:#e3b341;}   /* column */
+.cm{color:#6e7681;}  /* comment */
+
+.tip{
+  background:var(--or-dim);border:1px solid var(--or);border-radius:3px;
+  padding:0.65rem 0.85rem;font-size:0.78rem;color:var(--muted2);margin-top:0.75rem;
+  line-height:1.5;
+}
+.tip strong{color:var(--or);}
+.warn{
+  background:var(--pk-dim);border:1px solid var(--pink);border-radius:3px;
+  padding:0.65rem 0.85rem;font-size:0.78rem;color:var(--muted2);margin-top:0.75rem;
+}
+.warn strong{color:var(--pink);}
+
+/* ── Right: Editor + Results ── */
+#workspace{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* Schema bar */
+#schemaBar{
+  display:flex;align-items:center;gap:0.5rem;padding:0.55rem 1.1rem;
+  background:var(--s2);border-bottom:1px solid var(--border2);flex-shrink:0;flex-wrap:wrap;
+}
+.schema-label{font-family:var(--mono);font-size:0.58rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-right:0.3rem;}
+.schema-table{
+  font-family:var(--mono);font-size:0.68rem;padding:0.22rem 0.65rem;
+  border:1px solid var(--border2);border-radius:2px;color:var(--muted2);
+  cursor:pointer;transition:all 0.15s;background:var(--s1);
+}
+.schema-table:hover,.schema-table.active{border-color:var(--or);color:var(--or);background:var(--or-dim);}
+
+/* Editor */
+#editorWrap{
+  flex-shrink:0;padding:0.9rem 1.1rem;
+  border-bottom:1px solid var(--border2);background:var(--s1);
+}
+.editor-toolbar{
+  display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;flex-wrap:wrap;
+}
+.et-label{font-family:var(--mono);font-size:0.58rem;color:var(--or);letter-spacing:0.12em;text-transform:uppercase;}
+.et-spacer{flex:1;}
+.et-btn{
+  font-family:var(--mono);font-size:0.58rem;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.3rem 0.7rem;border-radius:2px;border:none;cursor:pointer;transition:all 0.15s;
+}
+.et-run{background:var(--or);color:#000;}
+.et-run:hover{background:var(--or2);}
+.et-clear{background:var(--border2);color:var(--muted2);}
+.et-clear:hover{background:var(--border2);color:var(--pink);}
+
+#sqlEditor{
+  width:100%;background:#000;border:1px solid var(--border2);border-radius:3px;
+  padding:0.75rem 0.9rem;font-family:var(--mono);font-size:0.82rem;color:var(--text);
+  resize:vertical;min-height:80px;max-height:180px;outline:none;
+  line-height:1.7;transition:border-color 0.2s;
+}
+#sqlEditor:focus{border-color:var(--or);}
+
+/* Schema tooltip */
+#schemaTooltip{
+  display:none;position:fixed;z-index:500;
+  background:var(--s2);border:1px solid var(--border2);border-radius:4px;
+  padding:0.75rem 0.9rem;min-width:220px;
+  box-shadow:0 8px 30px #00000066;
+  font-family:var(--mono);font-size:0.72rem;
+  animation:fadeUp 0.15s ease;
+}
+#schemaTooltip.show{display:block;}
+.st-name{color:var(--or);font-weight:700;margin-bottom:0.5rem;font-size:0.78rem;}
+.st-field{
+  display:flex;gap:0.5rem;padding:0.2rem 0;border-bottom:1px solid var(--border);
+  color:var(--muted2);align-items:center;
+}
+.st-field:last-child{border-bottom:none;}
+.st-fname{color:var(--text);flex:1;}
+.st-ftype{color:var(--purple);font-size:0.65rem;}
+.st-fpk{font-size:0.55rem;padding:0.1rem 0.3rem;background:#ffe44d22;color:#ffe44d;border:1px solid #ffe44d;border-radius:2px;}
+.st-ffk{font-size:0.55rem;padding:0.1rem 0.3rem;background:var(--bl-dim);color:var(--blue);border:1px solid var(--blue);border-radius:2px;}
+
+/* Results */
+#resultsWrap{flex:1;overflow:auto;padding:0.9rem 1.1rem;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+
+.results-meta{
+  display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;flex-wrap:wrap;
+}
+.rm-rows{font-family:var(--mono);font-size:0.65rem;color:var(--or);letter-spacing:0.1em;text-transform:uppercase;}
+.rm-time{font-family:var(--mono);font-size:0.62rem;color:var(--muted);}
+.rm-msg{font-size:0.8rem;color:var(--muted2);}
+
+#resultsTable{
+  border-collapse:collapse;width:100%;font-family:var(--mono);font-size:0.78rem;
+  min-width:500px;
+}
+#resultsTable th{
+  padding:0.5rem 0.85rem;background:var(--s2);border:1px solid var(--border2);
+  color:var(--muted2);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;
+  white-space:nowrap;text-align:left;font-weight:500;
+}
+#resultsTable td{
+  padding:0.45rem 0.85rem;border:1px solid var(--border);
+  color:var(--text);white-space:nowrap;
+}
+#resultsTable tr:nth-child(even) td{background:#ffffff04;}
+#resultsTable tr:hover td{background:var(--or-dim);}
+.null-val{color:var(--muted);font-style:italic;}
+.bool-yes{color:var(--green);}
+.bool-no{color:var(--pink);}
+
+/* Empty/error state */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;min-height:180px;gap:0.75rem;text-align:center;
+}
+.es-icon{font-size:2.5rem;opacity:0.3;}
+.es-text{font-family:var(--mono);font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;}
+.error-state{
+  background:var(--pk-dim);border:1px solid var(--pink);border-radius:3px;
+  padding:1rem 1.25rem;font-family:var(--mono);font-size:0.8rem;color:var(--pink);
+  margin-top:0.5rem;line-height:1.6;
+}
+.error-state strong{display:block;margin-bottom:0.3rem;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;}
+
+/* Exercise panel */
+#exercisePanel{
+  flex-shrink:0;background:var(--card);border-top:2px solid var(--border2);
+  max-height:0;overflow:hidden;transition:max-height 0.4s ease;
+}
+#exercisePanel.open{max-height:300px;}
+.ep-inner{padding:1rem 1.1rem;display:flex;gap:1.25rem;flex-wrap:wrap;align-items:flex-start;}
+.ep-question{
+  flex:1;min-width:260px;
+  background:var(--s2);border:1px solid var(--border2);border-radius:3px;padding:0.9rem 1rem;
+}
+.ep-qlabel{font-family:var(--mono);font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--or);margin-bottom:0.4rem;}
+.ep-qtext{font-size:0.85rem;color:var(--text);line-height:1.5;}
+.ep-qtext code{font-family:var(--mono);font-size:0.8rem;color:var(--or2);}
+.ep-controls{display:flex;flex-direction:column;gap:0.5rem;min-width:200px;}
+.ep-check-btn{
+  font-family:var(--mono);font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.65rem 1rem;border:none;border-radius:3px;cursor:pointer;
+  background:var(--or);color:#000;transition:all 0.15s;
+}
+.ep-check-btn:hover{background:var(--or2);}
+.ep-hint-btn{
+  font-family:var(--mono);font-size:0.58rem;letter-spacing:0.06em;text-transform:uppercase;
+  padding:0.55rem 1rem;border:1px solid var(--border2);border-radius:3px;cursor:pointer;
+  background:transparent;color:var(--muted2);transition:all 0.15s;
+}
+.ep-hint-btn:hover{border-color:var(--or);color:var(--or);}
+.ep-result{
+  font-family:var(--mono);font-size:0.72rem;padding:0.55rem 0.85rem;
+  border-radius:3px;display:none;margin-top:0.25rem;
+}
+.ep-result.show{display:block;}
+.ep-result.ok{background:var(--gr-dim);color:var(--green);border:1px solid var(--green);}
+.ep-result.fail{background:var(--pk-dim);color:var(--pink);border:1px solid var(--pink);}
+.ep-result.hint{background:var(--or-dim);color:var(--or);border:1px solid var(--or);}
+
+/* Bottom bar */
+#bottomBar{
+  display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1.1rem;
+  background:var(--s2);border-top:1px solid var(--border2);flex-shrink:0;flex-wrap:wrap;
+}
+.bb-btn{
+  font-family:var(--mono);font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.45rem 1rem;border-radius:3px;cursor:pointer;border:none;transition:all 0.15s;
+}
+.bb-ex{background:var(--or-dim);border:1px solid var(--or);color:var(--or);}
+.bb-ex:hover{background:var(--or);color:#000;}
+.bb-next{background:var(--or);color:#000;}
+.bb-next:hover{background:var(--or2);}
+.bb-prev{background:transparent;border:1px solid var(--border2);color:var(--muted2);}
+.bb-prev:hover{border-color:var(--muted2);}
+.bb-spacer{flex:1;}
+.lesson-progress{
+  display:flex;gap:0.3rem;align-items:center;
+}
+.lp-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--border2);
+  transition:background 0.2s,transform 0.2s;cursor:pointer;
+}
+.lp-dot.done{background:var(--green);}
+.lp-dot.active{background:var(--or);transform:scale(1.3);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse2{0%,100%{box-shadow:0 0 0 0 var(--or)}50%{box-shadow:0 0 0 4px transparent}}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div id="topbar">
+  <div class="tb-logo"><span class="tb-logo-dot"></span>SQL · Access</div>
+  <div class="lesson-tabs">
+    <button class="lt active" id="tab-0" onclick="goLesson(0)"><span class="ln">01</span>SELECT</button>
+    <button class="lt" id="tab-1" onclick="goLesson(1)"><span class="ln">02</span>WHERE</button>
+    <button class="lt" id="tab-2" onclick="goLesson(2)"><span class="ln">03</span>ORDER BY</button>
+    <button class="lt" id="tab-3" onclick="goLesson(3)"><span class="ln">04</span>Funciones</button>
+    <button class="lt" id="tab-4" onclick="goLesson(4)"><span class="ln">05</span>GROUP BY</button>
+    <button class="lt" id="tab-5" onclick="goLesson(5)"><span class="ln">06</span>INNER JOIN</button>
+  </div>
+  <div class="tb-end"><div class="xp-chip" id="xpChip">0 / 6 completadas</div></div>
+</div>
+
+<!-- ── Main ── -->
+<div id="main">
+
+  <!-- Theory panel -->
+  <div id="theory">
+    <div class="theory-header">
+      <div class="th-eyebrow" id="lessonEyebrow">Lección 1 de 6</div>
+      <div class="th-title" id="lessonTitle">SELECT <em>básico</em></div>
+      <div class="th-desc" id="lessonDesc">Aprende a recuperar datos de una tabla.</div>
+    </div>
+    <div class="theory-body" id="theoryBody"></div>
+  </div>
+
+  <!-- Workspace -->
+  <div id="workspace">
+
+    <!-- Schema bar -->
+    <div id="schemaBar">
+      <span class="schema-label">Tablas:</span>
+      <button class="schema-table" onclick="showSchema('JUGADORES',this)">JUGADORES</button>
+      <button class="schema-table" onclick="showSchema('NAVES',this)">NAVES</button>
+      <button class="schema-table" onclick="showSchema('CIRCUITOS',this)">CIRCUITOS</button>
+      <button class="schema-table" onclick="showSchema('CARRERAS',this)">CARRERAS</button>
+      <button class="schema-table" onclick="showSchema('RESULTADOS',this)">RESULTADOS</button>
+    </div>
+
+    <!-- Editor -->
+    <div id="editorWrap">
+      <div class="editor-toolbar">
+        <span class="et-label">▶ Editor SQL</span>
+        <span class="et-spacer"></span>
+        <button class="et-btn et-clear" onclick="clearEditor()">Limpiar</button>
+        <button class="et-btn et-run" onclick="runQuery()">Ejecutar ▶ (F5)</button>
+      </div>
+      <textarea id="sqlEditor" placeholder="Escribe aquí tu consulta SQL...
+Ejemplo: SELECT * FROM JUGADORES" spellcheck="false"></textarea>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsWrap">
+      <div class="empty-state" id="emptyState">
+        <div class="es-icon">⬡</div>
+        <div class="es-text">Escribe una consulta y pulsa Ejecutar</div>
+      </div>
+      <div id="resultsMeta" class="results-meta" style="display:none;"></div>
+      <div id="resultsTableWrap" style="display:none;overflow-x:auto;"></div>
+    </div>
+
+    <!-- Exercise panel -->
+    <div id="exercisePanel">
+      <div class="ep-inner">
+        <div class="ep-question">
+          <div class="ep-qlabel">Ejercicio</div>
+          <div class="ep-qtext" id="epQtext">—</div>
+        </div>
+        <div class="ep-controls">
+          <button class="ep-check-btn" onclick="checkExercise()">Comprobar consulta</button>
+          <button class="ep-hint-btn" onclick="showHint()">Ver pista</button>
+          <div class="ep-result" id="epResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div id="bottomBar">
+      <button class="bb-btn bb-prev" onclick="goLesson(currentLesson-1)" id="prevBtn" disabled>◀ Anterior</button>
+      <button class="bb-btn bb-ex" onclick="toggleExercise()" id="exBtn">Ejercicio</button>
+      <div class="bb-spacer"></div>
+      <div class="lesson-progress" id="progressDots"></div>
+      <div class="bb-spacer"></div>
+      <button class="bb-btn bb-next" onclick="completeAndNext()" id="nextBtn">Siguiente ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- Schema tooltip -->
+<div id="schemaTooltip"></div>
+
+<script>
+/* ════════════════════════════════════════════════
+   DATABASE
+════════════════════════════════════════════════ */
+const DB = {
+  JUGADORES: [
+    {IDJugador:1, NombreUsuario:"DragonSlayer99", Email:"dragon@gmail.com", Pais:"España",    FechaRegistro:"2024-01-15", CuentaActiva:true},
+    {IDJugador:2, NombreUsuario:"NeonPilot",      Email:"neon@hotmail.com", Pais:"México",    FechaRegistro:"2024-02-20", CuentaActiva:true},
+    {IDJugador:3, NombreUsuario:"StarRacer",      Email:"star@yahoo.com",   Pais:"Argentina", FechaRegistro:"2024-03-05", CuentaActiva:true},
+    {IDJugador:4, NombreUsuario:"VoidRunner88",   Email:"void@gmail.com",   Pais:"España",    FechaRegistro:"2024-03-18", CuentaActiva:false},
+    {IDJugador:5, NombreUsuario:"CosmicBlade",    Email:"cosmic@gmail.com", Pais:"Chile",     FechaRegistro:"2024-04-02", CuentaActiva:true},
+    {IDJugador:6, NombreUsuario:"Electra",        Email:"electra@mail.com", Pais:"España",    FechaRegistro:"2024-04-10", CuentaActiva:true},
+    {IDJugador:7, NombreUsuario:"TurboKing",      Email:"turbo@mail.com",   Pais:"México",    FechaRegistro:"2024-05-01", CuentaActiva:true},
+    {IDJugador:8, NombreUsuario:"NebulaDrifter",  Email:"nebula@mail.com",  Pais:"Colombia",  FechaRegistro:"2024-05-20", CuentaActiva:false},
+  ],
+  NAVES: [
+    {IDNave:1,  IDJugador:1, NombreNave:"Fénix Rojo",    Modelo:"Interceptor", VelocidadMax:520, ResistenciaEscudo:180, ColorHex:"#FF3A2D"},
+    {IDNave:2,  IDJugador:1, NombreNave:"Dragón Negro",  Modelo:"Destroyer",   VelocidadMax:410, ResistenciaEscudo:340, ColorHex:"#1A1A1A"},
+    {IDNave:3,  IDJugador:2, NombreNave:"Neón X",        Modelo:"Interceptor", VelocidadMax:555, ResistenciaEscudo:120, ColorHex:"#00E5FF"},
+    {IDNave:4,  IDJugador:3, NombreNave:"Polaris",       Modelo:"Cruiser",     VelocidadMax:460, ResistenciaEscudo:260, ColorHex:"#FFFDE7"},
+    {IDNave:5,  IDJugador:4, NombreNave:"Void Shadow",   Modelo:"Stealth",     VelocidadMax:490, ResistenciaEscudo:150, ColorHex:"#212121"},
+    {IDNave:6,  IDJugador:5, NombreNave:"Cosmos",        Modelo:"Cruiser",     VelocidadMax:445, ResistenciaEscudo:290, ColorHex:"#9C27B0"},
+    {IDNave:7,  IDJugador:6, NombreNave:"Rayo Azul",     Modelo:"Interceptor", VelocidadMax:535, ResistenciaEscudo:130, ColorHex:"#2979FF"},
+    {IDNave:8,  IDJugador:7, NombreNave:"Turbo GT",      Modelo:"Destroyer",   VelocidadMax:395, ResistenciaEscudo:380, ColorHex:"#FF6F00"},
+    {IDNave:9,  IDJugador:8, NombreNave:"Nebulosa",      Modelo:"Cruiser",     VelocidadMax:430, ResistenciaEscudo:310, ColorHex:"#7E57C2"},
+    {IDNave:10, IDJugador:2, NombreNave:"Photon",        Modelo:"Stealth",     VelocidadMax:480, ResistenciaEscudo:160, ColorHex:"#E0F7FA"},
+  ],
+  CIRCUITOS: [
+    {IDCircuito:1, NombreCircuito:"Desierto de Fuego",   Planeta:"Marte",    LongitudKm:8.4,  NumeroVueltas:5, CodigoDificultad:"D"},
+    {IDCircuito:2, NombreCircuito:"Anillo de Saturno",   Planeta:"Saturno",  LongitudKm:22.1, NumeroVueltas:3, CodigoDificultad:"D"},
+    {IDCircuito:3, NombreCircuito:"Valles de Europa",    Planeta:"Júpiter",  LongitudKm:6.8,  NumeroVueltas:7, CodigoDificultad:"M"},
+    {IDCircuito:4, NombreCircuito:"Dunas Lunares",       Planeta:"Luna",     LongitudKm:4.2,  NumeroVueltas:10,CodigoDificultad:"F"},
+    {IDCircuito:5, NombreCircuito:"Ciudad Neon",         Planeta:"Tierra",   LongitudKm:3.1,  NumeroVueltas:12,CodigoDificultad:"F"},
+  ],
+  CARRERAS: [
+    {IDCarrera:1, IDCircuito:1, FechaHoraInicio:"2024-06-01 20:00", Estado:"Finalizada"},
+    {IDCarrera:2, IDCircuito:2, FechaHoraInicio:"2024-06-08 21:00", Estado:"Finalizada"},
+    {IDCarrera:3, IDCircuito:3, FechaHoraInicio:"2024-06-15 19:30", Estado:"Finalizada"},
+    {IDCarrera:4, IDCircuito:4, FechaHoraInicio:"2024-06-22 18:00", Estado:"Finalizada"},
+    {IDCarrera:5, IDCircuito:5, FechaHoraInicio:"2024-07-01 20:00", Estado:"Programada"},
+    {IDCarrera:6, IDCircuito:1, FechaHoraInicio:"2024-07-08 21:00", Estado:"Programada"},
+  ],
+  RESULTADOS: [
+    {IDResultado:1,  IDCarrera:1, IDNave:1,  Posicion:1, TiempoTotalSeg:1842.5, PuntosGanados:25},
+    {IDResultado:2,  IDCarrera:1, IDNave:3,  Posicion:2, TiempoTotalSeg:1855.2, PuntosGanados:18},
+    {IDResultado:3,  IDCarrera:1, IDNave:7,  Posicion:3, TiempoTotalSeg:1861.0, PuntosGanados:15},
+    {IDResultado:4,  IDCarrera:1, IDNave:4,  Posicion:4, TiempoTotalSeg:1890.3, PuntosGanados:12},
+    {IDResultado:5,  IDCarrera:2, IDNave:3,  Posicion:1, TiempoTotalSeg:3112.8, PuntosGanados:25},
+    {IDResultado:6,  IDCarrera:2, IDNave:6,  Posicion:2, TiempoTotalSeg:3145.1, PuntosGanados:18},
+    {IDResultado:7,  IDCarrera:2, IDNave:1,  Posicion:3, TiempoTotalSeg:3178.4, PuntosGanados:15},
+    {IDResultado:8,  IDCarrera:2, IDNave:10, Posicion:4, TiempoTotalSeg:3200.0, PuntosGanados:12},
+    {IDResultado:9,  IDCarrera:3, IDNave:7,  Posicion:1, TiempoTotalSeg:2241.6, PuntosGanados:25},
+    {IDResultado:10, IDCarrera:3, IDNave:4,  Posicion:2, TiempoTotalSeg:2260.2, PuntosGanados:18},
+    {IDResultado:11, IDCarrera:3, IDNave:9,  Posicion:3, TiempoTotalSeg:2288.7, PuntosGanados:15},
+    {IDResultado:12, IDCarrera:3, IDNave:2,  Posicion:4, TiempoTotalSeg:2310.0, PuntosGanados:12},
+    {IDResultado:13, IDCarrera:4, IDNave:5,  Posicion:1, TiempoTotalSeg:1540.0, PuntosGanados:25},
+    {IDResultado:14, IDCarrera:4, IDNave:10, Posicion:2, TiempoTotalSeg:1558.3, PuntosGanados:18},
+    {IDResultado:15, IDCarrera:4, IDNave:8,  Posicion:3, TiempoTotalSeg:1572.1, PuntosGanados:15},
+    {IDResultado:16, IDCarrera:4, IDNave:6,  Posicion:4, TiempoTotalSeg:1599.4, PuntosGanados:12},
+  ]
+};
+
+const SCHEMA = {
+  JUGADORES: [
+    {name:"IDJugador",     type:"Autonumérico", pk:true},
+    {name:"NombreUsuario", type:"Texto(50)"},
+    {name:"Email",         type:"Texto(100)"},
+    {name:"Pais",          type:"Texto(50)"},
+    {name:"FechaRegistro", type:"Fecha/Hora"},
+    {name:"CuentaActiva",  type:"Sí/No"},
+  ],
+  NAVES: [
+    {name:"IDNave",           type:"Autonumérico", pk:true},
+    {name:"IDJugador",        type:"Número", fk:true},
+    {name:"NombreNave",       type:"Texto(60)"},
+    {name:"Modelo",           type:"Texto(30)"},
+    {name:"VelocidadMax",     type:"Número entero"},
+    {name:"ResistenciaEscudo",type:"Número entero"},
+    {name:"ColorHex",         type:"Texto(7)"},
+  ],
+  CIRCUITOS: [
+    {name:"IDCircuito",     type:"Autonumérico", pk:true},
+    {name:"NombreCircuito", type:"Texto(80)"},
+    {name:"Planeta",        type:"Texto(50)"},
+    {name:"LongitudKm",     type:"Decimal"},
+    {name:"NumeroVueltas",  type:"Número entero"},
+    {name:"CodigoDificultad",type:"Texto(2)"},
+  ],
+  CARRERAS: [
+    {name:"IDCarrera",      type:"Autonumérico", pk:true},
+    {name:"IDCircuito",     type:"Número", fk:true},
+    {name:"FechaHoraInicio",type:"Fecha/Hora"},
+    {name:"Estado",         type:"Texto(12)"},
+  ],
+  RESULTADOS: [
+    {name:"IDResultado",    type:"Autonumérico", pk:true},
+    {name:"IDCarrera",      type:"Número", fk:true},
+    {name:"IDNave",         type:"Número", fk:true},
+    {name:"Posicion",       type:"Número entero"},
+    {name:"TiempoTotalSeg", type:"Decimal"},
+    {name:"PuntosGanados",  type:"Número entero"},
+  ]
+};
+
+/* ════════════════════════════════════════════════
+   SQL ENGINE
+════════════════════════════════════════════════ */
+class SimpleSQL {
+  exec(rawSql) {
+    let sql = rawSql.trim().replace(/;$/, "").replace(/\s+/g, " ");
+    if (!/^SELECT/i.test(sql)) throw new Error("Solo se admiten consultas SELECT en este entorno.");
+
+    let rem = sql.slice(6).trim();
+
+    // TOP n
+    let topN = null;
+    const topM = rem.match(/^TOP\s+(\d+)\s/i);
+    if (topM) { topN = parseInt(topM[1]); rem = rem.slice(topM[0].length); }
+
+    // FROM
+    const fromIdx = rem.search(/\bFROM\b/i);
+    if (fromIdx < 0) throw new Error("Falta la cláusula FROM.");
+    const selectPart = rem.slice(0, fromIdx).trim();
+    rem = rem.slice(fromIdx + 4).trim();
+
+    // Detect JOIN
+    let mainTable, joinInfo = null;
+    const joinM = rem.match(/^(\w+)\s+(?:INNER\s+)?JOIN\s+(\w+)\s+ON\s+(.+?)(?=\s+WHERE\b|\s+GROUP\b|\s+ORDER\b|\s+HAVING\b|$)/i);
+    if (joinM) {
+      mainTable = joinM[1];
+      joinInfo  = { table: joinM[2], on: joinM[3].trim() };
+      rem = rem.slice(joinM[0].length).trim();
+    } else {
+      const tM = rem.match(/^(\w+)(?:\s|$)/);
+      if (!tM) throw new Error("No se reconoció la tabla.");
+      mainTable = tM[1];
+      rem = rem.slice(tM[0].length).trim();
+    }
+
+    let where = null, groupBy = null, orderField = null, orderDir = "ASC";
+    const wM = rem.match(/WHERE\s+(.+?)(?=\s+GROUP\b|\s+ORDER\b|\s+HAVING\b|$)/i);
+    if (wM) { where = wM[1].trim(); }
+    const gM = rem.match(/GROUP\s+BY\s+(.+?)(?=\s+ORDER\b|\s+HAVING\b|$)/i);
+    if (gM) { groupBy = gM[1].trim(); }
+    const oM = rem.match(/ORDER\s+BY\s+(\S+)(?:\s+(ASC|DESC))?/i);
+    if (oM) { orderField = oM[1]; orderDir = (oM[2] || "ASC").toUpperCase(); }
+
+    // Get data
+    const key = Object.keys(DB).find(k => k.toUpperCase() === mainTable.toUpperCase());
+    if (!key) throw new Error(`Tabla '${mainTable}' no existe. Disponibles: ${Object.keys(DB).join(", ")}`);
+    let data = DB[key].map(r => ({...r}));
+
+    // JOIN
+    if (joinInfo) {
+      const jKey = Object.keys(DB).find(k => k.toUpperCase() === joinInfo.table.toUpperCase());
+      if (!jKey) throw new Error(`Tabla '${joinInfo.table}' no encontrada.`);
+      const onM = joinInfo.on.match(/(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)/);
+      if (!onM) throw new Error("Sintaxis ON incorrecta. Ejemplo: NAVES.IDJugador = JUGADORES.IDJugador");
+      const [,t1,f1,t2,f2] = onM;
+      const lf = t1.toUpperCase()===mainTable.toUpperCase() ? f1 : f2;
+      const rf = t1.toUpperCase()===mainTable.toUpperCase() ? f2 : f1;
+      const joined = [];
+      data.forEach(r1 => {
+        DB[jKey].forEach(r2 => {
+          if (r1[lf] == r2[rf]) {
+            const m = {};
+            Object.entries(r1).forEach(([k,v]) => m[`${mainTable}.${k}`]=v);
+            Object.entries(r2).forEach(([k,v]) => m[`${joinInfo.table}.${k}`]=v);
+            // Flat copies
+            Object.entries(r1).forEach(([k,v]) => { if(!(k in m)) m[k]=v; });
+            Object.entries(r2).forEach(([k,v]) => { if(!(k in m)) m[k]=v; });
+            joined.push(m);
+          }
+        });
+      });
+      data = joined;
+    }
+
+    // WHERE
+    if (where) data = data.filter(r => this.evalWhere(r, where));
+
+    // Aggregates / GROUP BY
+    const isAgg = /\b(COUNT|SUM|AVG|MAX|MIN)\s*\(/i.test(selectPart);
+    if (isAgg || groupBy) {
+      data = this.aggregate(data, selectPart, groupBy);
+    } else if (selectPart.trim() !== "*") {
+      const cols = selectPart.split(",").map(c => c.trim());
+      data = data.map(row => {
+        const out = {};
+        cols.forEach(col => {
+          const asM = col.match(/^(.+?)\s+AS\s+(.+)$/i);
+          if (asM) {
+            out[asM[2].trim()] = this.getField(row, asM[1].trim());
+          } else {
+            const short = col.includes(".") ? col.split(".").pop() : col;
+            out[short] = this.getField(row, col);
+          }
+        });
+        return out;
+      });
+    }
+
+    // ORDER BY
+    if (orderField) {
+      const f = orderField.includes(".") ? orderField.split(".").pop() : orderField;
+      data.sort((a,b) => {
+        const va=a[f], vb=b[f];
+        if (va==null) return 1; if (vb==null) return -1;
+        const cmp = typeof va==="number" ? va-vb : String(va).localeCompare(String(vb));
+        return orderDir==="DESC" ? -cmp : cmp;
+      });
+    }
+
+    if (topN) data = data.slice(0, topN);
+    return data;
+  }
+
+  getField(row, expr) {
+    if (expr.includes(".")) {
+      const [t,f] = expr.split(".");
+      const pk = Object.keys(row).find(k => k === `${t}.${f}`);
+      return pk ? row[pk] : row[f];
+    }
+    return row[expr];
+  }
+
+  evalWhere(row, clause) {
+    const andP = this.splitKw(clause, "AND");
+    if (andP.length > 1) return andP.every(p => this.evalWhere(row, p.trim()));
+    const orP = this.splitKw(clause, "OR");
+    if (orP.length > 1) return orP.some(p => this.evalWhere(row, p.trim()));
+    return this.evalCond(row, clause.trim());
+  }
+
+  splitKw(str, kw) {
+    const parts=[]; let depth=0,inQ=false,qC='',cur='',i=0;
+    const up=str.toUpperCase();
+    while(i<str.length){
+      const ch=str[i];
+      if(!inQ&&(ch==='"'||ch==="'")){inQ=true;qC=ch;}
+      else if(inQ&&ch===qC)inQ=false;
+      else if(!inQ&&ch==='(')depth++;
+      else if(!inQ&&ch===')')depth--;
+      if(!inQ&&depth===0&&up.startsWith(kw,i)&&(i===0||/\s/.test(str[i-1]))&&/\s/.test(str[i+kw.length]||' ')){
+        parts.push(cur.trim());cur='';i+=kw.length;continue;
+      }
+      cur+=ch;i++;
+    }
+    if(cur.trim())parts.push(cur.trim());
+    return parts;
+  }
+
+  evalCond(row, cond) {
+    // LIKE
+    const lkM = cond.match(/^(.+?)\s+(?:NOT\s+)?LIKE\s+["'](.+)["']$/i);
+    if (lkM) {
+      const isNot=/NOT\s+LIKE/i.test(cond);
+      const pat=lkM[2].replace(/\*/g,'.*').replace(/%/g,'.*').replace(/\?/g,'.');
+      const val=String(this.getField(row,lkM[1].trim())||'');
+      const m=new RegExp('^'+pat+'$','i').test(val);
+      return isNot?!m:m;
+    }
+    // IS NULL
+    const nlM=cond.match(/^(.+?)\s+IS\s+(NOT\s+)?NULL$/i);
+    if(nlM){const v=this.getField(row,nlM[1].trim());const nil=v==null||v==='';return nlM[2]?!nil:nil;}
+    // BETWEEN
+    const btM=cond.match(/^(.+?)\s+BETWEEN\s+(.+?)\s+AND\s+(.+)$/i);
+    if(btM){const v=this.getField(row,btM[1].trim());return v>=this.pv(btM[2].trim())&&v<=this.pv(btM[3].trim());}
+    // Comparison
+    const cpM=cond.match(/^(.+?)\s*(>=|<=|<>|!=|>|<|=)\s*(.+)$/);
+    if(cpM){return this.cmp(this.getField(row,cpM[1].trim()),cpM[2],this.pv(cpM[3].trim()));}
+    return false;
+  }
+
+  pv(str) {
+    if((str.startsWith('"')&&str.endsWith('"'))||(str.startsWith("'")&&str.endsWith("'")))return str.slice(1,-1);
+    if(str.startsWith('#')&&str.endsWith('#'))return str.slice(1,-1);
+    if(/^(true|sí|si|-1)$/i.test(str))return true;
+    if(/^(false|no|0)$/i.test(str))return false;
+    const n=Number(str);return isNaN(n)?str:n;
+  }
+
+  cmp(a,op,b){
+    if(typeof a==='boolean')a=a?1:0;
+    if(b===true)b=1;if(b===false)b=0;
+    if(b==='Sí'||b==='Si'||b==='True')b=1;
+    if(b==='No'||b==='False')b=0;
+    switch(op){case'=':return a==b;case'<>':case'!=':return a!=b;case'>':return a>b;case'<':return a<b;case'>=':return a>=b;case'<=':return a<=b;}
+    return false;
+  }
+
+  aggregate(data, selectPart, groupBy) {
+    const cols = selectPart.split(",").map(c => c.trim());
+    const parseCol = col => {
+      const asM=col.match(/^(.+?)\s+AS\s+(.+)$/i);
+      const alias=asM?asM[2].trim():null;
+      const expr=asM?asM[1].trim():col;
+      const aggM=expr.match(/^(COUNT|SUM|AVG|MAX|MIN)\s*\(\s*(\*|\w+(?:\.\w+)?)\s*\)/i);
+      if(aggM)return{type:'agg',fn:aggM[1].toUpperCase(),field:aggM[2],alias:alias||`${aggM[1].toUpperCase()}(${aggM[2]})`};
+      return{type:'field',field:expr,alias:alias||(expr.includes('.')?expr.split('.').pop():expr)};
+    };
+    const parsed = cols.map(parseCol);
+
+    if (groupBy) {
+      const gf = groupBy.includes('.')?groupBy.split('.').pop():groupBy;
+      const groups={};
+      data.forEach(r=>{const k=r[gf]??r[groupBy]??'__null__';if(!groups[k])groups[k]=[];groups[k].push(r);});
+      return Object.entries(groups).map(([,rows])=>{
+        const out={};
+        parsed.forEach(col=>{
+          if(col.type==='field')out[col.alias]=rows[0][col.field]??rows[0][col.field.split('.').pop()];
+          else out[col.alias]=this.calcAgg(col.fn,col.field,rows);
+        });
+        return out;
+      });
+    } else {
+      const out={};
+      parsed.forEach(col=>{
+        if(col.type==='field')out[col.alias]=data[0]?.[col.field];
+        else out[col.alias]=this.calcAgg(col.fn,col.field,data);
+      });
+      return [out];
+    }
+  }
+
+  calcAgg(fn,field,rows){
+    if(fn==='COUNT')return rows.length;
+    const vals=rows.map(r=>{const v=field==='*'?1:(r[field]??r[field.split('.').pop()]);return Number(v);}).filter(v=>!isNaN(v));
+    if(!vals.length)return 0;
+    switch(fn){
+      case'SUM':return Math.round(vals.reduce((a,b)=>a+b,0)*100)/100;
+      case'AVG':return Math.round((vals.reduce((a,b)=>a+b,0)/vals.length)*100)/100;
+      case'MAX':return Math.max(...vals);
+      case'MIN':return Math.min(...vals);
+    }
+    return null;
+  }
+}
+
+const sql = new SimpleSQL();
+
+/* ════════════════════════════════════════════════
+   LESSONS
+════════════════════════════════════════════════ */
+const LESSONS = [
+  {
+    title: "SELECT básico",
+    titleHtml: 'SELECT <em>básico</em>',
+    desc: "Aprende a recuperar registros de una tabla.",
+    eyebrow: "Lección 1 de 6",
+    theory: `
+      <div class="t-section">
+        <div class="ts-label">¿Qué es una consulta?</div>
+        <div class="ts-text">Una consulta es una <strong>pregunta que le haces a la base de datos</strong>. En Access puedes construirlas visualmente (QBE) o escribiendo SQL directamente en la Vista SQL.</div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Sintaxis SELECT</div>
+        <div class="ts-text">Para recuperar datos usas <em>SELECT</em>. La estructura básica es:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> * <span class="k">FROM</span> <span class="t">JUGADORES</span></div>
+        <div class="ts-text">El <em>asterisco *</em> significa "todos los campos". Puedes pedir solo algunos:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="c">NombreUsuario</span>, <span class="c">Pais</span> <span class="k">FROM</span> <span class="t">JUGADORES</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">TOP — limitar resultados</div>
+        <div class="ts-text">Access permite usar <em>TOP n</em> para obtener solo los primeros n registros:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT TOP</span> <span class="s">3</span> * <span class="k">FROM</span> <span class="t">NAVES</span></div>
+      </div>
+      <div class="tip"><strong>💡 En Access:</strong> Ve a Crear → Diseño de consulta → Vista SQL para escribir estas sentencias.</div>
+    `,
+    exercise: {
+      text: "Escribe una consulta que muestre solo los campos <code>NombreNave</code> y <code>Modelo</code> de todas las naves.",
+      check: q => {
+        const n = q.toUpperCase().replace(/\s+/g,' ');
+        return n.includes('NOMBRENANCE') && n.includes('MODELO') && n.includes('FROM') && n.includes('NAVES') && !n.includes('*');
+      },
+      hint: "SELECT NombreNave, Modelo FROM NAVES"
+    }
+  },
+  {
+    title: "WHERE",
+    titleHtml: 'WHERE: <em>filtrar</em>',
+    desc: "Selecciona solo los registros que cumplen una condición.",
+    eyebrow: "Lección 2 de 6",
+    theory: `
+      <div class="t-section">
+        <div class="ts-label">Filtrar con WHERE</div>
+        <div class="ts-text"><em>WHERE</em> filtra filas según una condición. Sin WHERE obtienes todos los registros; con WHERE solo los que cumplan la condición.</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> * <span class="k">FROM</span> <span class="t">JUGADORES</span><br><span class="k">WHERE</span> <span class="c">Pais</span> = <span class="s">"España"</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Operadores de comparación</div>
+        <div class="ts-text">Puedes usar <em>=  &lt;&gt;  &gt;  &lt;  &gt;=  &lt;=</em></div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> * <span class="k">FROM</span> <span class="t">NAVES</span><br><span class="k">WHERE</span> <span class="c">VelocidadMax</span> &gt; <span class="s">500</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">AND y OR</div>
+        <div class="ts-text">Combina condiciones con <em>AND</em> (deben cumplirse todas) u <em>OR</em> (basta con una):</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> * <span class="k">FROM</span> <span class="t">NAVES</span><br><span class="k">WHERE</span> <span class="c">VelocidadMax</span> &gt; <span class="s">450</span><br><span class="k">AND</span> <span class="c">Modelo</span> = <span class="s">"Interceptor"</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">LIKE — búsqueda parcial</div>
+        <div class="ts-text">Usa <em>LIKE</em> con comodines. En Access: <em>*</em> reemplaza cualquier texto, <em>?</em> reemplaza un carácter:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> * <span class="k">FROM</span> <span class="t">JUGADORES</span><br><span class="k">WHERE</span> <span class="c">NombreUsuario</span> <span class="k">LIKE</span> <span class="s">"*Pilot*"</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Campos Sí/No (booleanos)</div>
+        <div class="ts-text">Para campos de tipo Sí/No usa el valor directamente:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> * <span class="k">FROM</span> <span class="t">JUGADORES</span><br><span class="k">WHERE</span> <span class="c">CuentaActiva</span> = <span class="s">true</span></div>
+      </div>
+      <div class="tip"><strong>💡 En Access:</strong> Las cadenas de texto usan comillas dobles <em>" "</em> en SQL. Las fechas van entre almohadillas: <em>#01/06/2024#</em></div>
+    `,
+    exercise: {
+      text: "Muestra todas las naves cuya <code>VelocidadMax</code> sea mayor o igual a 480 <strong>y</strong> cuyo <code>Modelo</code> no sea <code>Destroyer</code>.",
+      check: q => {
+        const n=q.toUpperCase().replace(/\s+/g,' ');
+        return n.includes('NAVES') && n.includes('VELOCIDADMAX') && (n.includes('>=')&&n.includes('480')) && n.includes('MODELO') && (n.includes('<>')||n.includes('!='));
+      },
+      hint: `SELECT * FROM NAVES\nWHERE VelocidadMax >= 480\nAND Modelo <> "Destroyer"`
+    }
+  },
+  {
+    title: "ORDER BY",
+    titleHtml: 'ORDER BY: <em>ordenar</em>',
+    desc: "Ordena los resultados de forma ascendente o descendente.",
+    eyebrow: "Lección 3 de 6",
+    theory: `
+      <div class="t-section">
+        <div class="ts-label">Ordenar resultados</div>
+        <div class="ts-text"><em>ORDER BY</em> siempre va al final de la consulta. Por defecto el orden es <em>ASC</em> (ascendente). Usa <em>DESC</em> para invertirlo:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> * <span class="k">FROM</span> <span class="t">NAVES</span><br><span class="k">ORDER BY</span> <span class="c">VelocidadMax</span> <span class="k">DESC</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Ordenar texto</div>
+        <div class="ts-text">Funciona igual con texto — ordena alfabéticamente:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="c">NombreUsuario</span>, <span class="c">Pais</span> <span class="k">FROM</span> <span class="t">JUGADORES</span><br><span class="k">ORDER BY</span> <span class="c">NombreUsuario</span> <span class="k">ASC</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">WHERE + ORDER BY juntos</div>
+        <div class="ts-text">Puedes combinar filtro y orden. Primero el WHERE, luego el ORDER BY:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> * <span class="k">FROM</span> <span class="t">RESULTADOS</span><br><span class="k">WHERE</span> <span class="c">IDCarrera</span> = <span class="s">1</span><br><span class="k">ORDER BY</span> <span class="c">Posicion</span> <span class="k">ASC</span></div>
+      </div>
+      <div class="tip"><strong>💡 Orden de cláusulas en SQL:</strong><br>SELECT → FROM → WHERE → ORDER BY<br>No se puede cambiar el orden de las cláusulas.</div>
+    `,
+    exercise: {
+      text: "Muestra el nombre y la velocidad de todas las naves, ordenadas de <strong>mayor a menor velocidad</strong>. Solo los campos <code>NombreNave</code> y <code>VelocidadMax</code>.",
+      check: q => {
+        const n=q.toUpperCase().replace(/\s+/g,' ');
+        return n.includes('NAVES')&&n.includes('NOMBRENANCE')&&n.includes('VELOCIDADMAX')&&n.includes('ORDER BY')&&n.includes('DESC');
+      },
+      hint: "SELECT NombreNave, VelocidadMax FROM NAVES\nORDER BY VelocidadMax DESC"
+    }
+  },
+  {
+    title: "Funciones",
+    titleHtml: 'Funciones de <em>agregado</em>',
+    desc: "Cuenta, suma, calcula promedios y encuentra máximos y mínimos.",
+    eyebrow: "Lección 4 de 6",
+    theory: `
+      <div class="t-section">
+        <div class="ts-label">¿Qué son?</div>
+        <div class="ts-text">Las funciones de agregado <strong>calculan un único resultado</strong> a partir de todos los valores de una columna. En lugar de devolver filas, devuelven un número.</div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">COUNT — contar filas</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="f">COUNT</span>(*) <span class="k">FROM</span> <span class="t">JUGADORES</span></div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="f">COUNT</span>(*) <span class="k">FROM</span> <span class="t">JUGADORES</span><br><span class="k">WHERE</span> <span class="c">CuentaActiva</span> = <span class="s">true</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">SUM, AVG, MAX, MIN</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="f">AVG</span>(<span class="c">VelocidadMax</span>) <span class="k">FROM</span> <span class="t">NAVES</span></div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="f">MAX</span>(<span class="c">VelocidadMax</span>), <span class="f">MIN</span>(<span class="c">VelocidadMax</span>) <span class="k">FROM</span> <span class="t">NAVES</span></div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="f">SUM</span>(<span class="c">PuntosGanados</span>) <span class="k">FROM</span> <span class="t">RESULTADOS</span><br><span class="k">WHERE</span> <span class="c">IDNave</span> = <span class="s">1</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Alias con AS</div>
+        <div class="ts-text">Puedes dar nombre a la columna resultado con <em>AS</em>:</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="f">COUNT</span>(*) <span class="k">AS</span> <span class="c">TotalJugadores</span>,<br>       <span class="f">AVG</span>(<span class="c">VelocidadMax</span>) <span class="k">AS</span> <span class="c">VelocidadMedia</span><br><span class="k">FROM</span> <span class="t">NAVES</span></div>
+      </div>
+      <div class="warn"><strong>⚠ Importante:</strong> No puedes mezclar campos normales con funciones de agregado sin GROUP BY. <code>SELECT NombreNave, AVG(VelocidadMax) FROM NAVES</code> da error.</div>
+    `,
+    exercise: {
+      text: "Calcula el <strong>total de puntos ganados</strong> en la carrera número 2. Usa <code>SUM</code> y filtra por <code>IDCarrera = 2</code>.",
+      check: q => {
+        const n=q.toUpperCase().replace(/\s+/g,' ');
+        return n.includes('SUM')&&n.includes('PUNTOSGANADOS')&&n.includes('RESULTADOS')&&n.includes('IDCARRERA')&&n.includes('2');
+      },
+      hint: "SELECT SUM(PuntosGanados) AS TotalPuntos\nFROM RESULTADOS\nWHERE IDCarrera = 2"
+    }
+  },
+  {
+    title: "GROUP BY",
+    titleHtml: 'GROUP BY: <em>agrupar</em>',
+    desc: "Aplica funciones de agregado por categorías.",
+    eyebrow: "Lección 5 de 6",
+    theory: `
+      <div class="t-section">
+        <div class="ts-label">¿Para qué sirve?</div>
+        <div class="ts-text"><em>GROUP BY</em> agrupa los registros por los valores de un campo, y aplica la función de agregado a cada grupo por separado. Permite responder preguntas como: <strong>"¿Cuántas naves hay de cada modelo?"</strong></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Ejemplo básico</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="c">Modelo</span>, <span class="f">COUNT</span>(*) <span class="k">AS</span> <span class="c">NumNaves</span><br><span class="k">FROM</span> <span class="t">NAVES</span><br><span class="k">GROUP BY</span> <span class="c">Modelo</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Con otras funciones</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="c">Modelo</span>, <span class="f">AVG</span>(<span class="c">VelocidadMax</span>) <span class="k">AS</span> <span class="c">VelMedia</span><br><span class="k">FROM</span> <span class="t">NAVES</span><br><span class="k">GROUP BY</span> <span class="c">Modelo</span></div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="c">IDCarrera</span>, <span class="f">COUNT</span>(*) <span class="k">AS</span> <span class="c">Participantes</span>, <span class="f">MAX</span>(<span class="c">PuntosGanados</span>) <span class="k">AS</span> <span class="c">MaxPuntos</span><br><span class="k">FROM</span> <span class="t">RESULTADOS</span><br><span class="k">GROUP BY</span> <span class="c">IDCarrera</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Regla de oro</div>
+        <div class="ts-text">Todo campo que aparezca en el SELECT <strong>y no sea una función</strong> de agregado, <em>debe aparecer en el GROUP BY</em>.</div>
+      </div>
+      <div class="tip"><strong>💡 GROUP BY + ORDER BY:</strong><br><span style="font-family:var(--mono);font-size:0.78rem;">SELECT Modelo, COUNT(*) AS N<br>FROM NAVES<br>GROUP BY Modelo<br>ORDER BY N DESC</span></div>
+    `,
+    exercise: {
+      text: "¿Cuántos jugadores hay de cada <code>Pais</code>? Muestra el país y el número de jugadores, ordenado de mayor a menor.",
+      check: q => {
+        const n=q.toUpperCase().replace(/\s+/g,' ');
+        return n.includes('PAIS')&&n.includes('COUNT')&&n.includes('JUGADORES')&&n.includes('GROUP BY');
+      },
+      hint: "SELECT Pais, COUNT(*) AS NumJugadores\nFROM JUGADORES\nGROUP BY Pais\nORDER BY NumJugadores DESC"
+    }
+  },
+  {
+    title: "INNER JOIN",
+    titleHtml: 'INNER JOIN: <em>unir tablas</em>',
+    desc: "Combina datos de dos tablas usando una clave común.",
+    eyebrow: "Lección 6 de 6",
+    theory: `
+      <div class="t-section">
+        <div class="ts-label">¿Qué es un JOIN?</div>
+        <div class="ts-text">Hasta ahora consultabas una sola tabla. Con <em>INNER JOIN</em> puedes cruzar dos tablas usando el campo que las relaciona (FK → PK). Solo devuelve filas que tienen correspondencia en ambas tablas.</div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Sintaxis</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="c">JUGADORES.NombreUsuario</span>, <span class="c">NAVES.NombreNave</span><br><span class="k">FROM</span> <span class="t">JUGADORES</span><br><span class="k">INNER JOIN</span> <span class="t">NAVES</span> <span class="k">ON</span> <span class="c">JUGADORES.IDJugador</span> = <span class="c">NAVES.IDJugador</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Con WHERE y ORDER BY</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="c">JUGADORES.NombreUsuario</span>, <span class="c">NAVES.NombreNave</span>, <span class="c">NAVES.VelocidadMax</span><br><span class="k">FROM</span> <span class="t">JUGADORES</span><br><span class="k">INNER JOIN</span> <span class="t">NAVES</span> <span class="k">ON</span> <span class="c">JUGADORES.IDJugador</span> = <span class="c">NAVES.IDJugador</span><br><span class="k">WHERE</span> <span class="c">JUGADORES.Pais</span> = <span class="s">"España"</span><br><span class="k">ORDER BY</span> <span class="c">NAVES.VelocidadMax</span> <span class="k">DESC</span></div>
+      </div>
+      <div class="t-section">
+        <div class="ts-label">Tres tablas: resultado + nave + carrera</div>
+        <div class="sql-snippet" onclick="loadSQL(this)"><span class="k">SELECT</span> <span class="c">NAVES.NombreNave</span>, <span class="c">RESULTADOS.Posicion</span>, <span class="c">RESULTADOS.PuntosGanados</span><br><span class="k">FROM</span> <span class="t">RESULTADOS</span><br><span class="k">INNER JOIN</span> <span class="t">NAVES</span> <span class="k">ON</span> <span class="c">RESULTADOS.IDNave</span> = <span class="c">NAVES.IDNave</span><br><span class="k">WHERE</span> <span class="c">RESULTADOS.IDCarrera</span> = <span class="s">1</span><br><span class="k">ORDER BY</span> <span class="c">RESULTADOS.Posicion</span></div>
+      </div>
+      <div class="tip"><strong>💡 En Access:</strong> El asistente de consultas hace el JOIN automáticamente cuando arrastras los campos relacionados. La cláusula SQL que genera es exactamente esta.</div>
+    `,
+    exercise: {
+      text: "Muestra el nombre del circuito (<code>CIRCUITOS.NombreCircuito</code>) junto con la fecha de cada carrera (<code>CARRERAS.FechaHoraInicio</code>), uniendo las dos tablas.",
+      check: q => {
+        const n=q.toUpperCase().replace(/\s+/g,' ');
+        return n.includes('CIRCUITOS')&&n.includes('CARRERAS')&&n.includes('INNER JOIN')&&n.includes('ON')&&n.includes('IDCIRCUITO');
+      },
+      hint: "SELECT CIRCUITOS.NombreCircuito, CARRERAS.FechaHoraInicio\nFROM CARRERAS\nINNER JOIN CIRCUITOS ON CARRERAS.IDCircuito = CIRCUITOS.IDCircuito"
+    }
+  }
+];
+
+/* ════════════════════════════════════════════════
+   UI STATE & RENDERING
+════════════════════════════════════════════════ */
+let currentLesson = 0;
+const done = new Array(LESSONS.length).fill(false);
+
+function goLesson(idx) {
+  if (idx < 0 || idx >= LESSONS.length) return;
+  currentLesson = idx;
+  const L = LESSONS[idx];
+
+  document.getElementById('lessonEyebrow').textContent = L.eyebrow;
+  document.getElementById('lessonTitle').innerHTML = L.titleHtml;
+  document.getElementById('lessonDesc').textContent = L.desc;
+  document.getElementById('theoryBody').innerHTML = L.theory;
+
+  document.querySelectorAll('.lt').forEach((t,i) => {
+    t.classList.remove('active');
+    t.classList.toggle('done', done[i]);
+    if (i === idx) t.classList.add('active');
+  });
+
+  // Update progress dots
+  const dots = document.getElementById('progressDots');
+  dots.innerHTML = '';
+  LESSONS.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'lp-dot' + (done[i]?' done':'') + (i===idx?' active':'');
+    d.onclick = () => goLesson(i);
+    dots.appendChild(d);
+  });
+
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').textContent = idx === LESSONS.length-1 ? '✓ Finalizar' : 'Siguiente ▶';
+
+  // Close exercise panel
+  const ep = document.getElementById('exercisePanel');
+  ep.classList.remove('open');
+  document.getElementById('epResult').classList.remove('show');
+
+  // Set exercise text
+  document.getElementById('epQtext').innerHTML = L.exercise.text;
+
+  // Reset results
+  resetResults();
+}
+
+function resetResults() {
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('resultsMeta').style.display = 'none';
+  document.getElementById('resultsTableWrap').style.display = 'none';
+  document.getElementById('resultsTableWrap').innerHTML = '';
+}
+
+function completeAndNext() {
+  done[currentLesson] = true;
+  const count = done.filter(Boolean).length;
+  document.getElementById('xpChip').textContent = count + ' / ' + LESSONS.length + ' completadas';
+  if (currentLesson < LESSONS.length - 1) goLesson(currentLesson + 1);
+  else {
+    document.getElementById('nextBtn').textContent = '🏆 Completado';
+    document.getElementById('nextBtn').style.background = 'var(--green)';
+    document.getElementById('nextBtn').style.color = '#000';
+    goLesson(currentLesson); // refresh dots
+  }
+}
+
+/* ════════════════════════════════════════════════
+   QUERY EXECUTION
+════════════════════════════════════════════════ */
+function runQuery() {
+  const q = document.getElementById('sqlEditor').value.trim();
+  if (!q) return;
+  const t0 = performance.now();
+  try {
+    const rows = sql.exec(q);
+    const t1 = performance.now();
+    renderResults(rows, Math.round(t1-t0));
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
+function renderResults(rows, ms) {
+  document.getElementById('emptyState').style.display = 'none';
+  const meta = document.getElementById('resultsMeta');
+  const wrap = document.getElementById('resultsTableWrap');
+  meta.style.display = 'flex';
+  wrap.style.display = 'block';
+
+  meta.innerHTML = `<span class="rm-rows">${rows.length} fila${rows.length!==1?'s':''}</span>
+    <span class="rm-time">${ms} ms</span>
+    <span class="rm-msg">${rows.length===0?'La consulta no devolvió resultados.':''}</span>`;
+
+  if (rows.length === 0) { wrap.innerHTML = ''; return; }
+
+  const cols = Object.keys(rows[0]);
+  let html = '<table id="resultsTable"><thead><tr>';
+  cols.forEach(c => html += `<th>${c}</th>`);
+  html += '</tr></thead><tbody>';
+  rows.forEach(row => {
+    html += '<tr>';
+    cols.forEach(c => {
+      let v = row[c];
+      if (v === null || v === undefined) html += `<td class="null-val">NULL</td>`;
+      else if (v === true) html += `<td class="bool-yes">Sí</td>`;
+      else if (v === false) html += `<td class="bool-no">No</td>`;
+      else html += `<td>${v}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function showError(msg) {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultsMeta').style.display = 'none';
+  const wrap = document.getElementById('resultsTableWrap');
+  wrap.style.display = 'block';
+  wrap.innerHTML = `<div class="error-state"><strong>⚠ Error en la consulta</strong>${msg}</div>`;
+}
+
+function clearEditor() {
+  document.getElementById('sqlEditor').value = '';
+  resetResults();
+}
+
+function loadSQL(el) {
+  // Extract text content (strip HTML tags for syntax highlighted snippets)
+  const raw = el.innerText || el.textContent;
+  document.getElementById('sqlEditor').value = raw.replace(/\s*↑ clic para cargar\s*$/, '').trim();
+  document.getElementById('sqlEditor').focus();
+}
+
+/* ════════════════════════════════════════════════
+   EXERCISE
+════════════════════════════════════════════════ */
+function toggleExercise() {
+  const ep = document.getElementById('exercisePanel');
+  ep.classList.toggle('open');
+  document.getElementById('epResult').classList.remove('show');
+}
+
+function checkExercise() {
+  const q = document.getElementById('sqlEditor').value.trim();
+  if (!q) { alert('Escribe una consulta primero.'); return; }
+  const L = LESSONS[currentLesson];
+  const res = document.getElementById('epResult');
+  if (L.exercise.check(q)) {
+    res.className = 'ep-result show ok';
+    res.textContent = '✓ ¡Correcto! Ejecuta la consulta para ver los resultados.';
+    done[currentLesson] = true;
+    const count = done.filter(Boolean).length;
+    document.getElementById('xpChip').textContent = count + ' / ' + LESSONS.length + ' completadas';
+    // Mark tab done
+    document.getElementById('tab-' + currentLesson).classList.add('done');
+    // Run the query
+    runQuery();
+  } else {
+    res.className = 'ep-result show fail';
+    res.textContent = '✗ No es exactamente lo pedido. Revisa el enunciado o pide una pista.';
+  }
+}
+
+function showHint() {
+  const L = LESSONS[currentLesson];
+  const res = document.getElementById('epResult');
+  res.className = 'ep-result show hint';
+  res.textContent = '💡 Pista: ' + L.exercise.hint;
+}
+
+/* ════════════════════════════════════════════════
+   SCHEMA POPUP
+════════════════════════════════════════════════ */
+let schemaVisible = false;
+function showSchema(tableName, btn) {
+  const tt = document.getElementById('schemaTooltip');
+  // Toggle if same table
+  if (tt.classList.contains('show') && tt.dataset.table === tableName) {
+    tt.classList.remove('show');
+    document.querySelectorAll('.schema-table').forEach(b => b.classList.remove('active'));
+    schemaVisible = false;
+    return;
+  }
+  document.querySelectorAll('.schema-table').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const fields = SCHEMA[tableName];
+  let html = `<div class="st-name">${tableName}</div>`;
+  fields.forEach(f => {
+    html += `<div class="st-field">
+      ${f.pk?'<span class="st-fpk">PK</span>':''}
+      ${f.fk?'<span class="st-ffk">FK</span>':''}
+      <span class="st-fname">${f.name}</span>
+      <span class="st-ftype">${f.type}</span>
+    </div>`;
+  });
+  tt.innerHTML = html;
+  tt.dataset.table = tableName;
+  // Position near button
+  const rect = btn.getBoundingClientRect();
+  tt.style.left = rect.left + 'px';
+  tt.style.top = (rect.bottom + 6) + 'px';
+  tt.classList.add('show');
+  schemaVisible = true;
+}
+
+document.addEventListener('click', e => {
+  if (schemaVisible && !e.target.closest('.schema-table') && !e.target.closest('#schemaTooltip')) {
+    document.getElementById('schemaTooltip').classList.remove('show');
+    document.querySelectorAll('.schema-table').forEach(b => b.classList.remove('active'));
+    schemaVisible = false;
+  }
+});
+
+/* Keyboard shortcut F5 */
+document.addEventListener('keydown', e => {
+  if (e.key === 'F5') { e.preventDefault(); runQuery(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runQuery(); }
+});
+
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
+goLesson(0);
+</script>
+</body>
+</html>

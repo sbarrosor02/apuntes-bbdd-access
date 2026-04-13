@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataQuest — Diseña la BD de un Videojuego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Syne:wght@400;600;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+/* ═══ TOKENS ═══════════════════════════════════════════ */
+:root {
+  --bg:       #0a0b14;
+  --surface:  #0f1123;
+  --card:     #141629;
+  --border:   #1e2240;
+  --border2:  #2a2f5a;
+  --neon:     #00ff9d;
+  --neon-dim: #00ff9d18;
+  --pink:     #ff2d78;
+  --pink-dim: #ff2d7818;
+  --blue:     #4d9fff;
+  --blue-dim: #4d9fff18;
+  --yellow:   #ffe44d;
+  --yel-dim:  #ffe44d18;
+  --purple:   #c084fc;
+  --text:     #e8ecff;
+  --muted:    #5a6090;
+  --muted2:   #8a90c0;
+  --pixel:    'Press Start 2P', monospace;
+  --display:  'Syne', sans-serif;
+  --mono:     'Syne Mono', monospace;
+}
+
+/* ═══ RESET ═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--display);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* scanline effect */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.06) 2px,
+    rgba(0,0,0,0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* pixel grid bg */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.z1 { position: relative; z-index: 1; }
+
+/* ═══ HEADER ═══════════════════════════════════════════ */
+header {
+  position: relative;
+  padding: 3.5rem 0 3rem;
+  border-bottom: 2px solid var(--border2);
+  overflow: hidden;
+  z-index: 1;
+}
+.header-glow {
+  position: absolute;
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+  width: 800px; height: 400px;
+  background: radial-gradient(ellipse, #00ff9d0d 0%, transparent 65%);
+  pointer-events: none;
+}
+.container { max-width: 1060px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+.pixel-badge {
+  font-family: var(--pixel);
+  font-size: 0.5rem;
+  color: var(--neon);
+  background: var(--neon-dim);
+  border: 1px solid var(--neon);
+  padding: 0.5rem 0.9rem;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+  animation: blink-border 2s infinite;
+}
+@keyframes blink-border { 0%,100%{border-color:var(--neon)} 50%{border-color:transparent} }
+
+h1 {
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  animation: fadeUp 0.6s ease both;
+}
+h1 em { color: var(--neon); font-style: normal; }
+h1 .sub { color: var(--pink); }
+
+.header-desc {
+  margin-top: 1.25rem;
+  color: var(--muted2);
+  font-size: 1rem;
+  max-width: 540px;
+  animation: fadeUp 0.7s 0.1s ease both;
+}
+
+.xp-bar-wrap {
+  margin-top: 2rem;
+  display: flex; align-items: center; gap: 1rem;
+  animation: fadeUp 0.7s 0.2s ease both;
+}
+.xp-label { font-family: var(--pixel); font-size: 0.5rem; color: var(--neon); letter-spacing: 0.1em; }
+.xp-track {
+  flex: 1; max-width: 320px;
+  height: 10px;
+  background: var(--border2);
+  border-radius: 0;
+  overflow: hidden;
+  border: 1px solid var(--border2);
+}
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon), #00ccff);
+  width: 0%;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.xp-score { font-family: var(--pixel); font-size: 0.55rem; color: var(--yellow); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ═══ PROGRESS NAV ═════════════════════════════════════ */
+.mission-nav {
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: #0a0b14ee;
+  backdrop-filter: blur(16px);
+  z-index: 100;
+}
+.mission-pill {
+  font-family: var(--pixel);
+  font-size: 0.45rem;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.mission-pill:hover  { border-color: var(--neon); color: var(--neon); }
+.mission-pill.active { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
+.mission-pill.done   { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+.mission-pill.done::after { content: ' ✓'; }
+
+/* ═══ MISSION SECTION ══════════════════════════════════ */
+.mission {
+  display: none;
+  animation: fadeUp 0.4s ease both;
+}
+.mission.active { display: block; }
+
+.mission-header {
+  display: flex; align-items: flex-start; gap: 2rem;
+  padding: 3rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.mission-number {
+  font-family: var(--pixel);
+  font-size: 0.55rem;
+  color: var(--pink);
+  background: var(--pink-dim);
+  border: 1px solid var(--pink);
+  padding: 0.5rem 0.8rem;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+.mission-info { flex: 1; }
+.mission-tag {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--neon);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+.mission-title {
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text);
+}
+.mission-title span { color: var(--yellow); }
+.mission-desc { color: var(--muted2); font-size: 0.9rem; margin-top: 0.6rem; max-width: 520px; }
+
+/* ═══ PROFESOR BOX ═════════════════════════════════════ */
+.profesor-bubble {
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--neon);
+  border-radius: 0 4px 4px 0;
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0;
+  position: relative;
+}
+.profesor-avatar {
+  width: 52px; height: 52px;
+  background: var(--neon-dim);
+  border: 2px solid var(--neon);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.profesor-name {
+  font-family: var(--pixel);
+  font-size: 0.48rem;
+  color: var(--neon);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+}
+.profesor-text { font-size: 0.92rem; color: var(--muted2); }
+.profesor-text strong { color: var(--text); }
+.profesor-text em { color: var(--yellow); font-style: normal; }
+.profesor-text .code {
+  font-family: var(--mono);
+  background: var(--border2);
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  font-size: 0.85rem;
+  color: var(--neon);
+}
+
+/* ═══ TABLE BUILDER ═════════════════════════════════════ */
+.table-builder {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+.table-builder-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--border2);
+  border-bottom: 1px solid var(--border2);
+}
+.table-icon { font-size: 1rem; }
+.table-name {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--yellow);
+}
+.table-badge {
+  margin-left: auto;
+  font-family: var(--pixel);
+  font-size: 0.42rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--neon-dim);
+  color: var(--neon);
+  border: 1px solid var(--neon);
+  letter-spacing: 0.06em;
+}
+.table-head-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 2fr;
+  gap: 0;
+  background: #0a0b14;
+  padding: 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--border2);
+}
+.th {
+  font-family: var(--pixel);
+  font-size: 0.42rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 2fr;
+  gap: 0;
+  padding: 0.7rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  transition: background 0.2s;
+  cursor: default;
+}
+.table-row:last-child { border-bottom: none; }
+.table-row:hover { background: #ffffff05; }
+.table-row.highlight { background: var(--neon-dim); border-left: 3px solid var(--neon); }
+.table-row.highlight-pk { background: var(--yel-dim); border-left: 3px solid var(--yellow); }
+.table-row.hidden-row { opacity: 0.3; filter: blur(2px); pointer-events: none; }
+
+.field-name {
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  color: var(--text);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.pk-badge {
+  font-family: var(--pixel);
+  font-size: 0.38rem;
+  padding: 0.2rem 0.45rem;
+  background: #ffe44d22;
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
+  letter-spacing: 0.05em;
+}
+.fk-badge {
+  font-family: var(--pixel);
+  font-size: 0.38rem;
+  padding: 0.2rem 0.45rem;
+  background: var(--blue-dim);
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  letter-spacing: 0.05em;
+}
+.field-type {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--purple);
+}
+.field-null {
+  font-family: var(--pixel);
+  font-size: 0.38rem;
+  color: var(--muted);
+}
+.field-null.nn { color: var(--pink); }
+.field-why {
+  font-size: 0.78rem;
+  color: var(--muted2);
+  line-height: 1.4;
+}
+.field-why .why-tag {
+  font-family: var(--pixel);
+  font-size: 0.38rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--pink-dim);
+  color: var(--pink);
+  border: 1px solid var(--pink);
+  display: inline-block;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.05em;
+}
+
+/* ═══ WHY REVEAL STEPS ══════════════════════════════════ */
+.step-sequence {
+  display: flex; flex-direction: column; gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+.step-item {
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.3s;
+}
+.step-item.visible { opacity: 1; transform: translateY(0); }
+.step-item:hover { border-color: var(--border2); }
+
+.step-num {
+  font-family: var(--pixel);
+  font-size: 0.65rem;
+  color: var(--yellow);
+  background: var(--yel-dim);
+  border: 1px solid var(--yellow);
+  padding: 0.4rem 0.6rem;
+  flex-shrink: 0;
+  min-width: 2.4rem;
+  text-align: center;
+}
+.step-content { flex: 1; }
+.step-field {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  color: var(--neon);
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.step-why { font-size: 0.85rem; color: var(--muted2); }
+.step-why strong { color: var(--text); }
+.step-why em { color: var(--pink); font-style: normal; }
+.type-chip {
+  font-family: var(--pixel);
+  font-size: 0.38rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+.tc-num  { background: #c084fc1a; color: var(--purple); border: 1px solid var(--purple); }
+.tc-text { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue); }
+.tc-date { background: var(--pink-dim); color: var(--pink); border: 1px solid var(--pink); }
+.tc-bool { background: var(--neon-dim); color: var(--neon); border: 1px solid var(--neon); }
+.tc-dec  { background: var(--yel-dim); color: var(--yellow); border: 1px solid var(--yellow); }
+
+/* ═══ INTERACTIVE QUIZ ══════════════════════════════════ */
+.quiz-block {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 2rem 0;
+}
+.quiz-header {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.quiz-icon { font-size: 1.2rem; }
+.quiz-label {
+  font-family: var(--pixel);
+  font-size: 0.5rem;
+  color: var(--yellow);
+  letter-spacing: 0.08em;
+}
+.quiz-body { padding: 1.5rem; }
+.quiz-question {
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+  line-height: 1.7;
+}
+.quiz-options { display: flex; flex-direction: column; gap: 0.6rem; }
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.88rem;
+  color: var(--text);
+  text-align: left;
+}
+.quiz-option:hover:not(.locked) {
+  border-color: var(--neon);
+  background: var(--neon-dim);
+}
+.quiz-option .opt-key {
+  font-family: var(--pixel);
+  font-size: 0.42rem;
+  min-width: 1.8rem;
+  padding: 0.3rem 0.4rem;
+  text-align: center;
+  background: var(--border2);
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.quiz-option.correct { border-color: var(--neon); background: var(--neon-dim); color: var(--neon); }
+.quiz-option.correct .opt-key { background: var(--neon); color: #000; }
+.quiz-option.wrong   { border-color: var(--pink); background: var(--pink-dim); color: var(--pink); opacity: 0.7; }
+.quiz-option.locked  { cursor: default; }
+
+.feedback-box {
+  display: none;
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 3px;
+  font-size: 0.87rem;
+  animation: fadeUp 0.3s ease;
+}
+.feedback-box.show { display: block; }
+.feedback-box.ok  { background: var(--neon-dim); border: 1px solid var(--neon); color: var(--neon); }
+.feedback-box.ko  { background: var(--pink-dim); border: 1px solid var(--pink); color: var(--pink); }
+.feedback-box strong { color: var(--text); }
+
+/* ═══ DRAG & DROP EXERCISE ══════════════════════════════ */
+.drag-area {
+  display: flex; gap: 2rem; flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+.field-pool {
+  flex: 1; min-width: 200px;
+}
+.field-pool-title {
+  font-family: var(--pixel);
+  font-size: 0.45rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+}
+.draggable-field {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.5rem;
+  cursor: grab;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--text);
+  transition: all 0.2s;
+  user-select: none;
+}
+.draggable-field:hover { border-color: var(--neon); color: var(--neon); }
+.draggable-field.dragging { opacity: 0.4; }
+.draggable-field.placed { opacity: 0.3; pointer-events: none; background: var(--surface); }
+.drag-icon { font-size: 0.7rem; opacity: 0.4; }
+
+.drop-table {
+  flex: 2; min-width: 280px;
+}
+.drop-zone {
+  background: var(--surface);
+  border: 2px dashed var(--border2);
+  border-radius: 3px;
+  padding: 0.6rem 0.9rem;
+  min-height: 44px;
+  margin-bottom: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  transition: all 0.2s;
+  display: flex; align-items: center;
+  position: relative;
+}
+.drop-zone.drag-over { border-color: var(--neon); background: var(--neon-dim); color: var(--neon); }
+.drop-zone.filled { border-style: solid; border-color: var(--border2); }
+.drop-zone .dz-label { font-size: 0.68rem; opacity: 0.5; }
+.drop-zone .dz-field {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--neon);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.drop-zone .dz-field .remove-btn {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--muted);
+  cursor: pointer;
+  background: none; border: none; padding: 0.15rem 0.3rem;
+  transition: color 0.2s;
+}
+.drop-zone .dz-field .remove-btn:hover { color: var(--pink); }
+.drop-zone.correct-zone { border-color: var(--neon); background: var(--neon-dim); }
+.drop-zone.wrong-zone  { border-color: var(--pink); background: var(--pink-dim); }
+
+/* ═══ BOTONES ════════════════════════════════════════════ */
+.btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+.btn {
+  font-family: var(--pixel);
+  font-size: 0.48rem;
+  letter-spacing: 0.06em;
+  padding: 0.75rem 1.4rem;
+  border: none; border-radius: 0;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+.btn:active { transform: translateY(1px); }
+.btn-neon   { background: var(--neon); color: #000; }
+.btn-neon:hover { background: #00ffb3; box-shadow: 0 0 20px #00ff9d55; }
+.btn-ghost  { background: transparent; border: 1px solid var(--border2); color: var(--muted2); }
+.btn-ghost:hover { border-color: var(--neon); color: var(--neon); }
+.btn-pink   { background: var(--pink); color: #fff; }
+.btn-pink:hover { background: #ff4d8f; box-shadow: 0 0 20px #ff2d7855; }
+
+/* ═══ COMPARISON TABLE ══════════════════════════════════ */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.85rem;
+}
+.compare-table th {
+  font-family: var(--pixel);
+  font-size: 0.42rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.7rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+}
+.compare-table td {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--muted2);
+}
+.compare-table tr:hover td { background: #ffffff04; }
+.compare-table .type-col  { color: var(--purple); font-family: var(--mono); }
+.compare-table .why-col   { }
+.compare-table .bad-col   { color: var(--pink); font-size: 0.8rem; }
+.compare-table .field-col { font-family: var(--mono); color: var(--neon); }
+
+/* ═══ FINAL SCORE ════════════════════════════════════════ */
+.score-display {
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: var(--card);
+  border: 2px solid var(--neon);
+  border-radius: 4px;
+  margin: 2rem 0;
+  box-shadow: 0 0 60px #00ff9d15;
+}
+.score-pixel {
+  font-family: var(--pixel);
+  font-size: clamp(0.8rem, 2vw, 1.2rem);
+  color: var(--neon);
+  margin-bottom: 0.5rem;
+  animation: flicker 4s infinite;
+}
+@keyframes flicker {
+  0%,98%,100%{opacity:1} 99%{opacity:0.6}
+}
+.score-number {
+  font-family: var(--pixel);
+  font-size: clamp(2rem, 6vw, 4rem);
+  color: var(--yellow);
+  margin: 0.5rem 0;
+  text-shadow: 0 0 30px #ffe44d55;
+}
+.score-msg { color: var(--muted2); font-size: 0.92rem; max-width: 400px; }
+
+/* ═══ VISUAL SCENARIO ════════════════════════════════════ */
+.game-screen {
+  background: #000;
+  border: 2px solid var(--border2);
+  border-radius: 4px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  font-family: var(--pixel);
+  font-size: 0.52rem;
+  line-height: 2;
+  color: var(--neon);
+  position: relative;
+  overflow: hidden;
+}
+.game-screen::before {
+  content: '● GAME PREVIEW';
+  position: absolute;
+  top: 0.5rem; left: 0.75rem;
+  font-size: 0.4rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+.gs-label { color: var(--muted); }
+.gs-val   { color: var(--yellow); }
+.gs-stat  { color: var(--pink); }
+.gs-item  { color: #00d4ff; }
+
+/* ═══ FOOTER ══════════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem 0;
+  text-align: center;
+  font-family: var(--pixel);
+  font-size: 0.42rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+/* ═══ UTILS ══════════════════════════════════════════════ */
+.divider { height: 1px; background: linear-gradient(to right, transparent, var(--border2), transparent); margin: 3rem 0; }
+.tip-box {
+  background: var(--yel-dim);
+  border: 1px solid var(--yellow);
+  border-radius: 3px;
+  padding: 0.9rem 1.2rem;
+  font-size: 0.85rem;
+  color: var(--muted2);
+  margin: 1.25rem 0;
+}
+.tip-box strong { color: var(--yellow); }
+.error-box {
+  background: var(--pink-dim);
+  border: 1px solid var(--pink);
+  border-radius: 3px;
+  padding: 0.9rem 1.2rem;
+  font-size: 0.85rem;
+  color: var(--muted2);
+  margin: 1.25rem 0;
+}
+.error-box strong { color: var(--pink); }
+</style>
+</head>
+<body>
+
+<!-- ════ HEADER ════════════════════════════════════════ -->
+<header>
+  <div class="header-glow"></div>
+  <div class="container z1">
+    <div class="pixel-badge">▶ DATAQUEST · BASES DE DATOS</div>
+    <h1>
+      Diseña la BD<br>
+      de un <em>Videojuego</em>
+    </h1>
+    <p class="header-desc">Aprende por qué existe cada campo en una tabla de base de datos construyendo desde cero el sistema de datos de un videojuego RPG.</p>
+    <div class="xp-bar-wrap">
+      <span class="xp-label">XP</span>
+      <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+      <span class="xp-score" id="xpScore">0 / 400 XP</span>
+    </div>
+  </div>
+</header>
+
+<!-- ════ NAV ════════════════════════════════════════════ -->
+<nav>
+  <div class="container">
+    <div class="mission-nav">
+      <div class="mission-pill active" onclick="goMission(0)" id="pill-0">MISIÓN 1 · JUGADORES</div>
+      <div class="mission-pill"        onclick="goMission(1)" id="pill-1">MISIÓN 2 · PERSONAJES</div>
+      <div class="mission-pill"        onclick="goMission(2)" id="pill-2">MISIÓN 3 · OBJETOS</div>
+      <div class="mission-pill"        onclick="goMission(3)" id="pill-3">MISIÓN 4 · PARTIDAS</div>
+      <div class="mission-pill"        onclick="goMission(4)" id="pill-4">► JEFE FINAL</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════
+     MISIÓN 1 — JUGADORES
+════════════════════════════════════════════════════ -->
+<div class="mission active" id="mission-0">
+<div class="container">
+
+  <div class="mission-header">
+    <div class="mission-number">MISIÓN 01</div>
+    <div class="mission-info">
+      <div class="mission-tag">// tabla: jugadores</div>
+      <div class="mission-title">La tabla <span>JUGADORES</span></div>
+      <div class="mission-desc">Todo jugador que crea una cuenta necesita que el sistema guarde cierta información sobre él. Vamos a ver qué campos necesita esta tabla y, más importante, <strong>por qué cada uno existe</strong>.</div>
+    </div>
+  </div>
+
+  <!-- Profesor -->
+  <div class="profesor-bubble">
+    <div class="profesor-avatar">🧑‍💻</div>
+    <div>
+      <div class="profesor-name">PROF. DATABASE</div>
+      <div class="profesor-text">
+        Imagina que acabas de lanzar tu juego online. El primer jugador escribe su nombre y pulsa "Crear cuenta". <strong>¿Qué datos necesita guardar el sistema para que esa cuenta funcione?</strong> No copies campos por inercia — cada campo tiene que justificarse. Si no sabes para qué sirve un campo, <em>no lo pongas</em>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Visualización del juego -->
+  <div class="game-screen">
+    <span class="gs-label">═══ FICHA DE JUGADOR (lo que verá la app) ══════</span><br>
+    <span class="gs-label">Nombre de usuario : </span><span class="gs-val">DragonSlayer99</span><br>
+    <span class="gs-label">Email             : </span><span class="gs-val">dragon@gmail.com</span><br>
+    <span class="gs-label">Contraseña        : </span><span class="gs-val">••••••••</span><br>
+    <span class="gs-label">País              : </span><span class="gs-val">España</span><br>
+    <span class="gs-label">Fecha de registro : </span><span class="gs-val">13/04/2026</span><br>
+    <span class="gs-label">Cuenta activa     : </span><span class="gs-stat">SÍ</span>
+  </div>
+
+  <!-- Pasos con justificación -->
+  <div class="step-sequence" id="steps-m1">
+    <div class="step-item" data-delay="0">
+      <div class="step-num">F·01</div>
+      <div class="step-content">
+        <div class="step-field">
+          IDJugador
+          <span class="type-chip tc-num">Autonumérico</span>
+          <span class="pk-badge">PK</span>
+        </div>
+        <div class="step-why">
+          <strong>¿Por qué existe?</strong> Es el <em>identificador único</em> de cada jugador. Dos jugadores pueden llamarse igual, pero su IDJugador nunca puede repetirse. Es la PK: la llave que usaremos para relacionar este jugador con sus personajes, partidas y logros. <strong>Siempre necesitas un campo que identifique la fila de forma inequívoca.</strong>
+        </div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="80">
+      <div class="step-num">F·02</div>
+      <div class="step-content">
+        <div class="step-field">
+          NombreUsuario
+          <span class="type-chip tc-text">Texto (50)</span>
+        </div>
+        <div class="step-why">
+          <strong>¿Por qué existe?</strong> El jugador necesita un nombre visible en el juego. Es el "alias" público. Lo configuramos con máx. 50 caracteres y marcamos <em>NOT NULL</em> (obligatorio), porque no tendría sentido una cuenta sin nombre.
+        </div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="160">
+      <div class="step-num">F·03</div>
+      <div class="step-content">
+        <div class="step-field">
+          Email
+          <span class="type-chip tc-text">Texto (100)</span>
+        </div>
+        <div class="step-why">
+          <strong>¿Por qué existe?</strong> Para poder contactar al jugador, enviarle verificación de cuenta y recuperar contraseña. También lo usamos como inicio de sesión alternativo. Marcamos este campo como <em>ÚNICO</em>: dos jugadores no pueden tener el mismo email.
+        </div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="240">
+      <div class="step-num">F·04</div>
+      <div class="step-content">
+        <div class="step-field">
+          ContrasenaHash
+          <span class="type-chip tc-text">Texto (255)</span>
+        </div>
+        <div class="step-why">
+          <strong>¿Por qué existe?</strong> Para que el jugador pueda iniciar sesión de forma segura. Guardamos el <em>hash</em> (versión cifrada), nunca la contraseña en texto plano. Es texto largo porque los hashes modernos son cadenas de ~60-255 caracteres.
+        </div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="320">
+      <div class="step-num">F·05</div>
+      <div class="step-content">
+        <div class="step-field">
+          Pais
+          <span class="type-chip tc-text">Texto (50)</span>
+        </div>
+        <div class="step-why">
+          <strong>¿Por qué existe?</strong> Para clasificaciones por regiones, servidores cercanos y estadísticas geográficas. Campo <em>opcional</em> (puede ser NULL), ya que el jugador puede no querer indicarlo.
+        </div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="400">
+      <div class="step-num">F·06</div>
+      <div class="step-content">
+        <div class="step-field">
+          FechaRegistro
+          <span class="type-chip tc-date">Fecha/Hora</span>
+        </div>
+        <div class="step-why">
+          <strong>¿Por qué existe?</strong> Para saber cuándo creó la cuenta. Permite calcular la antigüedad del jugador, dar recompensas por aniversario y detectar cuentas creadas en masa (bots).
+        </div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="480">
+      <div class="step-num">F·07</div>
+      <div class="step-content">
+        <div class="step-field">
+          CuentaActiva
+          <span class="type-chip tc-bool">Sí/No</span>
+        </div>
+        <div class="step-why">
+          <strong>¿Por qué existe?</strong> Para poder <em>desactivar</em> una cuenta sin borrarla (baneo temporal, suspensión). Si borráramos la fila, perderíamos el historial del jugador. Con este campo marcamos la cuenta como inactiva y podemos reactivarla.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla final -->
+  <div class="table-builder">
+    <div class="table-builder-header">
+      <span class="table-icon">🗃️</span>
+      <span class="table-name">JUGADORES</span>
+      <span class="table-badge">7 CAMPOS</span>
+    </div>
+    <div class="table-head-row">
+      <div class="th">Campo</div>
+      <div class="th">Tipo</div>
+      <div class="th">Nulo</div>
+      <div class="th">¿Por qué?</div>
+    </div>
+    <div class="table-row highlight-pk">
+      <div class="field-name"><span class="pk-badge">PK</span> IDJugador</div>
+      <div class="field-type">Autonumérico</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">IDENTIDAD</span> Identifica cada jugador de forma única</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">NombreUsuario</div>
+      <div class="field-type">Texto(50)</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">VISIBILIDAD</span> Nombre público en el juego</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">Email</div>
+      <div class="field-type">Texto(100)</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">ACCESO</span> Login y contacto (único)</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">ContrasenaHash</div>
+      <div class="field-type">Texto(255)</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">SEGURIDAD</span> Autenticación cifrada</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">Pais</div>
+      <div class="field-type">Texto(50)</div>
+      <div class="field-null" style="color:var(--muted2)">SÍ</div>
+      <div class="field-why"><span class="why-tag">REGIÓN</span> Servidores y estadísticas</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">FechaRegistro</div>
+      <div class="field-type">Fecha/Hora</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">AUDITORÍA</span> Antigüedad y detección de bots</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">CuentaActiva</div>
+      <div class="field-type">Sí/No</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">CONTROL</span> Suspender sin borrar historial</div>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div class="quiz-block">
+    <div class="quiz-header">
+      <span class="quiz-icon">🎮</span>
+      <span class="quiz-label">CHECKPOINT · PREGUNTA 1</span>
+    </div>
+    <div class="quiz-body">
+      <div class="quiz-question">
+        El administrador quiere borrar al jugador "ToxicPlayer88" por comportamiento inapropiado, pero necesita conservar su historial de partidas para futuras investigaciones.<br><br>
+        ¿Qué es más correcto hacer en la base de datos?
+      </div>
+      <div class="quiz-options" id="qm1-1">
+        <button class="quiz-option" onclick="quiz('qm1-1',this,'wrong','fb-m1-1')">
+          <span class="opt-key">A</span>
+          Borrar la fila de JUGADORES con DELETE — así se elimina todo rastro del jugador
+        </button>
+        <button class="quiz-option" onclick="quiz('qm1-1',this,'correct','fb-m1-1')">
+          <span class="opt-key">B</span>
+          Poner CuentaActiva = No — la cuenta queda bloqueada pero los datos se conservan
+        </button>
+        <button class="quiz-option" onclick="quiz('qm1-1',this,'wrong','fb-m1-1')">
+          <span class="opt-key">C</span>
+          No hay que hacer nada — el jugador no podrá entrar si cambiamos su contraseña
+        </button>
+      </div>
+      <div class="feedback-box" id="fb-m1-1"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-neon" onclick="completeMission(0)">COMPLETAR MISIÓN · +80 XP ▶</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     MISIÓN 2 — PERSONAJES
+════════════════════════════════════════════════════ -->
+<div class="mission" id="mission-1">
+<div class="container">
+
+  <div class="mission-header">
+    <div class="mission-number">MISIÓN 02</div>
+    <div class="mission-info">
+      <div class="mission-tag">// tabla: personajes</div>
+      <div class="mission-title">La tabla <span>PERSONAJES</span></div>
+      <div class="mission-desc">Un jugador puede crear varios personajes. Cada personaje tiene sus propias estadísticas. Aquí aprenderemos sobre campos numéricos con restricciones y la diferencia entre datos que "miden" algo y datos que "describen" algo.</div>
+    </div>
+  </div>
+
+  <div class="profesor-bubble">
+    <div class="profesor-avatar">🧑‍💻</div>
+    <div>
+      <div class="profesor-name">PROF. DATABASE</div>
+      <div class="profesor-text">
+        El jugador DragonSlayer99 tiene 3 personajes: un guerrero, un mago y un arquero. <strong>¿Ves el problema?</strong> Si guardáramos los personajes en la tabla JUGADORES, tendríamos que repetir la fila del jugador tres veces. Eso es un error grave en diseño de bases de datos — se llama <em>redundancia</em>. Por eso creamos una tabla separada: PERSONAJES.
+      </div>
+    </div>
+  </div>
+
+  <div class="game-screen">
+    <span class="gs-label">═══ PANTALLA SELECCIÓN DE PERSONAJE ════════════</span><br>
+    <span class="gs-label">► </span><span class="gs-val">Ragnar el Guerrero</span><span class="gs-label">   · Nivel </span><span class="gs-stat">47</span><span class="gs-label">   · HP </span><span class="gs-stat">850/850</span><br>
+    <span class="gs-label">  </span><span class="gs-val">Zephyr la Maga   </span><span class="gs-label">   · Nivel </span><span class="gs-stat">62</span><span class="gs-label">   · HP </span><span class="gs-stat">420/500</span><br>
+    <span class="gs-label">  </span><span class="gs-val">Kira la Arquera  </span><span class="gs-label">   · Nivel </span><span class="gs-stat">15</span><span class="gs-label">   · HP </span><span class="gs-stat">300/300</span>
+  </div>
+
+  <div class="step-sequence" id="steps-m2">
+    <div class="step-item" data-delay="0">
+      <div class="step-num">F·01</div>
+      <div class="step-content">
+        <div class="step-field">IDPersonaje <span class="type-chip tc-num">Autonumérico</span><span class="pk-badge">PK</span></div>
+        <div class="step-why"><strong>¿Por qué existe?</strong> Igual que en JUGADORES — cada personaje necesita su propio identificador único. Ragnar y Kira pueden tener el mismo nombre en distintas cuentas, pero su IDPersonaje siempre será diferente.</div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="80">
+      <div class="step-num">F·02</div>
+      <div class="step-content">
+        <div class="step-field">IDJugador <span class="type-chip tc-num">Número</span><span class="fk-badge">FK</span></div>
+        <div class="step-why"><strong>¿Por qué existe?</strong> Para saber <em>a qué jugador pertenece</em> este personaje. Es una <strong>clave foránea</strong>: apunta al IDJugador de la tabla JUGADORES. Sin este campo, no podríamos saber quién es el dueño del personaje.</div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="160">
+      <div class="step-num">F·03</div>
+      <div class="step-content">
+        <div class="step-field">NombrePersonaje <span class="type-chip tc-text">Texto(60)</span></div>
+        <div class="step-why"><strong>¿Por qué existe?</strong> El nombre visible del personaje en el mundo del juego. Es diferente del NombreUsuario del jugador. Un jugador puede llamarse "Pepito99" pero su personaje se llama "Ragnar el Destructor".</div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="240">
+      <div class="step-num">F·04</div>
+      <div class="step-content">
+        <div class="step-field">Clase <span class="type-chip tc-text">Texto(30)</span></div>
+        <div class="step-why"><strong>¿Por qué existe?</strong> La clase (Guerrero, Mago, Arquero...) determina las habilidades disponibles, el tipo de armas que puede equipar y las estadísticas base. Es un atributo <em>descriptivo</em>: define qué tipo de entidad es el personaje.</div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="320">
+      <div class="step-num">F·05</div>
+      <div class="step-content">
+        <div class="step-field">Nivel <span class="type-chip tc-num">Número entero</span></div>
+        <div class="step-why"><strong>¿Por qué existe?</strong> Es una estadística que <em>mide progresión</em>. Con un número podemos ordenar personajes, calcular la dificultad de los enemigos y desbloquear zonas. Usamos entero (no decimal) porque los niveles son siempre enteros (nivel 5, no nivel 5.3).</div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="400">
+      <div class="step-num">F·06</div>
+      <div class="step-content">
+        <div class="step-field">HPActual <span class="type-chip tc-num">Número entero</span></div>
+        <div class="step-why"><strong>¿Por qué existe?</strong> Los puntos de vida actuales. Cambian constantemente durante el juego (el personaje recibe daño, se cura). Es un campo <em>dinámico</em> que necesitamos para guardar el estado exacto al cerrar sesión.</div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="480">
+      <div class="step-num">F·07</div>
+      <div class="step-content">
+        <div class="step-field">HPMaximo <span class="type-chip tc-num">Número entero</span></div>
+        <div class="step-why"><strong>¿Por qué existe?</strong> El máximo de HP alcanzable. Separamos HPActual de HPMaximo porque necesitamos ambos para mostrar la barra de vida (420/500). Si solo guardáramos uno, no podríamos calcular el porcentaje de salud.</div>
+      </div>
+    </div>
+    <div class="step-item" data-delay="560">
+      <div class="step-num">F·08</div>
+      <div class="step-content">
+        <div class="step-field">TotalOro <span class="type-chip tc-dec">Número decimal</span></div>
+        <div class="step-why"><strong>¿Por qué existe?</strong> El dinero del personaje para comprar objetos. Usamos decimal (no entero) porque algunos juegos permiten monedas fraccionadas. Es un campo numérico con restricción: no puede ser negativo (no puede tener deudas).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla visual -->
+  <div class="table-builder">
+    <div class="table-builder-header">
+      <span class="table-icon">⚔️</span>
+      <span class="table-name">PERSONAJES</span>
+      <span class="table-badge">8 CAMPOS</span>
+    </div>
+    <div class="table-head-row">
+      <div class="th">Campo</div>
+      <div class="th">Tipo</div>
+      <div class="th">Nulo</div>
+      <div class="th">¿Por qué?</div>
+    </div>
+    <div class="table-row highlight-pk">
+      <div class="field-name"><span class="pk-badge">PK</span> IDPersonaje</div>
+      <div class="field-type">Autonumérico</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">IDENTIDAD</span>Identificador único del personaje</div>
+    </div>
+    <div class="table-row highlight">
+      <div class="field-name"><span class="fk-badge">FK</span> IDJugador</div>
+      <div class="field-type">Número</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">RELACIÓN</span>¿A qué jugador pertenece?</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">NombrePersonaje</div>
+      <div class="field-type">Texto(60)</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">DESCRIPCIÓN</span>Nombre visible en el juego</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">Clase</div>
+      <div class="field-type">Texto(30)</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">CATEGORÍA</span>Define habilidades y armas</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">Nivel</div>
+      <div class="field-type">Número entero</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">PROGRESIÓN</span>Mide la experiencia del personaje</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">HPActual</div>
+      <div class="field-type">Número entero</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">ESTADO</span>Salud en tiempo real</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">HPMaximo</div>
+      <div class="field-type">Número entero</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">LÍMITE</span>Para calcular % de salud</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">TotalOro</div>
+      <div class="field-type">Decimal</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">ECONOMÍA</span>Moneda del personaje ≥ 0</div>
+    </div>
+  </div>
+
+  <!-- Comparativa tipos de dato -->
+  <div class="tip-box">
+    <strong>💡 REGLA CLAVE — Elige el tipo correcto:</strong> Un campo de Nivel no puede ser Texto aunque lo parezca. Si guardas "47" como texto, no podrás hacer NivelMedio = AVG(Nivel) ni ordenar correctamente. Los datos <em>numéricos que se calculan o comparan</em> van siempre como Número.
+  </div>
+
+  <table class="compare-table">
+    <thead>
+      <tr><th>Campo</th><th>Tipo correcto</th><th>¿Por qué NO texto?</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="field-col">Nivel</td>
+        <td class="type-col">Número entero</td>
+        <td class="bad-col">No puedes hacer AVG("47","62") — daría error o resultado incorrecto</td>
+      </tr>
+      <tr>
+        <td class="field-col">HPActual</td>
+        <td class="type-col">Número entero</td>
+        <td class="bad-col">Si ordenas "850","420","300" como texto: 300 < 420 < 850 ✓, pero "9" > "850" como texto ✗</td>
+      </tr>
+      <tr>
+        <td class="field-col">TotalOro</td>
+        <td class="type-col">Decimal</td>
+        <td class="bad-col">No puedes sumar ni validar que sea ≥ 0 si es un campo de texto</td>
+      </tr>
+      <tr>
+        <td class="field-col">FechaRegistro</td>
+        <td class="type-col">Fecha/Hora</td>
+        <td class="bad-col">No puedes calcular días transcurridos ni ordenar cronológicamente con texto</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Quiz -->
+  <div class="quiz-block">
+    <div class="quiz-header">
+      <span class="quiz-icon">🎮</span>
+      <span class="quiz-label">CHECKPOINT · PREGUNTA 2</span>
+    </div>
+    <div class="quiz-body">
+      <div class="quiz-question">
+        Un compañero ha diseñado la tabla PERSONAJES pero guarda el campo <strong>Nivel como Texto(3)</strong> para ahorrar espacio. ¿Qué problema aparecerá?
+      </div>
+      <div class="quiz-options" id="qm2-1">
+        <button class="quiz-option" onclick="quiz('qm2-1',this,'wrong','fb-m2-1')">
+          <span class="opt-key">A</span>
+          Ninguno — Texto(3) también puede guardar "47" perfectamente
+        </button>
+        <button class="quiz-option" onclick="quiz('qm2-1',this,'wrong','fb-m2-1')">
+          <span class="opt-key">B</span>
+          Solo habrá problema si el nivel supera 999
+        </button>
+        <button class="quiz-option" onclick="quiz('qm2-1',this,'correct','fb-m2-1')">
+          <span class="opt-key">C</span>
+          No podrás calcular nivel promedio, ni ordenar correctamente, ni validar rangos (p.ej. Nivel entre 1 y 100)
+        </button>
+      </div>
+      <div class="feedback-box" id="fb-m2-1"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-neon" onclick="completeMission(1)">COMPLETAR MISIÓN · +80 XP ▶</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     MISIÓN 3 — OBJETOS
+════════════════════════════════════════════════════ -->
+<div class="mission" id="mission-2">
+<div class="container">
+
+  <div class="mission-header">
+    <div class="mission-number">MISIÓN 03</div>
+    <div class="mission-info">
+      <div class="mission-tag">// tablas: objetos + inventario</div>
+      <div class="mission-title">Objetos e <span>Inventario</span></div>
+      <div class="mission-desc">Los personajes recogen objetos. Aquí veremos por qué el inventario no es "añadir más columnas" a PERSONAJES sino crear una tabla intermedia — y entenderemos el concepto de campos derivados vs. campos almacenados.</div>
+    </div>
+  </div>
+
+  <div class="profesor-bubble">
+    <div class="profesor-avatar">🧑‍💻</div>
+    <div>
+      <div class="profesor-name">PROF. DATABASE</div>
+      <div class="profesor-text">
+        Aquí viene el error más típico que cometen los estudiantes: añadir columnas como <span class="code">Objeto1, Objeto2, Objeto3...</span> a la tabla PERSONAJES. Eso es un desastre. Si el jugador recoge un objeto 11, ¿qué hacemos? ¿Añadir la columna Objeto11? <strong>Nunca uses columnas numeradas — siempre usa una tabla separada.</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="error-box">
+    <strong>🚫 DISEÑO INCORRECTO — No hagas esto:</strong><br>
+    PERSONAJES(IDPersonaje, Nombre, Objeto1, Objeto2, Objeto3, Objeto4...)<br>
+    <br>
+    Problemas: ¿Y si un jugador tiene 50 objetos? ¿Y si solo tiene 1? Tendrás columnas vacías (NULL) por todas partes. No puedes buscar "todos los personajes que tienen una Espada" sin revisar todas las columnas.
+  </div>
+
+  <div class="tip-box">
+    <strong>✅ DISEÑO CORRECTO:</strong> Dos tablas separadas: OBJETOS (catálogo de todos los objetos del juego) + INVENTARIO (qué personaje tiene qué objeto y en qué cantidad). Esta es una relación N:M.
+  </div>
+
+  <!-- Tabla OBJETOS -->
+  <div class="table-builder" style="margin-bottom:1rem;">
+    <div class="table-builder-header">
+      <span class="table-icon">🗡️</span>
+      <span class="table-name">OBJETOS</span>
+      <span class="table-badge">CATÁLOGO</span>
+    </div>
+    <div class="table-head-row">
+      <div class="th">Campo</div>
+      <div class="th">Tipo</div>
+      <div class="th">Nulo</div>
+      <div class="th">¿Por qué?</div>
+    </div>
+    <div class="table-row highlight-pk">
+      <div class="field-name"><span class="pk-badge">PK</span> IDObjeto</div>
+      <div class="field-type">Autonumérico</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">IDENTIDAD</span>Código único de cada objeto</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">NombreObjeto</div>
+      <div class="field-type">Texto(80)</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">DESCRIPCIÓN</span>Nombre visible: "Espada Llameante"</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">Tipo</div>
+      <div class="field-type">Texto(30)</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">CATEGORÍA</span>Arma / Armadura / Poción / Misión</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">PesoKg</div>
+      <div class="field-type">Decimal</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">LÍMITE</span>Para el límite de carga del personaje</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">PrecioBase</div>
+      <div class="field-type">Decimal</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">ECONOMÍA</span>Precio en tienda. Un campo, no duplicar</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">Descripcion</div>
+      <div class="field-type">Memo/Texto largo</div>
+      <div class="field-null" style="color:var(--muted2)">SÍ</div>
+      <div class="field-why"><span class="why-tag">LORE</span>Descripción extensa. Memo porque puede ser muy largo</div>
+    </div>
+  </div>
+
+  <!-- Tabla INVENTARIO -->
+  <div class="table-builder">
+    <div class="table-builder-header">
+      <span class="table-icon">🎒</span>
+      <span class="table-name">INVENTARIO</span>
+      <span class="table-badge">TABLA INTERMEDIA N:M</span>
+    </div>
+    <div class="table-head-row">
+      <div class="th">Campo</div>
+      <div class="th">Tipo</div>
+      <div class="th">Nulo</div>
+      <div class="th">¿Por qué?</div>
+    </div>
+    <div class="table-row highlight-pk">
+      <div class="field-name"><span class="pk-badge">PK</span> IDInventario</div>
+      <div class="field-type">Autonumérico</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">IDENTIDAD</span>Identificador de la línea de inventario</div>
+    </div>
+    <div class="table-row highlight">
+      <div class="field-name"><span class="fk-badge">FK</span> IDPersonaje</div>
+      <div class="field-type">Número</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">RELACIÓN</span>¿A qué personaje pertenece?</div>
+    </div>
+    <div class="table-row highlight">
+      <div class="field-name"><span class="fk-badge">FK</span> IDObjeto</div>
+      <div class="field-type">Número</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">RELACIÓN</span>¿Qué objeto tiene?</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">Cantidad</div>
+      <div class="field-type">Número entero</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">CANTIDAD</span>Atributo propio: 1 poción, 5 flechas... ≥ 1</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">FechaObtencion</div>
+      <div class="field-type">Fecha/Hora</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">AUDITORÍA</span>¿Cuándo lo consiguió? Para eventos y logros</div>
+    </div>
+    <div class="table-row">
+      <div class="field-name">Equipado</div>
+      <div class="field-type">Sí/No</div>
+      <div class="field-null nn">NO</div>
+      <div class="field-why"><span class="why-tag">ESTADO</span>¿Está usando este objeto ahora mismo?</div>
+    </div>
+  </div>
+
+  <!-- Concepto campos derivados -->
+  <div class="profesor-bubble">
+    <div class="profesor-avatar">🧑‍💻</div>
+    <div>
+      <div class="profesor-name">PROF. DATABASE</div>
+      <div class="profesor-text">
+        Pregunta trampa: ¿guardamos en INVENTARIO el campo <span class="code">PesoTotalEquipado</span>? Eso sería la suma de todos los objetos equipados. La respuesta es <em>NO</em>. Ese es un <strong>campo derivado</strong> — se puede calcular con una consulta. Guardar valores calculados crea inconsistencias: si el jugador suelta un objeto pero olvidamos actualizar PesoTotal, los datos quedan corruptos. <strong>Solo guarda lo que no puedes calcular.</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz DRAG & DROP -->
+  <div class="quiz-block">
+    <div class="quiz-header">
+      <span class="quiz-icon">🧩</span>
+      <span class="quiz-label">CHECKPOINT · EJERCICIO INTERACTIVO</span>
+    </div>
+    <div class="quiz-body">
+      <div class="quiz-question">
+        Clasifica estos campos: ¿deben guardarse en la base de datos o son <strong>campos derivados</strong> (se calculan y NO se guardan)?
+      </div>
+
+      <div class="drag-area">
+        <div class="field-pool">
+          <div class="field-pool-title">Campos disponibles</div>
+          <div class="draggable-field" draggable="true" data-field="TotalObjetosInventario" id="df1">
+            <span class="drag-icon">⠿</span> TotalObjetosInventario
+          </div>
+          <div class="draggable-field" draggable="true" data-field="NombreObjeto" id="df2">
+            <span class="drag-icon">⠿</span> NombreObjeto
+          </div>
+          <div class="draggable-field" draggable="true" data-field="PesoTotalEquipado" id="df3">
+            <span class="drag-icon">⠿</span> PesoTotalEquipado
+          </div>
+          <div class="draggable-field" draggable="true" data-field="Cantidad" id="df4">
+            <span class="drag-icon">⠿</span> Cantidad
+          </div>
+          <div class="draggable-field" draggable="true" data-field="PrecioVentaCalculado" id="df5">
+            <span class="drag-icon">⠿</span> PrecioVentaCalculado
+          </div>
+        </div>
+
+        <div class="drop-table">
+          <div class="field-pool-title" style="color:var(--neon)">✅ SE GUARDA en la BD</div>
+          <div class="drop-zone" data-correct="NombreObjeto,Cantidad" id="dz-guardar">
+            <span class="dz-label">Arrastra aquí los campos que SÍ deben guardarse</span>
+          </div>
+          <div style="height:1.5rem;"></div>
+          <div class="field-pool-title" style="color:var(--pink)">🔄 CAMPO DERIVADO (no se guarda)</div>
+          <div class="drop-zone" data-correct="TotalObjetosInventario,PesoTotalEquipado,PrecioVentaCalculado" id="dz-derivado">
+            <span class="dz-label">Arrastra aquí los campos que se pueden calcular</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-pink" onclick="checkDrag()">COMPROBAR RESPUESTA</button>
+        <button class="btn btn-ghost" onclick="resetDrag()">Reiniciar</button>
+      </div>
+      <div class="feedback-box" id="fb-drag"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-neon" onclick="completeMission(2)">COMPLETAR MISIÓN · +80 XP ▶</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     MISIÓN 4 — PARTIDAS
+════════════════════════════════════════════════════ -->
+<div class="mission" id="mission-3">
+<div class="container">
+
+  <div class="mission-header">
+    <div class="mission-number">MISIÓN 04</div>
+    <div class="mission-info">
+      <div class="mission-tag">// tabla: partidas</div>
+      <div class="mission-title">Diseña la tabla <span>PARTIDAS</span></div>
+      <div class="mission-desc">Ahora eres tú quien diseña. Cada vez que un personaje juega una partida en modo multijugador, el sistema debe registrar esa sesión. Decide qué campos son necesarios y justifica cada uno.</div>
+    </div>
+  </div>
+
+  <div class="profesor-bubble">
+    <div class="profesor-avatar">🧑‍💻</div>
+    <div>
+      <div class="profesor-name">PROF. DATABASE</div>
+      <div class="profesor-text">
+        Esta es tu primera misión de diseño libre. Hay muchas formas correctas, pero existen errores que siempre son incorrectos. Para cada campo que propongas, pregúntate: <em>¿Para qué la usará la aplicación?</em> Si no tienes respuesta, ese campo no debería estar.
+      </div>
+    </div>
+  </div>
+
+  <div class="game-screen">
+    <span class="gs-label">═══ RESUMEN DE PARTIDA ══════════════════════════</span><br>
+    <span class="gs-label">Mapa      : </span><span class="gs-val">Desierto de Fuego</span><br>
+    <span class="gs-label">Duración  : </span><span class="gs-val">00:42:17</span><br>
+    <span class="gs-label">Resultado : </span><span class="gs-stat">VICTORIA</span><br>
+    <span class="gs-label">Kills     : </span><span class="gs-val">23</span><span class="gs-label">   Muertes : </span><span class="gs-val">4</span><br>
+    <span class="gs-label">XP ganada : </span><span class="gs-item">+850 XP</span><br>
+    <span class="gs-label">Oro ganado: </span><span class="gs-item">+340 monedas</span>
+  </div>
+
+  <table class="compare-table">
+    <thead>
+      <tr><th>Campo propuesto</th><th>¿Lo guardamos?</th><th>Justificación del Prof.</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="field-col">IDPartida (PK)</td>
+        <td style="color:var(--neon)">✅ SÍ</td>
+        <td>Siempre necesitamos PK única para referenciar esta partida</td>
+      </tr>
+      <tr>
+        <td class="field-col">IDPersonaje (FK)</td>
+        <td style="color:var(--neon)">✅ SÍ</td>
+        <td>¿Quién jugó? Necesitamos FK a PERSONAJES</td>
+      </tr>
+      <tr>
+        <td class="field-col">FechaHoraInicio</td>
+        <td style="color:var(--neon)">✅ SÍ</td>
+        <td>Para clasificaciones temporales y detectar trampas</td>
+      </tr>
+      <tr>
+        <td class="field-col">FechaHoraFin</td>
+        <td style="color:var(--neon)">✅ SÍ</td>
+        <td>Necesitamos ambas para calcular duración (no guardar "DuracionSegundos" directamente)</td>
+      </tr>
+      <tr>
+        <td class="field-col">DuracionMinutos</td>
+        <td style="color:var(--pink)">🔄 DERIVADO</td>
+        <td>Se calcula: FechaFin − FechaInicio. No lo guardamos para evitar inconsistencias</td>
+      </tr>
+      <tr>
+        <td class="field-col">Mapa</td>
+        <td style="color:var(--neon)">✅ SÍ</td>
+        <td>Para estadísticas de mapa más jugado y balanceo de dificultad</td>
+      </tr>
+      <tr>
+        <td class="field-col">Resultado</td>
+        <td style="color:var(--neon)">✅ SÍ</td>
+        <td>Victoria / Derrota / Empate. Tipo Texto(10) o valor numérico según la lógica del juego</td>
+      </tr>
+      <tr>
+        <td class="field-col">Kills / Muertes</td>
+        <td style="color:var(--neon)">✅ SÍ</td>
+        <td>KPIs de rendimiento. Enteros no negativos. Se usan para clasificaciones y logros</td>
+      </tr>
+      <tr>
+        <td class="field-col">XPGanada</td>
+        <td style="color:var(--neon)">✅ SÍ</td>
+        <td>Necesitamos el histórico de XP ganada en cada partida para auditorías</td>
+      </tr>
+      <tr>
+        <td class="field-col">NombreJugador</td>
+        <td style="color:var(--pink)">🚫 NUNCA</td>
+        <td>Redundancia — ya está en JUGADORES. Si el jugador cambia su nombre, habría que actualizar miles de filas</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Quiz final de misión -->
+  <div class="quiz-block">
+    <div class="quiz-header">
+      <span class="quiz-icon">🎮</span>
+      <span class="quiz-label">CHECKPOINT · PREGUNTA 4</span>
+    </div>
+    <div class="quiz-body">
+      <div class="quiz-question">
+        Un compañero propone añadir el campo <strong>"KDRatio"</strong> (Kills/Muertes) a la tabla PARTIDAS. Tú tienes ya los campos <strong>Kills</strong> y <strong>Muertes</strong> guardados. ¿Qué decides?
+      </div>
+      <div class="quiz-options" id="qm4-1">
+        <button class="quiz-option" onclick="quiz('qm4-1',this,'wrong','fb-m4-1')">
+          <span class="opt-key">A</span>
+          Añadir KDRatio — así la consulta es más rápida porque no hay que dividir
+        </button>
+        <button class="quiz-option" onclick="quiz('qm4-1',this,'correct','fb-m4-1')">
+          <span class="opt-key">B</span>
+          No añadirlo — es un campo derivado (Kills/Muertes). Se calcula en la consulta sin guardar
+        </button>
+        <button class="quiz-option" onclick="quiz('qm4-1',this,'wrong','fb-m4-1')">
+          <span class="opt-key">C</span>
+          Depende del tamaño de la base de datos — en tablas grandes sí conviene guardarlo
+        </button>
+      </div>
+      <div class="feedback-box" id="fb-m4-1"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-neon" onclick="completeMission(3)">COMPLETAR MISIÓN · +80 XP ▶</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     JEFE FINAL — RESUMEN Y PUNTUACIÓN
+════════════════════════════════════════════════════ -->
+<div class="mission" id="mission-4">
+<div class="container">
+
+  <div class="mission-header">
+    <div class="mission-number">JEFE FINAL</div>
+    <div class="mission-info">
+      <div class="mission-tag">// resumen · reglas fundamentales</div>
+      <div class="mission-title"><span>Las 6 Reglas</span><br>del Buen Campo</div>
+      <div class="mission-desc">Has completado el juego. Aquí tienes las reglas que has aprendido — el manual que todo diseñador de bases de datos debe memorizar.</div>
+    </div>
+  </div>
+
+  <div class="score-display">
+    <div class="score-pixel">▶ GAME COMPLETE ◀</div>
+    <div class="score-number" id="finalScore">0 XP</div>
+    <div class="score-msg">Has completado las 4 misiones. Aquí están las reglas fundamentales que has aplicado durante la práctica.</div>
+  </div>
+
+  <div class="step-sequence">
+    <div class="step-item visible">
+      <div class="step-num" style="background:var(--neon-dim); color:var(--neon); border-color:var(--neon);">R·01</div>
+      <div class="step-content">
+        <div class="step-field" style="color:var(--neon)">Toda tabla necesita una Clave Primaria (PK)</div>
+        <div class="step-why">La PK identifica cada fila de forma única. Sin ella, no puedes relacionar tablas, no puedes actualizar una fila concreta y no puedes eliminar sin borrar otras filas por error. <strong>Siempre el primer campo, siempre obligatorio.</strong></div>
+      </div>
+    </div>
+    <div class="step-item visible">
+      <div class="step-num" style="background:var(--pink-dim); color:var(--pink); border-color:var(--pink);">R·02</div>
+      <div class="step-content">
+        <div class="step-field" style="color:var(--pink)">Elige el tipo de dato correcto</div>
+        <div class="step-why">Los números que se calculan o comparan son Número, no Texto. Las fechas son Fecha/Hora, no Texto. Los flags booleanos son Sí/No. El tipo incorrecto te impedirá hacer consultas válidas.</div>
+      </div>
+    </div>
+    <div class="step-item visible">
+      <div class="step-num" style="background:var(--yel-dim); color:var(--yellow); border-color:var(--yellow);">R·03</div>
+      <div class="step-content">
+        <div class="step-field" style="color:var(--yellow)">No guardes campos derivados</div>
+        <div class="step-why">Si un valor se puede calcular a partir de otros campos ya almacenados (suma, resta, conteo, porcentaje), no lo guardes. Crear campos derivados lleva a inconsistencias cuando los datos base cambian.</div>
+      </div>
+    </div>
+    <div class="step-item visible">
+      <div class="step-num" style="background:var(--blue-dim); color:var(--blue); border-color:var(--blue);">R·04</div>
+      <div class="step-content">
+        <div class="step-field" style="color:var(--blue)">Nunca columnas numeradas (Objeto1, Objeto2...)</div>
+        <div class="step-why">Si necesitas varios valores del mismo tipo, crea una tabla separada. Las columnas numeradas tienen un máximo fijo, generan NULLs innecesarios y hacen las consultas imposibles de mantener.</div>
+      </div>
+    </div>
+    <div class="step-item visible">
+      <div class="step-num" style="background:#c084fc1a; color:var(--purple); border-color:var(--purple);">R·05</div>
+      <div class="step-content">
+        <div class="step-field" style="color:var(--purple)">No repitas datos de otras tablas</div>
+        <div class="step-why">Si ya tienes el NombreJugador en JUGADORES, no lo copies en PARTIDAS. Si el jugador cambia su nombre, tendrías que actualizarlo en miles de filas. La FK es el camino correcto: guarda el ID, consulta el nombre cuando lo necesites.</div>
+      </div>
+    </div>
+    <div class="step-item visible">
+      <div class="step-num" style="background:var(--neon-dim); color:var(--neon); border-color:var(--neon);">R·06</div>
+      <div class="step-content">
+        <div class="step-field" style="color:var(--neon)">Cada campo debe justificarse con un uso concreto</div>
+        <div class="step-why">Antes de añadir cualquier campo, pregunta: ¿qué funcionalidad de la aplicación necesita este dato? Si no hay respuesta concreta, no añadas el campo. Las bases de datos con campos "por si acaso" son más difíciles de mantener y entender.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Esquema final completo -->
+  <div class="profesor-bubble" style="border-left-color:var(--yellow);">
+    <div class="profesor-avatar" style="border-color:var(--yellow); background:var(--yel-dim);">🏆</div>
+    <div>
+      <div class="profesor-name" style="color:var(--yellow)">ESQUEMA FINAL DE LA BD</div>
+      <div class="profesor-text">
+        Este es el modelo completo que hemos construido juntos:<br><br>
+        <span class="code">JUGADORES</span> (IDJugador, NombreUsuario, Email, ContrasenaHash, Pais, FechaRegistro, CuentaActiva)<br>
+        <span class="code">PERSONAJES</span> (IDPersonaje, <em>IDJugador FK</em>, NombrePersonaje, Clase, Nivel, HPActual, HPMaximo, TotalOro)<br>
+        <span class="code">OBJETOS</span> (IDObjeto, NombreObjeto, Tipo, PesoKg, PrecioBase, Descripcion)<br>
+        <span class="code">INVENTARIO</span> (IDInventario, <em>IDPersonaje FK</em>, <em>IDObjeto FK</em>, Cantidad, FechaObtencion, Equipado)<br>
+        <span class="code">PARTIDAS</span> (IDPartida, <em>IDPersonaje FK</em>, FechaHoraInicio, FechaHoraFin, Mapa, Resultado, Kills, Muertes, XPGanada)
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row" style="margin-top:2rem;">
+    <button class="btn btn-neon" onclick="completeMission(4)">FINALIZAR Y VER PUNTUACIÓN ▶</button>
+    <button class="btn btn-ghost" onclick="goMission(0); resetAll()">↺ Jugar de nuevo</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ════ FOOTER ══════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    DATAQUEST · PRÁCTICA DE BASES DE DATOS · DISEÑO DE TABLAS Y CAMPOS
+  </div>
+</footer>
+
+<!-- ════ JAVASCRIPT ══════════════════════════════════ -->
+<script>
+/* ── Estado global ── */
+let xp = 0;
+let missionsDone = [false,false,false,false,false];
+const XP_PER_MISSION = 80;
+
+/* ── Navegación entre misiones ── */
+function goMission(idx) {
+  document.querySelectorAll('.mission').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.mission-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('mission-' + idx).classList.add('active');
+  document.getElementById('pill-' + idx).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  // Animar steps de la misión activa
+  animateSteps('steps-m' + (idx+1));
+}
+
+function animateSteps(id) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  const items = container.querySelectorAll('.step-item');
+  items.forEach((item, i) => {
+    const delay = parseInt(item.dataset.delay) || i * 80;
+    setTimeout(() => item.classList.add('visible'), delay + 100);
+  });
+}
+
+/* ── Completar misión ── */
+function completeMission(idx) {
+  if (!missionsDone[idx]) {
+    missionsDone[idx] = true;
+    xp += XP_PER_MISSION;
+    updateXP();
+  }
+  document.getElementById('pill-' + idx).classList.add('done');
+  const next = idx + 1;
+  if (next <= 4) {
+    goMission(next);
+    if (next === 4) {
+      document.getElementById('finalScore').textContent = xp + ' / 400 XP';
+    }
+  }
+}
+
+function updateXP() {
+  const pct = (xp / 400) * 100;
+  document.getElementById('xpFill').style.width = pct + '%';
+  document.getElementById('xpScore').textContent = xp + ' / 400 XP';
+}
+
+function resetAll() {
+  xp = 0; missionsDone = [false,false,false,false,false];
+  updateXP();
+  document.querySelectorAll('.mission-pill').forEach(p => { p.classList.remove('done','active'); });
+  document.getElementById('pill-0').classList.add('active');
+}
+
+/* ── Quiz multiple choice ── */
+const FEEDBACK = {
+  correct: [
+    '¡Correcto! +10 XP. ',
+    '¡Exacto! Eso es lo que haría un diseñador experto. ',
+    '¡Perfecto! Tienes los conceptos muy claros. '
+  ],
+  wrong: [
+    'No del todo. Piénsalo de nuevo. ',
+    'Esa no es la respuesta correcta. ',
+    'Casi — pero hay un detalle importante que se te escapa. '
+  ]
+};
+
+const EXTRA_FEEDBACK = {
+  'qm1-1': {
+    correct: 'Con CuentaActiva = No bloqueamos la cuenta sin perder el historial. Esto es clave para auditorías y para poder reactivar la cuenta si el jugador apela el baneo.',
+    wrong: 'Borrar la fila con DELETE eliminaría TODOS los datos del jugador: partidas, personajes, inventario... Irreversible e innecesario.'
+  },
+  'qm2-1': {
+    correct: 'Con Texto, "9" > "100" porque la comparación es carácter a carácter. AVG("47","15") daría error. Los niveles necesitan ser Número.',
+    wrong: 'Con texto puedes guardar el número, pero no puedes hacer operaciones matemáticas ni comparaciones numéricas correctas.'
+  },
+  'qm4-1': {
+    correct: 'KDRatio = Kills/Muertes — cualquier consulta puede calcularlo al vuelo: SELECT Kills/Muertes AS KDRatio FROM PARTIDAS. Guardar el resultado crearía riesgo de inconsistencia.',
+    wrong: 'La optimización prematura es el origen de muchos errores de diseño. Los campos derivados generan inconsistencias que son mucho más costosas que el tiempo de cálculo.'
+  }
+};
+
+function quiz(groupId, btn, result, feedbackId) {
+  const buttons = document.querySelectorAll(`#${groupId} .quiz-option`);
+  buttons.forEach(b => { b.classList.add('locked'); b.onclick = null; });
+  btn.classList.add(result === 'correct' ? 'correct' : 'wrong');
+  if (result === 'wrong') {
+    // Show correct
+    buttons.forEach(b => {
+      // The correct button is the one we haven't clicked that would be 'correct'
+    });
+  }
+  const fb = document.getElementById(feedbackId);
+  fb.classList.add('show', result === 'correct' ? 'ok' : 'ko');
+  const msgs = FEEDBACK[result];
+  const extra = EXTRA_FEEDBACK[groupId] ? EXTRA_FEEDBACK[groupId][result] : '';
+  fb.innerHTML = '<strong>' + msgs[Math.floor(Math.random()*msgs.length)] + '</strong> ' + extra;
+}
+
+/* ── Drag & Drop ── */
+let currentDrag = null;
+const dropState = { 'dz-guardar': [], 'dz-derivado': [] };
+
+document.querySelectorAll('.draggable-field').forEach(el => {
+  el.addEventListener('dragstart', e => {
+    currentDrag = el;
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    currentDrag = null;
+  });
+});
+
+document.querySelectorAll('.drop-zone').forEach(zone => {
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    if (!currentDrag) return;
+    const field = currentDrag.dataset.field;
+    const zoneId = zone.id;
+    // Add to state
+    if (!dropState[zoneId].includes(field)) {
+      dropState[zoneId].push(field);
+    }
+    // Mark source as placed
+    currentDrag.classList.add('placed');
+    // Update zone display
+    renderDropZone(zoneId);
+  });
+});
+
+function renderDropZone(zoneId) {
+  const zone = document.getElementById(zoneId);
+  const fields = dropState[zoneId];
+  if (fields.length === 0) {
+    zone.innerHTML = '<span class="dz-label">Arrastra aquí...</span>';
+    zone.classList.remove('filled');
+    return;
+  }
+  zone.classList.add('filled');
+  zone.innerHTML = fields.map(f =>
+    `<div class="dz-field">${f} <button class="remove-btn" onclick="removeDrop('${zoneId}','${f}')">✕</button></div>`
+  ).join('');
+}
+
+function removeDrop(zoneId, field) {
+  dropState[zoneId] = dropState[zoneId].filter(f => f !== field);
+  const orig = document.querySelector(`[data-field="${field}"]`);
+  if (orig) orig.classList.remove('placed');
+  renderDropZone(zoneId);
+}
+
+function resetDrag() {
+  dropState['dz-guardar'] = []; dropState['dz-derivado'] = [];
+  document.querySelectorAll('.draggable-field').forEach(f => f.classList.remove('placed'));
+  ['dz-guardar','dz-derivado'].forEach(id => {
+    const z = document.getElementById(id);
+    z.innerHTML = '<span class="dz-label">Arrastra aquí...</span>';
+    z.classList.remove('filled','correct-zone','wrong-zone');
+  });
+  const fb = document.getElementById('fb-drag');
+  fb.classList.remove('show','ok','ko');
+}
+
+function checkDrag() {
+  const correct = {
+    'dz-guardar': ['NombreObjeto','Cantidad'],
+    'dz-derivado': ['TotalObjetosInventario','PesoTotalEquipado','PrecioVentaCalculado']
+  };
+  let ok = true;
+  ['dz-guardar','dz-derivado'].forEach(zid => {
+    const zone = document.getElementById(zid);
+    const expected = correct[zid].sort().join(',');
+    const actual = [...dropState[zid]].sort().join(',');
+    if (expected === actual) {
+      zone.classList.add('correct-zone'); zone.classList.remove('wrong-zone');
+    } else {
+      zone.classList.add('wrong-zone'); zone.classList.remove('correct-zone');
+      ok = false;
+    }
+  });
+  const fb = document.getElementById('fb-drag');
+  fb.classList.add('show');
+  if (ok) {
+    fb.className = 'feedback-box show ok';
+    fb.innerHTML = '<strong>¡Perfecto!</strong> Has identificado correctamente los campos derivados. TotalObjetos y PesoTotal se calculan con consultas. PrecioVenta puede incluir modificadores y debe calcularse en tiempo real.';
+  } else {
+    fb.className = 'feedback-box show ko';
+    fb.innerHTML = '<strong>Revisa las zonas marcadas en rojo.</strong> Pista: un campo derivado es cualquier valor que puedas obtener haciendo COUNT, SUM u otra operación sobre otros campos ya existentes.';
+  }
+}
+
+/* ── Init: animar primera misión ── */
+window.addEventListener('load', () => {
+  setTimeout(() => animateSteps('steps-m1'), 300);
+});
+</script>
+</body>
+</html>
