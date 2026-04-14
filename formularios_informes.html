@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formularios e Informes — Microsoft Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff;--bg2:#f6f8fa;--bg3:#f0f2f5;
+  --border:#d0d7de;--border2:#e6eaef;
+  --text:#1f2328;--muted:#636c76;--muted2:#57606a;
+  --accent:#0969da;--acc-dim:#0969da10;
+  --green:#1a7f37;--grn-dim:#1a7f3712;
+  --orange:#bc4c00;--org-dim:#bc4c0010;
+  --red:#cf222e;--red-dim:#cf222e10;
+  --purple:#6639ba;--pur-dim:#6639ba10;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Consolas',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;
+  display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── Layout ── */
+.layout{display:flex;flex:1;}
+.sidebar{
+  width:240px;flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  padding:1.25rem 0;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.main{flex:1;max-width:860px;padding:2.5rem 3rem;overflow-x:hidden;}
+@media(max-width:768px){.sidebar{display:none}.main{padding:1.5rem 1.25rem}}
+
+/* ── Header ── */
+.page-header{
+  border-bottom:1px solid var(--border2);padding-bottom:1.5rem;margin-bottom:2rem;
+}
+.page-header .breadcrumb{
+  font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem;
+  display:flex;align-items:center;gap:0.4rem;
+}
+.page-header h1{font-size:1.9rem;font-weight:700;letter-spacing:-0.02em;color:var(--text);}
+.page-header .subtitle{color:var(--muted2);margin-top:0.35rem;font-size:0.95rem;}
+.header-meta{display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap;}
+.meta-chip{
+  font-size:0.75rem;padding:0.2rem 0.65rem;border-radius:20px;
+  background:var(--bg2);border:1px solid var(--border);color:var(--muted2);
+}
+
+/* ── Sidebar nav ── */
+.sb-section{
+  font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;
+  color:var(--muted);padding:0.5rem 1.1rem 0.25rem;margin-top:0.5rem;
+}
+.sb-link{
+  display:block;font-size:0.82rem;color:var(--muted2);
+  padding:0.3rem 1.1rem;text-decoration:none;border-left:2px solid transparent;
+  transition:all 0.15s;
+}
+.sb-link:hover{color:var(--accent);background:var(--acc-dim);}
+.sb-link.active{color:var(--accent);border-left-color:var(--accent);background:var(--acc-dim);}
+
+/* ── Cells (Jupyter-style) ── */
+.cell{margin-bottom:1.75rem;position:relative;}
+.cell-label{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  font-family:var(--mono);font-size:0.68rem;color:var(--muted);
+  margin-bottom:0.4rem;
+}
+.cell-label .cl-type{
+  padding:0.1rem 0.45rem;border-radius:3px;font-size:0.62rem;font-weight:500;
+  text-transform:uppercase;letter-spacing:0.06em;
+}
+.cl-concept {background:#ddf4ff;color:#0550ae;}
+.cl-practice{background:#dafbe1;color:#116329;}
+.cl-tip     {background:#fff8c5;color:#9a6700;}
+.cl-warning {background:#ffebe9;color:#82071e;}
+.cl-example {background:#f3f0ff;color:#5319e7;}
+
+/* ── Markdown cell ── */
+.md-cell{
+  background:var(--bg);border:1px solid var(--border2);
+  border-left:3px solid transparent;border-radius:0 6px 6px 0;
+  padding:1.1rem 1.4rem;
+}
+.md-cell:hover{border-left-color:var(--border);}
+.md-cell h2{font-size:1.25rem;font-weight:700;margin-bottom:0.6rem;letter-spacing:-0.01em;}
+.md-cell h3{font-size:1rem;font-weight:600;margin-bottom:0.5rem;color:var(--text);}
+.md-cell p{margin-bottom:0.75rem;color:var(--muted2);font-size:0.92rem;}
+.md-cell p:last-child{margin-bottom:0;}
+.md-cell strong{color:var(--text);font-weight:600;}
+.md-cell em{color:var(--accent);font-style:normal;font-weight:500;}
+.md-cell ul,.md-cell ol{padding-left:1.4rem;color:var(--muted2);font-size:0.92rem;}
+.md-cell li{margin-bottom:0.35rem;}
+.md-cell code{
+  font-family:var(--mono);font-size:0.82rem;
+  background:var(--bg2);padding:0.1rem 0.4rem;border-radius:3px;
+  border:1px solid var(--border2);color:var(--accent);
+}
+
+/* ── Tip / warning cells ── */
+.tip-cell{
+  background:var(--bg);border:1px solid #d4a72c;border-left:3px solid #d4a72c;
+  border-radius:0 6px 6px 0;padding:1rem 1.25rem;
+}
+.tip-cell .tip-icon{font-size:1rem;margin-right:0.3rem;}
+.tip-cell p{font-size:0.88rem;color:var(--muted2);margin:0;}
+.tip-cell strong{color:#7d4e00;}
+.warn-cell{
+  background:var(--bg);border:1px solid var(--red);border-left:3px solid var(--red);
+  border-radius:0 6px 6px 0;padding:1rem 1.25rem;
+}
+.warn-cell p{font-size:0.88rem;color:var(--muted2);margin:0;}
+.warn-cell strong{color:var(--red);}
+
+/* ── Step list ── */
+.steps{list-style:none;padding:0;display:flex;flex-direction:column;gap:0.6rem;}
+.steps li{
+  display:flex;gap:0.9rem;align-items:flex-start;
+  padding:0.75rem 1rem;background:var(--bg2);
+  border:1px solid var(--border2);border-radius:6px;
+  font-size:0.88rem;color:var(--muted2);
+}
+.steps li strong{display:block;color:var(--text);font-size:0.9rem;margin-bottom:0.15rem;}
+.step-num{
+  font-family:var(--mono);font-size:0.72rem;font-weight:600;
+  min-width:1.8rem;height:1.8rem;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent);color:#fff;flex-shrink:0;
+}
+
+/* ── Access UI Mockups ── */
+.access-window{
+  border:1px solid var(--border);border-radius:6px;overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,0.08);margin:0.5rem 0;
+  font-family:var(--sans);
+}
+.access-titlebar{
+  background:#2b579a;color:#fff;padding:0.35rem 0.85rem;
+  display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;
+}
+.access-titlebar .win-controls{display:flex;gap:0.3rem;margin-left:auto;}
+.win-btn{width:12px;height:12px;border-radius:50%;display:inline-block;}
+.wc-min{background:#febc2e;}.wc-max{background:#28c940;}.wc-cl{background:#ff5f57;}
+
+.access-ribbon{
+  background:#f3f3f3;border-bottom:1px solid #c8c8c8;
+  padding:0.3rem 0.6rem 0;display:flex;gap:0;overflow-x:auto;
+}
+.ribbon-tab{
+  font-size:0.72rem;padding:0.3rem 0.8rem;color:#444;cursor:pointer;
+  border-bottom:2px solid transparent;white-space:nowrap;
+}
+.ribbon-tab.active{color:#2b579a;border-bottom-color:#2b579a;background:#fff;}
+
+.access-form-canvas{
+  background:#e8e8e8;padding:1.25rem;min-height:200px;position:relative;
+}
+.form-surface{
+  background:#fff;border:1px solid #aaa;
+  position:relative;display:inline-block;
+  min-width:480px;min-height:160px;
+  box-shadow:2px 2px 6px rgba(0,0,0,0.15);
+}
+.form-header-bar{
+  background:#2b579a;color:#fff;font-size:0.75rem;
+  padding:0.2rem 0.5rem;letter-spacing:0.04em;
+}
+.form-body{padding:0.9rem;display:flex;flex-direction:column;gap:0.6rem;}
+
+/* Controls */
+.ctrl-row{display:flex;align-items:center;gap:0.6rem;}
+.ctrl-label{
+  font-size:0.75rem;color:#333;min-width:100px;text-align:right;
+}
+.ctrl-textbox{
+  border:1px solid #7a9cc9;padding:0.2rem 0.45rem;
+  font-size:0.8rem;min-width:160px;background:#fff;color:#222;
+  outline:none;
+}
+.ctrl-textbox:focus{border-color:#2b579a;box-shadow:0 0 0 2px rgba(43,87,154,0.2);}
+.ctrl-combo{
+  border:1px solid #7a9cc9;padding:0.2rem 0.45rem;
+  font-size:0.8rem;min-width:160px;background:#fff;
+  appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0 0l4 4 4-4z' fill='%23555'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center;padding-right:18px;
+}
+.ctrl-checkbox-row{display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;}
+.ctrl-check{width:13px;height:13px;border:1px solid #7a9cc9;}
+.ctrl-btn{
+  background:#e1e1e1;border:1px solid #aaa;padding:0.2rem 0.85rem;
+  font-size:0.78rem;cursor:pointer;color:#333;
+}
+.ctrl-btn:hover{background:#d0d0d0;}
+.ctrl-btn.primary{background:#2b579a;color:#fff;border-color:#1e3f74;}
+.ctrl-btn.primary:hover{background:#1e3f74;}
+
+/* Form nav bar */
+.form-navbar{
+  background:#f0f0f0;border-top:1px solid #ccc;
+  display:flex;align-items:center;gap:0.3rem;padding:0.2rem 0.5rem;
+  font-size:0.72rem;color:#555;
+}
+.nav-arrow{padding:0.1rem 0.3rem;background:#fff;border:1px solid #bbb;cursor:pointer;color:#555;}
+.nav-record{padding:0.1rem 0.6rem;border:1px solid #bbb;font-family:var(--mono);font-size:0.72rem;}
+
+/* Report mockup */
+.report-surface{
+  background:#fff;border:1px solid var(--border);
+  font-family:var(--sans);font-size:0.8rem;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+.report-section{padding:0.5rem 0.8rem;border-bottom:1px dashed var(--border);}
+.report-section:last-child{border-bottom:none;}
+.rs-label{
+  font-size:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--muted);margin-bottom:0.2rem;display:flex;align-items:center;gap:0.35rem;
+}
+.rs-label::after{content:'';flex:1;height:1px;background:var(--border2);}
+.report-row{display:flex;gap:1rem;color:var(--text);align-items:center;}
+.report-row.header-row{font-weight:600;font-size:0.75rem;color:var(--muted);border-bottom:1px solid var(--border);}
+.report-cell{flex:1;padding:0.25rem 0;}
+.report-total{font-weight:700;border-top:2px solid var(--text);}
+
+/* ── Controls palette ── */
+.controls-palette{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.6rem;
+  background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:1rem;
+}
+.ctrl-item{
+  background:var(--bg);border:1px solid var(--border2);border-radius:4px;
+  padding:0.65rem 0.75rem;cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:flex-start;gap:0.5rem;
+}
+.ctrl-item:hover{border-color:var(--accent);background:var(--acc-dim);}
+.ctrl-item.selected{border-color:var(--accent);background:var(--acc-dim);}
+.ci-icon{font-size:1.1rem;flex-shrink:0;}
+.ci-text .ci-name{font-size:0.82rem;font-weight:600;color:var(--text);}
+.ci-text .ci-desc{font-size:0.72rem;color:var(--muted);margin-top:0.1rem;}
+.ctrl-detail{
+  display:none;
+  background:var(--bg);border:1px solid var(--accent);border-radius:6px;
+  padding:1rem 1.2rem;margin-top:0.75rem;
+  animation:fadeIn 0.2s ease;
+}
+.ctrl-detail.show{display:block;}
+.cd-name{font-weight:700;font-size:0.95rem;color:var(--accent);margin-bottom:0.5rem;}
+.cd-props{display:flex;flex-direction:column;gap:0.4rem;}
+.cd-prop{display:flex;gap:0.6rem;align-items:flex-start;font-size:0.83rem;}
+.cd-pname{min-width:130px;color:var(--muted);font-family:var(--mono);font-size:0.78rem;}
+.cd-pval{color:var(--text);}
+
+/* ── Properties panel ── */
+.properties-panel{
+  background:var(--bg2);border:1px solid var(--border);border-radius:6px;
+  overflow:hidden;font-size:0.82rem;
+}
+.pp-header{
+  background:var(--bg3);border-bottom:1px solid var(--border);
+  padding:0.5rem 0.9rem;font-weight:600;color:var(--text);font-size:0.85rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.pp-tabs{display:flex;border-bottom:1px solid var(--border);}
+.pp-tab{
+  padding:0.35rem 0.8rem;font-size:0.75rem;color:var(--muted2);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all 0.15s;
+}
+.pp-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.pp-body{padding:0;}
+.pp-row{
+  display:grid;grid-template-columns:140px 1fr;
+  border-bottom:1px solid var(--border2);
+}
+.pp-row:last-child{border-bottom:none;}
+.pp-key{
+  padding:0.35rem 0.7rem;font-size:0.78rem;color:var(--muted2);
+  background:var(--bg2);border-right:1px solid var(--border2);
+}
+.pp-val{
+  padding:0.35rem 0.7rem;font-size:0.78rem;color:var(--text);
+  background:var(--bg);
+}
+.pp-val.editable{cursor:pointer;}
+.pp-val.editable:hover{background:var(--acc-dim);color:var(--accent);}
+
+/* ── Exercises ── */
+.exercise-block{
+  background:var(--bg2);border:1px solid var(--border);border-radius:6px;
+  overflow:hidden;margin-top:0.5rem;
+}
+.ex-header{
+  background:var(--bg3);border-bottom:1px solid var(--border);
+  padding:0.7rem 1rem;display:flex;align-items:center;gap:0.6rem;
+}
+.ex-num{
+  font-family:var(--mono);font-size:0.68rem;font-weight:600;
+  background:var(--accent);color:#fff;padding:0.15rem 0.5rem;border-radius:3px;
+}
+.ex-title{font-weight:600;font-size:0.9rem;}
+.ex-diff{margin-left:auto;font-size:0.72rem;padding:0.15rem 0.55rem;border-radius:20px;}
+.ex-easy  {background:var(--grn-dim);color:var(--green);border:1px solid var(--green);}
+.ex-medium{background:#fff8c5;color:#7d4e00;border:1px solid #d4a72c;}
+.ex-body{padding:1.1rem;}
+.ex-scenario{
+  background:var(--bg);border-left:3px solid var(--accent);
+  padding:0.75rem 1rem;font-size:0.88rem;color:var(--muted2);
+  margin-bottom:1.1rem;border-radius:0 4px 4px 0;line-height:1.65;
+}
+.ex-scenario strong{color:var(--text);}
+
+/* Checklist */
+.checklist{list-style:none;padding:0;display:flex;flex-direction:column;gap:0.4rem;}
+.checklist li{
+  display:flex;align-items:flex-start;gap:0.7rem;
+  padding:0.55rem 0.75rem;background:var(--bg);
+  border:1px solid var(--border2);border-radius:4px;
+  font-size:0.87rem;color:var(--text);cursor:pointer;transition:all 0.15s;
+}
+.checklist li:hover{border-color:var(--accent);background:var(--acc-dim);}
+.checklist li.done{
+  border-color:var(--green);background:var(--grn-dim);color:var(--muted2);
+  text-decoration:line-through;
+}
+.check-box{
+  width:16px;height:16px;border:1.5px solid var(--border);border-radius:3px;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  margin-top:2px;transition:all 0.15s;font-size:0.65rem;
+}
+.checklist li.done .check-box{background:var(--green);border-color:var(--green);color:#fff;}
+
+.ex-progress{
+  font-family:var(--mono);font-size:0.72rem;color:var(--muted);
+  margin-top:0.75rem;display:flex;align-items:center;gap:0.5rem;
+}
+.prog-bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--green);border-radius:3px;width:0%;transition:width 0.3s ease;}
+
+/* ── Comparison table ── */
+.compare-tbl{
+  width:100%;border-collapse:collapse;font-size:0.85rem;margin:0.5rem 0;
+}
+.compare-tbl th{
+  background:var(--bg2);border:1px solid var(--border);
+  padding:0.55rem 0.85rem;text-align:left;font-weight:600;font-size:0.8rem;color:var(--muted2);
+}
+.compare-tbl td{
+  border:1px solid var(--border2);padding:0.5rem 0.85rem;
+  color:var(--muted2);vertical-align:top;
+}
+.compare-tbl tr:hover td{background:var(--bg2);}
+.compare-tbl .hl{color:var(--text);font-weight:500;}
+
+/* ── Section headers ── */
+.section-header{
+  display:flex;align-items:center;gap:0.75rem;
+  border-bottom:1px solid var(--border2);padding-bottom:0.75rem;
+  margin-bottom:1.5rem;margin-top:2.5rem;
+}
+.section-header:first-of-type{margin-top:0;}
+.sh-num{
+  font-family:var(--mono);font-size:0.72rem;font-weight:600;
+  background:var(--bg2);border:1px solid var(--border);
+  padding:0.2rem 0.6rem;border-radius:3px;color:var(--muted);
+}
+.sh-title{font-size:1.3rem;font-weight:700;letter-spacing:-0.01em;}
+
+/* ── Footer ── */
+footer{
+  border-top:1px solid var(--border2);padding:1.25rem 3rem;
+  font-size:0.78rem;color:var(--muted);display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:0.5rem;
+}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div style="padding:0.75rem 1.1rem 1rem;border-bottom:1px solid var(--border2);margin-bottom:0.5rem;">
+    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;">Módulo 5</div>
+    <div style="font-size:0.9rem;font-weight:700;color:var(--text);">Formularios e Informes</div>
+  </div>
+  <div class="sb-section">Formularios</div>
+  <a class="sb-link active" href="#intro">¿Qué es un formulario?</a>
+  <a class="sb-link" href="#crear-form">Crear un formulario</a>
+  <a class="sb-link" href="#controles">Controles</a>
+  <a class="sb-link" href="#propiedades">Propiedades</a>
+  <a class="sb-link" href="#subformularios">Subformularios</a>
+  <div class="sb-section">Informes</div>
+  <a class="sb-link" href="#informes">¿Qué es un informe?</a>
+  <a class="sb-link" href="#crear-informe">Crear un informe</a>
+  <a class="sb-link" href="#secciones">Secciones</a>
+  <a class="sb-link" href="#totales">Agrupar y totalizar</a>
+  <div class="sb-section">Práctica</div>
+  <a class="sb-link" href="#ejercicios">Ejercicios guiados</a>
+</nav>
+
+<!-- ── Main content ── -->
+<main class="main">
+
+  <div class="page-header">
+    <div class="breadcrumb">
+      <span>Access</span><span>›</span><span>Módulo 5</span>
+    </div>
+    <h1>Formularios e Informes</h1>
+    <p class="subtitle">Crea interfaces de entrada de datos y genera informes profesionales en Microsoft Access.</p>
+    <div class="header-meta">
+      <span class="meta-chip">📋 Formularios</span>
+      <span class="meta-chip">📊 Informes</span>
+      <span class="meta-chip">⏱ ~50 min</span>
+      <span class="meta-chip">Ciclo Medio</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 1 — QUÉ ES UN FORMULARIO
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="intro">
+    <span class="sh-num">01</span>
+    <h2 class="sh-title">¿Qué es un formulario?</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Concepto</span></div>
+    <div class="md-cell">
+      <p>Hasta ahora has introducido datos directamente en la tabla, como si fuera una hoja de cálculo. Los <strong>formularios</strong> son una interfaz visual más cómoda y segura para introducir y consultar datos.</p>
+      <p>Un formulario no almacena datos por sí solo — simplemente <em>muestra y edita</em> los datos que están en la tabla vinculada.</p>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Comparativa</span></div>
+    <div class="md-cell">
+      <table class="compare-tbl">
+        <thead><tr><th></th><th>Vista Hoja de datos (tabla)</th><th>Formulario</th></tr></thead>
+        <tbody>
+          <tr><td class="hl">Aspecto</td><td>Filas y columnas tipo Excel</td><td>Pantalla personalizada con controles</td></tr>
+          <tr><td class="hl">Uso</td><td>Ver muchos registros a la vez</td><td>Trabajar con un registro a la vez</td></tr>
+          <tr><td class="hl">Validación</td><td>Básica</td><td>Puedes añadir mensajes y reglas</td></tr>
+          <tr><td class="hl">Usabilidad</td><td>Técnica — para el diseñador</td><td>Amigable — para el usuario final</td></tr>
+          <tr><td class="hl">¿Modifica datos?</td><td>Sí</td><td>Sí (si está vinculado)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Tipos de formulario</span></div>
+    <div class="md-cell">
+      <ul>
+        <li><strong>Formulario simple</strong> — muestra un registro a la vez. El más habitual.</li>
+        <li><strong>Formulario dividido</strong> — mitad formulario, mitad hoja de datos. Útil para navegar y editar a la vez.</li>
+        <li><strong>Varios elementos</strong> — muestra varios registros en formato formulario (como tarjetas).</li>
+        <li><strong>Subformulario</strong> — un formulario dentro de otro. Se usa para relaciones 1:N (p. ej. un cliente y todos sus pedidos).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Mockup: formulario simple -->
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-example">Ejemplo visual</span></div>
+    <div class="access-window">
+      <div class="access-titlebar">
+        <span>📋</span><span>frmJugadores — Microsoft Access</span>
+        <div class="win-controls"><span class="win-btn wc-min"></span><span class="win-btn wc-max"></span><span class="win-btn wc-cl"></span></div>
+      </div>
+      <div class="access-ribbon">
+        <div class="ribbon-tab">Archivo</div>
+        <div class="ribbon-tab active">Inicio</div>
+        <div class="ribbon-tab">Crear</div>
+        <div class="ribbon-tab">Herramientas de formulario</div>
+      </div>
+      <div class="access-form-canvas">
+        <div class="form-surface">
+          <div class="form-header-bar">Ficha de Jugador</div>
+          <div class="form-body">
+            <div class="ctrl-row">
+              <span class="ctrl-label">ID Jugador:</span>
+              <input class="ctrl-textbox" value="3" style="width:60px" readonly>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">Nombre de usuario:</span>
+              <input class="ctrl-textbox" value="StarRacer" style="width:180px">
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">Email:</span>
+              <input class="ctrl-textbox" value="star@yahoo.com" style="width:200px">
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">País:</span>
+              <select class="ctrl-combo" style="width:140px"><option>Argentina</option><option>España</option><option>México</option></select>
+            </div>
+            <div class="ctrl-row" style="margin-top:0.3rem;">
+              <span class="ctrl-label">Cuenta activa:</span>
+              <input class="ctrl-check" type="checkbox" checked>
+            </div>
+            <div class="ctrl-row" style="margin-top:0.5rem;justify-content:flex-end;gap:0.4rem;">
+              <button class="ctrl-btn">Cancelar</button>
+              <button class="ctrl-btn primary">Guardar</button>
+            </div>
+          </div>
+          <div class="form-navbar">
+            <button class="nav-arrow">|◀</button>
+            <button class="nav-arrow">◀</button>
+            <span>Registro</span>
+            <input class="nav-record" value="3">
+            <span>de 8</span>
+            <button class="nav-arrow">▶</button>
+            <button class="nav-arrow">▶|</button>
+            <button class="nav-arrow">▶*</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 2 — CREAR UN FORMULARIO
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="crear-form">
+    <span class="sh-num">02</span>
+    <h2 class="sh-title">Crear un formulario</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Método rápido: Asistente</span></div>
+    <div class="md-cell">
+      <p>Access ofrece varias formas de crear formularios. La más rápida para empezar es el <strong>botón Formulario</strong> (un clic). La más flexible es el <strong>Asistente para formularios</strong>.</p>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-practice">Paso a paso</span></div>
+    <div class="md-cell">
+      <ol class="steps">
+        <li><span class="step-num">1</span><div><strong>Selecciona la tabla o consulta origen</strong>En el panel de navegación, haz clic en la tabla que quieres usar (ej. Jugadores).</div></li>
+        <li><span class="step-num">2</span><div><strong>Pestaña Crear → Asistente para formularios</strong>Se abrirá un diálogo de varios pasos.</div></li>
+        <li><span class="step-num">3</span><div><strong>Elige los campos</strong>Selecciona los campos que quieres que aparezcan en el formulario usando los botones <code>&gt;</code> y <code>&gt;&gt;</code>.</div></li>
+        <li><span class="step-num">4</span><div><strong>Elige la distribución</strong>Columnas (un registro a la vez) es la más habitual. Tabular muestra varios.</div></li>
+        <li><span class="step-num">5</span><div><strong>Pon nombre al formulario</strong>Por convenio, los formularios se nombran con el prefijo <code>frm</code>: <em>frmJugadores</em>.</div></li>
+        <li><span class="step-num">6</span><div><strong>Abrir el formulario para ver los datos</strong>Access genera el formulario y lo abre en Vista Formulario.</div></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-tip">Consejo</span></div>
+    <div class="tip-cell">
+      <p><span class="tip-icon">💡</span><strong>Vistas del formulario:</strong> Hay tres vistas que usarás continuamente. <strong>Vista Formulario</strong> — para introducir datos. <strong>Vista Diseño</strong> — para modificar el aspecto y los controles. <strong>Vista Presentación</strong> — para ajustar tamaños con datos reales visibles. Cambia entre ellas con el botón derecho sobre la pestaña del formulario.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 3 — CONTROLES
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="controles">
+    <span class="sh-num">03</span>
+    <h2 class="sh-title">Controles del formulario</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Paleta de controles</span></div>
+    <div class="md-cell">
+      <p>En <strong>Vista Diseño</strong>, el panel <em>Controles</em> (pestaña Diseño de la cinta) contiene todos los elementos que puedes arrastrar al formulario. Haz clic en cada control para ver sus características:</p>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="controls-palette" id="ctrlPalette">
+      <div class="ctrl-item" onclick="selectControl('textbox')">
+        <span class="ci-icon">🔡</span>
+        <div class="ci-text"><div class="ci-name">Cuadro de texto</div><div class="ci-desc">TextBox — mostrar o editar un campo</div></div>
+      </div>
+      <div class="ctrl-item" onclick="selectControl('label')">
+        <span class="ci-icon">🏷️</span>
+        <div class="ci-text"><div class="ci-name">Etiqueta</div><div class="ci-desc">Label — texto fijo descriptivo</div></div>
+      </div>
+      <div class="ctrl-item" onclick="selectControl('combo')">
+        <span class="ci-icon">📋</span>
+        <div class="ci-text"><div class="ci-name">Cuadro combinado</div><div class="ci-desc">ComboBox — lista desplegable</div></div>
+      </div>
+      <div class="ctrl-item" onclick="selectControl('check')">
+        <span class="ci-icon">☑️</span>
+        <div class="ci-text"><div class="ci-name">Casilla de verificación</div><div class="ci-desc">CheckBox — campos Sí/No</div></div>
+      </div>
+      <div class="ctrl-item" onclick="selectControl('button')">
+        <span class="ci-icon">🔘</span>
+        <div class="ci-text"><div class="ci-name">Botón de comando</div><div class="ci-desc">CommandButton — ejecutar acción</div></div>
+      </div>
+      <div class="ctrl-item" onclick="selectControl('image')">
+        <span class="ci-icon">🖼️</span>
+        <div class="ci-text"><div class="ci-name">Imagen</div><div class="ci-desc">Image — logo o foto decorativa</div></div>
+      </div>
+      <div class="ctrl-item" onclick="selectControl('subform')">
+        <span class="ci-icon">🗂️</span>
+        <div class="ci-text"><div class="ci-name">Subformulario</div><div class="ci-desc">SubForm — formulario anidado</div></div>
+      </div>
+      <div class="ctrl-item" onclick="selectControl('line')">
+        <span class="ci-icon">➖</span>
+        <div class="ci-text"><div class="ci-name">Línea / Rectángulo</div><div class="ci-desc">Elementos decorativos</div></div>
+      </div>
+    </div>
+    <div class="ctrl-detail" id="ctrlDetail"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 4 — PROPIEDADES
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="propiedades">
+    <span class="sh-num">04</span>
+    <h2 class="sh-title">Propiedades importantes</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Hoja de propiedades</span></div>
+    <div class="md-cell">
+      <p>Cada control tiene una <strong>Hoja de propiedades</strong> (F4 en Vista Diseño) con centenares de opciones. Las más importantes son:</p>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-example">Panel de propiedades (simulación)</span></div>
+    <div class="properties-panel">
+      <div class="pp-header"><span>📋</span> Hoja de propiedades — txtNombreUsuario</div>
+      <div class="pp-tabs">
+        <div class="pp-tab active" onclick="switchPPTab(0,this)">Formato</div>
+        <div class="pp-tab" onclick="switchPPTab(1,this)">Datos</div>
+        <div class="pp-tab" onclick="switchPPTab(2,this)">Eventos</div>
+        <div class="pp-tab" onclick="switchPPTab(3,this)">Otras</div>
+      </div>
+      <div class="pp-body" id="ppBody0">
+        <div class="pp-row"><div class="pp-key">Ancho</div><div class="pp-val editable">6 cm</div></div>
+        <div class="pp-row"><div class="pp-key">Alto</div><div class="pp-val editable">0,635 cm</div></div>
+        <div class="pp-row"><div class="pp-key">Color de fondo</div><div class="pp-val editable">Blanco</div></div>
+        <div class="pp-row"><div class="pp-key">Color de texto</div><div class="pp-val editable">Texto 1</div></div>
+        <div class="pp-row"><div class="pp-key">Tamaño de fuente</div><div class="pp-val editable">11</div></div>
+        <div class="pp-row"><div class="pp-key">Negrita</div><div class="pp-val editable">No</div></div>
+        <div class="pp-row"><div class="pp-key">Formato</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+        <div class="pp-row"><div class="pp-key">Máscara de entrada</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+        <div class="pp-row"><div class="pp-key">Visible</div><div class="pp-val editable">Sí</div></div>
+        <div class="pp-row"><div class="pp-key">Habilitado</div><div class="pp-val editable">Sí</div></div>
+      </div>
+      <div class="pp-body" id="ppBody1" style="display:none">
+        <div class="pp-row"><div class="pp-key" style="background:#fff8c5;font-weight:600">Origen del control</div><div class="pp-val editable" style="color:var(--accent);font-weight:600">NombreUsuario</div></div>
+        <div class="pp-row"><div class="pp-key">Regla de validación</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+        <div class="pp-row"><div class="pp-key">Texto de validación</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+        <div class="pp-row"><div class="pp-key">Valor predeterminado</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+        <div class="pp-row"><div class="pp-key">Bloqueado</div><div class="pp-val editable">No</div></div>
+        <div class="pp-row"><div class="pp-key">Filtros</div><div class="pp-val editable">Sí</div></div>
+      </div>
+      <div class="pp-body" id="ppBody2" style="display:none">
+        <div class="pp-row"><div class="pp-key">Al hacer clic</div><div class="pp-val editable" style="color:var(--muted)">[Procedimiento de evento]</div></div>
+        <div class="pp-row"><div class="pp-key">Al cambiar</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+        <div class="pp-row"><div class="pp-key">Al recibir el foco</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+        <div class="pp-row"><div class="pp-key">Al perder el foco</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+      </div>
+      <div class="pp-body" id="ppBody3" style="display:none">
+        <div class="pp-row"><div class="pp-key" style="background:#fff8c5;font-weight:600">Nombre</div><div class="pp-val editable" style="color:var(--accent);font-weight:600">txtNombreUsuario</div></div>
+        <div class="pp-row"><div class="pp-key">Texto de la barra de estado</div><div class="pp-val editable" style="color:var(--muted)">(vacío)</div></div>
+        <div class="pp-row"><div class="pp-key">Índice de tabulación</div><div class="pp-val editable">2</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-tip">Las 3 propiedades más importantes</span></div>
+    <div class="tip-cell">
+      <p><strong>Nombre</strong> (pestaña Otras) — el identificador del control en el código. Usa el prefijo: <code>txt</code> para cuadros de texto, <code>cbo</code> para combos, <code>btn</code> para botones, <code>chk</code> para casillas.<br><br>
+      <strong>Origen del control</strong> (pestaña Datos) — el campo de la tabla al que está conectado. Si está en blanco, el control es decorativo (no guarda datos).<br><br>
+      <strong>Bloqueado</strong> (pestaña Datos) — si es Sí, el usuario puede ver el dato pero no modificarlo. Útil para campos calculados o IDs.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 5 — SUBFORMULARIOS
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="subformularios">
+    <span class="sh-num">05</span>
+    <h2 class="sh-title">Subformularios</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Relación 1:N en pantalla</span></div>
+    <div class="md-cell">
+      <p>Un <strong>subformulario</strong> permite mostrar los registros del lado N de una relación 1:N dentro del formulario principal del lado 1. Por ejemplo: el formulario muestra los datos de un jugador, y el subformulario muestra todas sus naves.</p>
+      <p>Access vincula automáticamente el campo <em>IDJugador</em> del formulario principal con el campo <em>IDJugador</em> del subformulario.</p>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-example">Vista del resultado</span></div>
+    <div class="access-window">
+      <div class="access-titlebar"><span>📋</span><span>frmJugadoresConNaves</span>
+        <div class="win-controls"><span class="win-btn wc-min"></span><span class="win-btn wc-max"></span><span class="win-btn wc-cl"></span></div>
+      </div>
+      <div class="access-form-canvas">
+        <div class="form-surface" style="min-width:520px">
+          <div class="form-header-bar">Jugador y sus Naves</div>
+          <div class="form-body">
+            <div class="ctrl-row">
+              <span class="ctrl-label">Usuario:</span>
+              <input class="ctrl-textbox" value="NeonPilot" style="width:180px" readonly>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">País:</span>
+              <input class="ctrl-textbox" value="México" style="width:120px" readonly>
+            </div>
+            <!-- Subformulario -->
+            <div style="margin-top:0.6rem;border:2px solid #2b579a;padding:0.1rem;">
+              <div style="background:#dce6f1;font-size:0.7rem;padding:0.2rem 0.5rem;color:#1f3864;font-weight:600;">Naves del jugador (subformulario)</div>
+              <table style="width:100%;font-size:0.75rem;border-collapse:collapse;">
+                <thead style="background:#f2f2f2;">
+                  <tr><td style="padding:0.2rem 0.5rem;border:1px solid #ccc;">Nombre nave</td><td style="padding:0.2rem 0.5rem;border:1px solid #ccc;">Modelo</td><td style="padding:0.2rem 0.5rem;border:1px solid #ccc;">Velocidad</td></tr>
+                </thead>
+                <tbody>
+                  <tr><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;">Neón X</td><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;">Interceptor</td><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;">555</td></tr>
+                  <tr style="background:#f9f9f9;"><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;">Photon</td><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;">Stealth</td><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;">480</td></tr>
+                  <tr><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;color:#aaa;font-style:italic;">(nueva nave)</td><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;"></td><td style="padding:0.2rem 0.5rem;border:1px solid #e0e0e0;"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="form-navbar">
+            <button class="nav-arrow">|◀</button><button class="nav-arrow">◀</button>
+            <span>Registro</span><input class="nav-record" value="2"><span>de 8</span>
+            <button class="nav-arrow">▶</button><button class="nav-arrow">▶|</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 6 — QUÉ ES UN INFORME
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="informes">
+    <span class="sh-num">06</span>
+    <h2 class="sh-title">¿Qué es un informe?</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Concepto</span></div>
+    <div class="md-cell">
+      <p>Un <strong>informe</strong> muestra datos formateados para <em>imprimir o exportar</em>. A diferencia del formulario, un informe es de <strong>solo lectura</strong> — no se puede usar para modificar datos.</p>
+      <table class="compare-tbl" style="margin-top:0.75rem;">
+        <thead><tr><th></th><th>Formulario</th><th>Informe</th></tr></thead>
+        <tbody>
+          <tr><td class="hl">Propósito</td><td>Introducir y editar datos</td><td>Presentar datos formateados</td></tr>
+          <tr><td class="hl">¿Editable?</td><td>Sí</td><td>No</td></tr>
+          <tr><td class="hl">Destino</td><td>Pantalla (uso interactivo)</td><td>Impresora, PDF, pantalla</td></tr>
+          <tr><td class="hl">Totales</td><td>Limitados</td><td>Suma, cuenta, promedio por grupos</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 7 — CREAR INFORME
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="crear-informe">
+    <span class="sh-num">07</span>
+    <h2 class="sh-title">Crear un informe</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-practice">Paso a paso</span></div>
+    <div class="md-cell">
+      <ol class="steps">
+        <li><span class="step-num">1</span><div><strong>Pestaña Crear → Asistente para informes</strong></div></li>
+        <li><span class="step-num">2</span><div><strong>Elige la tabla u consulta origen y los campos</strong>Puedes cruzar campos de varias tablas si hay relaciones definidas.</div></li>
+        <li><span class="step-num">3</span><div><strong>Niveles de agrupación</strong>Agrupa por un campo para obtener subtotales. Ej: agrupar resultados por Carrera.</div></li>
+        <li><span class="step-num">4</span><div><strong>Criterio de ordenación</strong>Define el orden de los registros dentro de cada grupo.</div></li>
+        <li><span class="step-num">5</span><div><strong>Distribución y orientación</strong>Escalonada / Bloque. Vertical / Horizontal (apaisado).</div></li>
+        <li><span class="step-num">6</span><div><strong>Nombrar el informe</strong>Usa el prefijo <code>rpt</code>: <em>rptResultadosPorCarrera</em>.</div></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 8 — SECCIONES
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="secciones">
+    <span class="sh-num">08</span>
+    <h2 class="sh-title">Secciones del informe</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-example">Anatomía de un informe</span></div>
+    <div class="report-surface">
+      <div class="report-section" style="background:#e8f0fb;">
+        <div class="rs-label">Encabezado del informe <span style="font-weight:400;font-style:italic">(aparece solo en la 1ª página)</span></div>
+        <div style="font-size:1.1rem;font-weight:700;color:var(--text);">Resultados de Carreras — NeonRace</div>
+        <div style="font-size:0.75rem;color:var(--muted);">Fecha: 01/07/2024</div>
+      </div>
+      <div class="report-section" style="background:#f8f9fa;">
+        <div class="rs-label">Encabezado de página <span style="font-weight:400;font-style:italic">(se repite en cada página)</span></div>
+        <div class="report-row header-row">
+          <div class="report-cell">Nave</div>
+          <div class="report-cell">Piloto</div>
+          <div class="report-cell">Posición</div>
+          <div class="report-cell" style="text-align:right">Puntos</div>
+        </div>
+      </div>
+      <div class="report-section" style="background:#fff8c5;">
+        <div class="rs-label">Encabezado de grupo: Carrera 1</div>
+        <div style="font-weight:600;font-size:0.82rem;">🏁 Carrera 1 — Desierto de Fuego</div>
+      </div>
+      <div class="report-section">
+        <div class="rs-label">Sección Detalle <span style="font-weight:400;font-style:italic">(se repite por cada registro)</span></div>
+        <div class="report-row"><div class="report-cell">Fénix Rojo</div><div class="report-cell">DragonSlayer99</div><div class="report-cell">1.º</div><div class="report-cell" style="text-align:right">25</div></div>
+        <div class="report-row"><div class="report-cell">Neón X</div><div class="report-cell">NeonPilot</div><div class="report-cell">2.º</div><div class="report-cell" style="text-align:right">18</div></div>
+        <div class="report-row"><div class="report-cell">Rayo Azul</div><div class="report-cell">Electra</div><div class="report-cell">3.º</div><div class="report-cell" style="text-align:right">15</div></div>
+      </div>
+      <div class="report-section" style="background:#f0fff4;">
+        <div class="rs-label">Pie de grupo: Carrera 1</div>
+        <div class="report-row report-total"><div class="report-cell" style="color:var(--muted)">Total Carrera 1</div><div class="report-cell"></div><div class="report-cell"></div><div class="report-cell" style="text-align:right;color:var(--green);font-weight:700">70 pts</div></div>
+      </div>
+      <div class="report-section" style="background:#f8f9fa;">
+        <div class="rs-label">Pie de página <span style="font-weight:400;font-style:italic">(número de página, fecha...)</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);">
+          <span>NeonRace Interactive</span><span>Página 1 de 2</span>
+        </div>
+      </div>
+      <div class="report-section" style="background:#e8f0fb;">
+        <div class="rs-label">Pie del informe <span style="font-weight:400;font-style:italic">(aparece solo al final)</span></div>
+        <div class="report-row report-total"><div class="report-cell" style="color:var(--text)">TOTAL GENERAL</div><div class="report-cell"></div><div class="report-cell"></div><div class="report-cell" style="text-align:right;color:var(--accent);font-size:1rem;">280 pts</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 9 — TOTALES
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="totales">
+    <span class="sh-num">09</span>
+    <h2 class="sh-title">Agrupar y totalizar</h2>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-concept">Funciones en informes</span></div>
+    <div class="md-cell">
+      <p>En los cuadros de texto del <strong>Pie de grupo</strong> o del <strong>Pie del informe</strong>, puedes insertar expresiones con funciones de agregado. Se escriben en la propiedad <em>Origen del control</em>:</p>
+      <table class="compare-tbl">
+        <thead><tr><th>Expresión</th><th>Resultado</th></tr></thead>
+        <tbody>
+          <tr><td><code>=Suma([PuntosGanados])</code></td><td>Suma de todos los puntos del grupo</td></tr>
+          <tr><td><code>=Cuenta([IDResultado])</code></td><td>Número de registros en el grupo</td></tr>
+          <tr><td><code>=Promedio([TiempoTotalSeg])</code></td><td>Tiempo medio del grupo</td></tr>
+          <tr><td><code>=Máximo([VelocidadMax])</code></td><td>Velocidad máxima del grupo</td></tr>
+          <tr><td><code>=Ahora()</code></td><td>Fecha y hora actuales (para el pie de página)</td></tr>
+          <tr><td><code>="Página " & [Página] & " de " & [Páginas]</code></td><td>Número de página</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cell">
+    <div class="cell-label"><span class="cl-type cl-tip">Consejo</span></div>
+    <div class="tip-cell">
+      <p><span class="tip-icon">💡</span><strong>Panel Agrupar, ordenar y total:</strong> En Vista Diseño del informe, el botón <em>Agrupar y ordenar</em> de la cinta abre un panel en la parte inferior donde puedes configurar el agrupamiento sin escribir código. Access genera las secciones de encabezado y pie de grupo automáticamente.</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SECCIÓN 10 — EJERCICIOS
+  ════════════════════════════════════════ -->
+  <div class="section-header" id="ejercicios">
+    <span class="sh-num">10</span>
+    <h2 class="sh-title">Ejercicios guiados</h2>
+  </div>
+
+  <!-- Ejercicio 1 -->
+  <div class="cell">
+    <div class="exercise-block">
+      <div class="ex-header">
+        <span class="ex-num">EJ 01</span>
+        <span class="ex-title">Formulario de Jugadores</span>
+        <span class="ex-diff ex-easy">Básico</span>
+      </div>
+      <div class="ex-body">
+        <div class="ex-scenario">Crea un formulario para introducir y editar los datos de la tabla <strong>JUGADORES</strong>. Debe incluir todos los campos, tener un título visible en la cabecera, y usar una casilla de verificación para el campo <em>CuentaActiva</em>.</div>
+        <ul class="checklist" id="cl1">
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Abre Access y selecciona la tabla JUGADORES en el panel de navegación.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Ve a Crear → Asistente para formularios y añade todos los campos.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Elige distribución En columnas y finaliza el asistente. Nómbralo <code>frmJugadores</code>.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Abre en Vista Diseño. Añade una etiqueta en el Encabezado del formulario con el texto "Ficha de Jugador".</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Selecciona el cuadro de texto de CuentaActiva. En la Hoja de propiedades, comprueba que el Origen del control es <code>CuentaActiva</code>.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Elimina el cuadro de texto de CuentaActiva y añade desde los Controles una Casilla de verificación vinculada al campo CuentaActiva.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Cambia a Vista Formulario y navega por los registros para comprobar que todo funciona.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Guarda el formulario (Ctrl+G).</li>
+        </ul>
+        <div class="ex-progress">
+          <span id="cl1-text">0 / 8 pasos</span>
+          <div class="prog-bar"><div class="prog-fill" id="cl1-fill"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ejercicio 2 -->
+  <div class="cell">
+    <div class="exercise-block">
+      <div class="ex-header">
+        <span class="ex-num">EJ 02</span>
+        <span class="ex-title">Formulario con Subformulario</span>
+        <span class="ex-diff ex-medium">Intermedio</span>
+      </div>
+      <div class="ex-body">
+        <div class="ex-scenario">Crea un formulario que muestre los datos de cada <strong>JUGADOR</strong> junto con todas sus <strong>NAVES</strong>. Para ello necesitarás un subformulario que muestre la lista de naves del jugador seleccionado.</div>
+        <ul class="checklist" id="cl2">
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Crea primero el subformulario: Asistente para formularios → tabla NAVES → todos los campos excepto IDJugador → distribución Tabular → nombre <code>sfrmNaves</code>.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Abre el formulario <code>frmJugadores</code> en Vista Diseño.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Amplía la sección Detalle hacia abajo para hacer espacio al subformulario.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>En el panel Controles, activa el Asistente para controles (icono varita) y luego haz clic en Subformulario/Subinforme.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Dibuja el subformulario en el espacio libre. El asistente te preguntará qué formulario usar — elige <code>sfrmNaves</code>.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Comprueba en la Hoja de propiedades del subformulario que el Campo principal es <code>IDJugador</code> y el Campo secundario es <code>IDJugador</code>.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Cambia a Vista Formulario. Navega por jugadores y verifica que el subformulario muestra solo sus naves.</li>
+        </ul>
+        <div class="ex-progress">
+          <span id="cl2-text">0 / 7 pasos</span>
+          <div class="prog-bar"><div class="prog-fill" id="cl2-fill"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ejercicio 3 -->
+  <div class="cell">
+    <div class="exercise-block">
+      <div class="ex-header">
+        <span class="ex-num">EJ 03</span>
+        <span class="ex-title">Informe de Resultados por Carrera</span>
+        <span class="ex-diff ex-medium">Intermedio</span>
+      </div>
+      <div class="ex-body">
+        <div class="ex-scenario">Crea un informe que muestre todos los resultados agrupados por carrera, con el nombre de la nave (no el ID) y el piloto. Al final de cada grupo debe aparecer el total de puntos, y al final del informe el total general.</div>
+        <ul class="checklist" id="cl3">
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Crea primero una consulta con: RESULTADOS (Posicion, PuntosGanados) + NAVES (NombreNave) + JUGADORES (NombreUsuario) + CARRERAS (IDCarrera). Guárdala como <code>qryResultadosDetalle</code>.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Ve a Crear → Asistente para informes → selecciona <code>qryResultadosDetalle</code> con todos los campos.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>En el paso de agrupación, añade <code>IDCarrera</code> como nivel de agrupación.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>En opciones de resumen, marca Suma para el campo PuntosGanados.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Elige distribución Escalonada, orientación Vertical. Nómbralo <code>rptResultadosPorCarrera</code>.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>En Vista Diseño, comprueba que en el Pie de grupo aparece un cuadro de texto con <code>=Suma([PuntosGanados])</code>.</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>En el Pie del informe añade otro cuadro de texto con <code>=Suma([PuntosGanados])</code> y etiquétalo "TOTAL GENERAL".</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Abre en Vista previa de impresión para ver el resultado final.</li>
+        </ul>
+        <div class="ex-progress">
+          <span id="cl3-text">0 / 8 pasos</span>
+          <div class="prog-bar"><div class="prog-fill" id="cl3-fill"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<footer>
+  <span>Módulo 5 · Formularios e Informes · Microsoft Access</span>
+  <span>Ciclo Medio — Aplicaciones Ofimáticas</span>
+</footer>
+
+<script>
+/* ── Controls palette ── */
+const CTRL_INFO = {
+  textbox: {
+    name: "Cuadro de texto (TextBox)",
+    props: [
+      ["Origen del control","Campo de la tabla al que se vincula. Si está vacío, el dato no se guarda."],
+      ["Nombre","Identificador del control. Convención: prefijo txt (ej: txtNombre)."],
+      ["Formato","Cómo se muestra el valor: fecha corta, moneda, porcentaje..."],
+      ["Máscara de entrada","Obliga a un formato de escritura. Ej: 00/00/0000 para fechas."],
+      ["Bloqueado","Sí = el usuario puede ver pero no editar el valor."],
+      ["Habilitado","No = el control aparece atenuado (gris)."],
+    ]
+  },
+  label: {
+    name: "Etiqueta (Label)",
+    props: [
+      ["Título","El texto que muestra la etiqueta."],
+      ["Nombre","Identificador. Convención: prefijo lbl."],
+      ["Color de fuente","Color del texto."],
+      ["Tamaño de fuente","Tamaño en puntos."],
+      ["Visible","Permite ocultar/mostrar la etiqueta dinámicamente."],
+    ]
+  },
+  combo: {
+    name: "Cuadro combinado (ComboBox)",
+    props: [
+      ["Origen del control","Campo de la tabla donde se guarda el valor seleccionado."],
+      ["Origen de la fila","De dónde viene la lista: otra tabla, consulta o lista de valores."],
+      ["Tipo de origen de fila","Tabla/Consulta, Lista de valores o Lista de campos."],
+      ["Columna dependiente","Qué columna de la lista se guarda en el campo (normalmente la 1ª)."],
+      ["Nombre","Convención: prefijo cbo (ej: cboPais)."],
+    ]
+  },
+  check: {
+    name: "Casilla de verificación (CheckBox)",
+    props: [
+      ["Origen del control","Debe vincularse a un campo de tipo Sí/No."],
+      ["Nombre","Convención: prefijo chk (ej: chkCuentaActiva)."],
+      ["Valor predeterminado","0 (No/Falso) o -1 (Sí/Verdadero)."],
+    ]
+  },
+  button: {
+    name: "Botón de comando (CommandButton)",
+    props: [
+      ["Título","El texto visible en el botón."],
+      ["Al hacer clic","Evento — asigna una macro o código VBA para ejecutar al pulsar."],
+      ["Nombre","Convención: prefijo btn (ej: btnGuardar)."],
+      ["Imagen","Puedes mostrar un icono en lugar de texto."],
+    ]
+  },
+  image: {
+    name: "Imagen (Image)",
+    props: [
+      ["Imagen","Ruta al archivo de imagen (BMP, JPG, PNG)."],
+      ["Modo de ajuste de tamaño","Recortar, Ajustar o Ampliar/reducir."],
+      ["Nombre","Convención: prefijo img."],
+    ]
+  },
+  subform: {
+    name: "Subformulario (SubForm/SubReport)",
+    props: [
+      ["Objeto de origen","El formulario o informe que se muestra dentro."],
+      ["Campo principal","Campo del formulario PRINCIPAL que actúa como vínculo (ej: IDJugador)."],
+      ["Campo secundario","Campo del subformulario que se compara con el campo principal."],
+      ["Nombre","Convención: prefijo sfrm."],
+    ]
+  },
+  line: {
+    name: "Línea / Rectángulo",
+    props: [
+      ["Color de borde","Color de la línea o del borde del rectángulo."],
+      ["Ancho de borde","Grosor en puntos."],
+      ["Estilo de borde","Sólido, guiones, puntos..."],
+      ["Color especial","Permite efectos 3D (relieve, hundido)."],
+    ]
+  }
+};
+
+function selectControl(type) {
+  document.querySelectorAll('.ctrl-item').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  const info = CTRL_INFO[type];
+  const detail = document.getElementById('ctrlDetail');
+  let html = `<div class="cd-name">${info.name}</div><div class="cd-props">`;
+  info.props.forEach(([k,v]) => {
+    html += `<div class="cd-prop"><span class="cd-pname">${k}</span><span class="cd-pval">${v}</span></div>`;
+  });
+  html += '</div>';
+  detail.innerHTML = html;
+  detail.classList.add('show');
+}
+
+/* ── Properties panel tabs ── */
+function switchPPTab(idx, btn) {
+  [0,1,2,3].forEach(i => {
+    document.getElementById('ppBody'+i).style.display = i===idx ? '' : 'none';
+  });
+  document.querySelectorAll('.pp-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+}
+
+/* ── Checklist ── */
+function toggleCheck(li) {
+  li.classList.toggle('done');
+  li.querySelector('.check-box').textContent = li.classList.contains('done') ? '✓' : '';
+  updateProgress(li.closest('.checklist'));
+}
+
+function updateProgress(ul) {
+  const id = ul.id;
+  const total = ul.querySelectorAll('li').length;
+  const done = ul.querySelectorAll('li.done').length;
+  const fill = document.getElementById(id + '-fill');
+  const text = document.getElementById(id + '-text');
+  if (fill) fill.style.width = (done/total*100) + '%';
+  if (text) text.textContent = done + ' / ' + total + ' pasos';
+}
+
+/* ── Sidebar active state ── */
+const sbLinks = document.querySelectorAll('.sb-link');
+const sections = document.querySelectorAll('.section-header[id]');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id; });
+  sbLinks.forEach(l => {
+    l.classList.remove('active');
+    if (l.getAttribute('href') === '#' + cur) l.classList.add('active');
+  });
+}, {passive:true});
+</script>
+</body>
+</html>
