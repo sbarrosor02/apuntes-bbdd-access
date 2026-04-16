@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Práctica — TechFix SL · Bases de Datos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f; --s1:#0d1018; --s2:#131622; --card:#161b28;
+  --border:#1d2235; --border2:#272e48;
+  --cyan:#00d4ff; --cy-dim:#00d4ff18;
+  --green:#3dffa0; --gr-dim:#3dffa015;
+  --amber:#ffb340; --am-dim:#ffb34018;
+  --pink:#ff4d8f;  --pk-dim:#ff4d8f15;
+  --purple:#c084fc;--pu-dim:#c084fc15;
+  --red:#ff5c5c;   --rd-dim:#ff5c5c15;
+  --text:#dce6f5; --muted:#4a5580; --muted2:#8a9ab8;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh;overflow-x:hidden;}
+
+/* dot grid */
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,#1e2d3d 1px,transparent 1px);background-size:26px 26px;opacity:.35;pointer-events:none;z-index:0;}
+
+.wrap{max-width:860px;margin:0 auto;padding:0 2rem 5rem;position:relative;z-index:1;}
+
+/* ── HEADER ── */
+.hero{padding:3.5rem 0 2.5rem;border-bottom:1px solid var(--border2);}
+.hero-eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;}
+.hero-eyebrow::before{content:'';width:20px;height:2px;background:var(--amber);}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.1;letter-spacing:-.02em;}
+.hero h1 em{color:var(--amber);font-style:normal;}
+.hero-sub{margin-top:.9rem;font-size:1rem;color:var(--muted2);max-width:560px;}
+.meta-row{margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:.6rem;}
+.meta-chip{font-family:var(--mono);font-size:.65rem;padding:.3rem .8rem;border-radius:2px;border:1px solid var(--border2);color:var(--muted2);background:var(--s2);}
+.meta-chip.hot{border-color:var(--red);color:var(--red);background:var(--rd-dim);}
+
+/* ── PROGRESS NAV ── */
+.progress-nav{position:sticky;top:0;z-index:100;background:#07090fcc;backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:.7rem 0;margin:0 -2rem;padding-left:2rem;padding-right:2rem;}
+.pn-inner{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;}
+.pn-step{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.3rem .75rem;border-radius:2px;border:1px solid var(--border);color:var(--muted);text-decoration:none;transition:all .2s;cursor:pointer;background:none;}
+.pn-step:hover,.pn-step.active{border-color:var(--amber);color:var(--amber);background:var(--am-dim);}
+.pn-sep{color:var(--muted);font-size:.7rem;}
+
+/* ── SECTIONS ── */
+section{padding-top:2.5rem;}
+.section-label{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:.4rem;}
+.section-label::before{content:'// ';}
+.section-title{font-size:1.6rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.3rem;}
+.section-desc{color:var(--muted2);font-size:.92rem;margin-bottom:1.5rem;max-width:620px;}
+
+/* ── CONTEXT CARD ── */
+.context-card{background:var(--s1);border:1px solid var(--border2);border-left:3px solid var(--amber);border-radius:4px;padding:1.4rem 1.6rem;margin-bottom:1.5rem;}
+.context-card h3{font-size:1rem;font-weight:700;color:var(--amber);margin-bottom:.6rem;}
+.context-card p{font-size:.9rem;color:var(--muted2);margin-bottom:.6rem;}
+.context-card p:last-child{margin-bottom:0;}
+.context-card ul{padding-left:1.4rem;color:var(--muted2);font-size:.9rem;}
+.context-card li{margin-bottom:.3rem;}
+
+/* ── ENTITY CARDS ── */
+.entity-grid{display:grid;gap:.9rem;}
+.entity-card{background:var(--card);border:1px solid var(--border2);border-radius:4px;overflow:hidden;transition:border-color .2s;}
+.entity-card:hover{border-color:var(--border2);}
+.ec-header{display:flex;align-items:center;gap:.8rem;padding:.8rem 1.1rem;background:var(--s2);border-bottom:1px solid var(--border);}
+.ec-num{font-family:var(--mono);font-size:.58rem;background:var(--border2);padding:.15rem .5rem;border-radius:2px;color:var(--muted);flex-shrink:0;}
+.ec-title{font-weight:700;font-size:.95rem;}
+.ec-badge{margin-left:auto;font-family:var(--mono);font-size:.55rem;padding:.2rem .55rem;border-radius:2px;text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;}
+.ec-body{padding:.9rem 1.1rem;}
+.ec-body ul{padding-left:1.3rem;color:var(--muted2);font-size:.86rem;}
+.ec-body li{margin-bottom:.35rem;line-height:1.55;}
+.ec-body li strong{color:var(--text);}
+.ec-body li code{font-family:var(--mono);font-size:.78rem;background:var(--s2);padding:.05rem .35rem;border-radius:2px;color:var(--amber);}
+
+.ec-central .ec-header{background:linear-gradient(90deg,var(--am-dim),var(--s2));}
+.ec-central .ec-title{color:var(--amber);}
+.ec-central{border-color:var(--amber);}
+.ec-intermedia .ec-header{background:linear-gradient(90deg,var(--pu-dim),var(--s2));}
+.ec-intermedia .ec-title{color:var(--purple);}
+.ec-intermedia{border-color:var(--purple);}
+
+.badge-pk{background:var(--cy-dim);color:var(--cyan);}
+.badge-fk{background:var(--pk-dim);color:var(--pink);}
+.badge-nm{background:var(--pu-dim);color:var(--purple);}
+.badge-central{background:var(--am-dim);color:var(--amber);}
+
+/* ── RELATIONS DIAGRAM ── */
+.rel-diagram{background:var(--s1);border:1px solid var(--border2);border-radius:4px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+.rel-diagram svg{width:100%;height:auto;display:block;}
+
+/* ── QUERY CARDS ── */
+.query-list{display:flex;flex-direction:column;gap:.75rem;}
+.query-card{background:var(--card);border:1px solid var(--border2);border-radius:4px;overflow:hidden;}
+.qc-header{display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;background:var(--s2);border-bottom:1px solid var(--border);}
+.qc-id{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--green);background:var(--gr-dim);padding:.2rem .6rem;border-radius:2px;border:1px solid var(--green);}
+.qc-name{font-family:var(--mono);font-size:.72rem;color:var(--muted2);}
+.qc-body{padding:.75rem 1rem;font-size:.87rem;color:var(--muted2);line-height:1.6;}
+.qc-body strong{color:var(--text);}
+.qc-body code{font-family:var(--mono);font-size:.78rem;color:var(--amber);}
+
+/* ── DELIVERABLE BOX ── */
+.deliver-box{background:var(--rd-dim);border:1px solid var(--red);border-radius:4px;padding:1.3rem 1.5rem;margin-top:1rem;}
+.deliver-box h3{font-size:1rem;font-weight:800;color:var(--red);margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem;}
+.deliver-section{margin-bottom:1rem;}
+.deliver-section h4{font-size:.8rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;font-family:var(--mono);}
+.deliver-section ul{padding-left:1.3rem;color:var(--muted2);font-size:.86rem;}
+.deliver-section li{margin-bottom:.3rem;}
+.deliver-section li strong{color:var(--text);}
+
+/* ── RUBRIC TABLE ── */
+.rubric-wrap{overflow-x:auto;margin-top:.5rem;}
+.rubric{width:100%;border-collapse:collapse;font-size:.82rem;}
+.rubric th{background:var(--s2);color:var(--muted2);font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;padding:.5rem .75rem;border:1px solid var(--border2);text-align:left;white-space:nowrap;}
+.rubric td{padding:.5rem .75rem;border:1px solid var(--border);color:var(--muted2);vertical-align:top;line-height:1.4;}
+.rubric td:first-child{color:var(--text);font-weight:600;white-space:nowrap;}
+.rubric tr:nth-child(even) td{background:#ffffff04;}
+.rubric .pts{font-family:var(--mono);font-size:.7rem;color:var(--amber);text-align:center;white-space:nowrap;}
+
+/* ── NOTE BOX ── */
+.note-box{background:var(--am-dim);border:1px solid var(--amber);border-radius:4px;padding:1rem 1.2rem;margin-top:1.2rem;font-size:.86rem;color:var(--muted2);}
+.note-box strong{color:var(--amber);}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding-top:1.5rem;margin-top:3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
+footer span{font-family:var(--mono);font-size:.65rem;color:var(--muted);}
+
+/* ── SCROLL MARGIN ── */
+section[id]{scroll-margin-top:60px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-eyebrow">Práctica entregable · UT6 · Bases de Datos</div>
+  <h1>Gestión de un Taller<br>de Reparaciones: <em>TechFix SL</em></h1>
+  <p class="hero-sub">Diseña e implementa desde cero una base de datos completa en Microsoft Access para un taller de reparación de equipos informáticos.</p>
+  <div class="meta-row">
+    <span class="meta-chip">Módulo AOF</span>
+    <span class="meta-chip">1.º SMR</span>
+    <span class="meta-chip">Individual</span>
+    <span class="meta-chip">Hasta 10 puntos</span>
+    <span class="meta-chip hot">Entregable</span>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="progress-nav">
+  <div class="pn-inner">
+    <a class="pn-step active" href="#contexto">01 Contexto</a>
+    <span class="pn-sep">›</span>
+    <a class="pn-step" href="#diseno">02 Diseño</a>
+    <span class="pn-sep">›</span>
+    <a class="pn-step" href="#access">03 Access</a>
+    <span class="pn-sep">›</span>
+    <a class="pn-step" href="#consultas">04 SQL</a>
+    <span class="pn-sep">›</span>
+    <a class="pn-step" href="#entrega">05 Entrega</a>
+    <span class="pn-sep">›</span>
+    <a class="pn-step" href="#rubrica">06 Rúbrica</a>
+  </div>
+</nav>
+
+<!-- ── BLOQUE 0: CONTEXTO ── -->
+<section id="contexto">
+  <div class="section-label">Bloque 0</div>
+  <div class="section-title">Contexto del proyecto</div>
+  <div class="context-card">
+    <h3>¿Qué es TechFix SL?</h3>
+    <p><strong>TechFix SL</strong> es un pequeño taller de reparación de equipos informáticos situado en el centro de la ciudad. Atiende a particulares y pequeñas empresas. Hasta ahora lleva el control en papel y necesita informatizar su gestión.</p>
+    <p>Como técnico en prácticas, tu misión es diseñar e implementar la base de datos que el taller necesita para gestionar:</p>
+    <ul>
+      <li>Sus clientes y los dispositivos que traen a reparar.</li>
+      <li>Las órdenes de trabajo asignadas a los técnicos del taller.</li>
+      <li>El inventario de repuestos y su uso en cada reparación.</li>
+      <li>Consultas para el seguimiento diario del negocio.</li>
+    </ul>
+  </div>
+  <div class="note-box">
+    <strong>Importante:</strong> No existe una única solución correcta. Se valorará que las decisiones tomadas sean <strong>coherentes y estén justificadas</strong>. Puedes crear más tablas de las descritas si lo consideras necesario.
+  </div>
+</section>
+
+<!-- ── BLOQUE 1: DISEÑO ── -->
+<section id="diseno">
+  <div class="section-label">Bloque 1</div>
+  <div class="section-title">Diseño de la base de datos</div>
+  <p class="section-desc">A continuación se describen los <strong>requisitos funcionales</strong> de cada entidad. No se especifican los nombres exactos de los campos: tú decides nombre, tipo de dato y si es obligatorio.</p>
+
+  <div class="entity-grid">
+
+    <div class="entity-card">
+      <div class="ec-header">
+        <span class="ec-num">E1</span>
+        <span class="ec-title">Clientes</span>
+        <span class="ec-badge badge-pk">Tabla principal</span>
+      </div>
+      <div class="ec-body">
+        <ul>
+          <li>Identificador único generado <strong>automáticamente</strong>.</li>
+          <li>Nombre completo (nombre y apellidos).</li>
+          <li>Al menos <strong>dos formas de contacto</strong> (p. ej. teléfono y correo).</li>
+          <li>Localización: como mínimo <strong>localidad y provincia</strong>.</li>
+          <li>Fecha en que se registró por primera vez en el taller.</li>
+          <li>Indicador de si el cliente acepta comunicaciones (activo/inactivo).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="ec-header">
+        <span class="ec-num">E2</span>
+        <span class="ec-title">Técnicos</span>
+        <span class="ec-badge badge-pk">Tabla principal</span>
+      </div>
+      <div class="ec-body">
+        <ul>
+          <li>Identificador único y datos personales básicos.</li>
+          <li>Especialización principal: <code>hardware</code>, <code>software</code> o <code>redes</code> (solo una de las tres).</li>
+          <li>Estado: activo o de baja en la empresa.</li>
+          <li>Fecha de incorporación al taller.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="ec-header">
+        <span class="ec-num">E3</span>
+        <span class="ec-title">Dispositivos (equipos)</span>
+        <span class="ec-badge badge-fk">Relacionada con Clientes</span>
+      </div>
+      <div class="ec-body">
+        <ul>
+          <li>Cada dispositivo pertenece a <strong>un único cliente</strong>; un cliente puede tener varios.</li>
+          <li>Tipo de dispositivo: sobremesa, portátil, tablet, smartphone, impresora u otro.</li>
+          <li>Marca y modelo del fabricante.</li>
+          <li>Descripción breve del problema que indica el cliente al traerlo (campo libre).</li>
+          <li>Un mismo dispositivo puede traerse a reparar en <strong>distintas ocasiones</strong>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="entity-card ec-central">
+      <div class="ec-header">
+        <span class="ec-num">E4</span>
+        <span class="ec-title">Órdenes de trabajo</span>
+        <span class="ec-badge badge-central">Tabla CENTRAL</span>
+      </div>
+      <div class="ec-body">
+        <ul>
+          <li>Vincula un <strong>dispositivo</strong> con un <strong>técnico asignado</strong> (puede estar sin asignar inicialmente).</li>
+          <li>Fecha y hora de entrada del equipo al taller (obligatoria).</li>
+          <li>Fecha estimada de entrega al cliente.</li>
+          <li>Estado con valores fijos: <code>Recibido</code> · <code>En diagnóstico</code> · <code>En reparación</code> · <code>En espera de piezas</code> · <code>Terminado</code> · <code>Entregado</code>.</li>
+          <li>Notas de diagnóstico técnico y descripción del trabajo realizado (pueden ser dos campos).</li>
+          <li>Coste de mano de obra (independiente del coste de repuestos).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="entity-card">
+      <div class="ec-header">
+        <span class="ec-num">E5</span>
+        <span class="ec-title">Repuestos</span>
+        <span class="ec-badge badge-pk">Catálogo</span>
+      </div>
+      <div class="ec-body">
+        <ul>
+          <li>Nombre del repuesto y referencia interna.</li>
+          <li>Categoría: RAM, disco/SSD, pantalla, teclado, batería, fuente de alimentación, otro.</li>
+          <li>Precio de coste (para el taller) y precio de venta (al cliente) diferenciados.</li>
+          <li>Stock: unidades disponibles en almacén.</li>
+          <li>Nombre del proveedor habitual.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="entity-card ec-intermedia">
+      <div class="ec-header">
+        <span class="ec-num">E6</span>
+        <span class="ec-title">Uso de repuestos en órdenes</span>
+        <span class="ec-badge badge-nm">Tabla intermedia N:M</span>
+      </div>
+      <div class="ec-body">
+        <ul>
+          <li>Relaciona <strong>órdenes de trabajo</strong> con <strong>repuestos</strong> utilizados (relación N:M).</li>
+          <li>Una orden puede usar varios repuestos; un repuesto puede usarse en muchas órdenes.</li>
+          <li>Se registra la <strong>cantidad</strong> de unidades del repuesto usadas en esa orden.</li>
+          <li>Se guarda el <strong>precio de venta aplicado</strong> en ese momento (puede diferir del catálogo actual).</li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- /entity-grid -->
+
+  <!-- Relations -->
+  <div style="margin-top:1.5rem;">
+    <div class="section-label" style="font-size:.58rem;">Relaciones entre entidades</div>
+    <div class="rel-diagram">
+      <svg viewBox="0 0 780 180" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" font-size="11">
+        <!-- Boxes -->
+        <rect x="10"  y="70" width="110" height="40" rx="3" fill="#131622" stroke="#272e48"/>
+        <text x="65"  y="95" text-anchor="middle" fill="#dce6f5" font-weight="600">Clientes</text>
+
+        <rect x="170" y="70" width="110" height="40" rx="3" fill="#131622" stroke="#272e48"/>
+        <text x="225" y="95" text-anchor="middle" fill="#dce6f5" font-weight="600">Dispositivos</text>
+
+        <rect x="340" y="70" width="130" height="40" rx="3" fill="#161b28" stroke="#ffb340" stroke-width="1.5"/>
+        <text x="405" y="92" text-anchor="middle" fill="#ffb340" font-weight="700">Órdenes de</text>
+        <text x="405" y="105" text-anchor="middle" fill="#ffb340" font-weight="700">trabajo</text>
+
+        <rect x="530" y="10" width="100" height="40" rx="3" fill="#131622" stroke="#272e48"/>
+        <text x="580" y="35" text-anchor="middle" fill="#dce6f5" font-weight="600">Técnicos</text>
+
+        <rect x="530" y="130" width="100" height="40" rx="3" fill="#131622" stroke="#272e48"/>
+        <text x="580" y="155" text-anchor="middle" fill="#dce6f5" font-weight="600">Repuestos</text>
+
+        <rect x="680" y="110" width="90" height="50" rx="3" fill="#131622" stroke="#c084fc" stroke-width="1.2"/>
+        <text x="725" y="132" text-anchor="middle" fill="#c084fc" font-size="10">Uso de</text>
+        <text x="725" y="145" text-anchor="middle" fill="#c084fc" font-size="10">repuestos</text>
+        <text x="725" y="157" text-anchor="middle" fill="#c084fc" font-size="9">(N:M)</text>
+
+        <!-- Lines -->
+        <line x1="120" y1="90" x2="170" y2="90" stroke="#4a5580" stroke-width="1.5"/>
+        <text x="145" y="84" text-anchor="middle" fill="#8a9ab8" font-size="10">1:N</text>
+
+        <line x1="280" y1="90" x2="340" y2="90" stroke="#4a5580" stroke-width="1.5"/>
+        <text x="310" y="84" text-anchor="middle" fill="#8a9ab8" font-size="10">1:N</text>
+
+        <line x1="470" y1="80" x2="530" y2="40" stroke="#4a5580" stroke-width="1.5"/>
+        <text x="500" y="58" text-anchor="middle" fill="#8a9ab8" font-size="10">N:1</text>
+
+        <line x1="470" y1="105" x2="680" y2="130" stroke="#c084fc" stroke-width="1.2" stroke-dasharray="4,2"/>
+        <line x1="530" y1="150" x2="680" y2="145" stroke="#c084fc" stroke-width="1.2" stroke-dasharray="4,2"/>
+        <text x="600" y="128" text-anchor="middle" fill="#c084fc" font-size="9">N:M</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="note-box" style="margin-top:.75rem;">
+    <strong>Tarea:</strong> Elabora el diagrama E-R completo <em>antes</em> de crear las tablas en Access. Puedes dibujarlo a mano, con draw.io o con cualquier herramienta. Debe mostrar atributos, cardinalidades y claves.
+  </div>
+</section>
+
+<!-- ── BLOQUE 2: ACCESS ── -->
+<section id="access">
+  <div class="section-label">Bloque 2</div>
+  <div class="section-title">Implementación en Microsoft Access</div>
+  <p class="section-desc">Crea la base de datos con el nombre <code style="font-family:var(--mono);color:var(--amber);font-size:.88rem;">TechFix_Apellido.accdb</code> y realiza los siguientes pasos:</p>
+
+  <div class="entity-grid">
+    <div class="entity-card">
+      <div class="ec-header"><span class="ec-num">P1</span><span class="ec-title">Tablas y campos</span></div>
+      <div class="ec-body"><ul>
+        <li>Crea todas las tablas con campos, tipos de datos y propiedades adecuadas.</li>
+        <li>Establece claves primarias en todas las tablas.</li>
+        <li>Usa tipos de datos apropiados (Autonumérico, Texto, Número, Fecha/Hora, Sí/No…).</li>
+        <li>Configura al menos: tamaño del campo, si es requerido y valor predeterminado donde tenga sentido.</li>
+      </ul></div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header"><span class="ec-num">P2</span><span class="ec-title">Relaciones e integridad referencial</span></div>
+      <div class="ec-body"><ul>
+        <li>Define todas las relaciones en la ventana de relaciones de Access.</li>
+        <li>Activa la <strong>integridad referencial</strong> en cada relación.</li>
+        <li>Decide si aplicas actualización y eliminación en cascada (justifícalo en la memoria).</li>
+      </ul></div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header"><span class="ec-num">P3</span><span class="ec-title">Datos de prueba</span></div>
+      <div class="ec-body"><ul>
+        <li>Al menos <strong>5 clientes</strong> de distintas localidades.</li>
+        <li>Al menos <strong>3 técnicos</strong> con distintas especializaciones.</li>
+        <li>Al menos <strong>8 dispositivos</strong> de varios tipos y clientes.</li>
+        <li>Al menos <strong>10 órdenes de trabajo</strong> en distintos estados.</li>
+        <li>Al menos <strong>6 repuestos</strong> con usos registrados en varias órdenes.</li>
+      </ul></div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header"><span class="ec-num">P4</span><span class="ec-title">Formularios e informes</span></div>
+      <div class="ec-body"><ul>
+        <li><strong>Formulario:</strong> Alta de nuevo cliente (todos los campos).</li>
+        <li><strong>Formulario:</strong> Nueva orden de trabajo con subformulario de repuestos usados.</li>
+        <li><strong>Informe:</strong> Órdenes abiertas agrupadas por técnico (cliente + dispositivo).</li>
+        <li><strong>Informe:</strong> Factura de una orden concreta (cliente, trabajo, repuestos, total).</li>
+      </ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── BLOQUE 3: SQL ── -->
+<section id="consultas">
+  <div class="section-label">Bloque 3</div>
+  <div class="section-title">Consultas SQL</div>
+  <p class="section-desc">Crea estas consultas en Access en <strong>vista SQL</strong>. Guarda cada una con el nombre indicado y haz una captura con los resultados.</p>
+
+  <div class="query-list">
+
+    <div class="query-card">
+      <div class="qc-header">
+        <span class="qc-id">C1</span>
+        <span class="qc-name">C1_DispositivosPorLocalidad</span>
+      </div>
+      <div class="qc-body">
+        Lista el <strong>nombre del cliente</strong>, tipo de dispositivo y marca de todos los equipos traídos por clientes de una localidad concreta. Muestra solo aquellos cuya orden tenga estado distinto de <code>Entregado</code>. Necesitarás unir varias tablas con <strong>JOIN</strong>.
+      </div>
+    </div>
+
+    <div class="query-card">
+      <div class="qc-header">
+        <span class="qc-id">C2</span>
+        <span class="qc-name">C2_OrdenesAbiertas</span>
+      </div>
+      <div class="qc-body">
+        Muestra todas las órdenes de trabajo que <strong>no estén en estado</strong> <code>Entregado</code> ni <code>Terminado</code>, ordenadas de <strong>más antigua a más reciente</strong> por fecha de entrada. Incluye el nombre del técnico asignado (puede ser nulo si no hay ninguno asignado).
+      </div>
+    </div>
+
+    <div class="query-card">
+      <div class="qc-header">
+        <span class="qc-id">C3</span>
+        <span class="qc-name">C3_RepPorTecnico</span>
+      </div>
+      <div class="qc-body">
+        Cuenta el número de reparaciones completadas (<code>Terminado</code> o <code>Entregado</code>) por cada técnico. Muestra solo los técnicos con <strong>más de 1</strong> reparación completada, ordenados de mayor a menor. Usa <strong>GROUP BY + HAVING</strong>.
+      </div>
+    </div>
+
+    <div class="query-card">
+      <div class="qc-header">
+        <span class="qc-id">C4</span>
+        <span class="qc-name">C4_IngresosPorOrden</span>
+      </div>
+      <div class="qc-body">
+        Calcula el <strong>coste total</strong> de cada orden (mano de obra + suma de repuestos usados: cantidad × precio aplicado). Muestra solo órdenes <code>Terminado</code> o <code>Entregado</code>, ordenadas por coste total <strong>descendente</strong>. Necesitarás <strong>SUM + GROUP BY + JOIN</strong>.
+      </div>
+    </div>
+
+    <div class="query-card">
+      <div class="qc-header">
+        <span class="qc-id">C5</span>
+        <span class="qc-name">C5_RepuestoMasUsado</span>
+      </div>
+      <div class="qc-body">
+        Obtén el <strong>nombre del repuesto</strong> que ha aparecido en mayor número de órdenes de trabajo distintas. Puedes usar una subconsulta o <strong>ORDER BY + TOP 1</strong> (sintaxis Access).
+      </div>
+    </div>
+
+    <div class="query-card">
+      <div class="qc-header">
+        <span class="qc-id">C6</span>
+        <span class="qc-name">C6_ClientesVariosDispositivos</span>
+      </div>
+      <div class="qc-body">
+        Lista los clientes que han traído <strong>más de un dispositivo</strong> distinto al taller, mostrando nombre completo y número de dispositivos. Usa <strong>GROUP BY + HAVING + COUNT</strong>.
+      </div>
+    </div>
+
+    <div class="query-card">
+      <div class="qc-header">
+        <span class="qc-id">C7</span>
+        <span class="qc-name">C7_StockBajo</span>
+      </div>
+      <div class="qc-body">
+        Muestra todos los repuestos con <strong>stock igual o inferior a 3 unidades</strong>, ordenados por cantidad disponible de menor a mayor. Incluye nombre, categoría, precio de venta y unidades.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── BLOQUE 4: ENTREGA ── -->
+<section id="entrega">
+  <div class="section-label">Bloque 4</div>
+  <div class="section-title">Qué debes entregar</div>
+
+  <div class="deliver-box">
+    <h3>📦 Archivo ZIP: <code style="font-family:var(--mono);font-size:.85rem;">TechFix_Apellido.zip</code></h3>
+
+    <div class="deliver-section">
+      <h4>1 · Base de datos</h4>
+      <ul>
+        <li><strong>TechFix_Apellido.accdb</strong> con todas las tablas, relaciones, datos de prueba, consultas, formularios e informes.</li>
+      </ul>
+    </div>
+
+    <div class="deliver-section">
+      <h4>2 · Documento de diseño (PDF o Word)</h4>
+      <ul>
+        <li>Diagrama E-R completo (foto del papel también vale).</li>
+        <li>Descripción de cada tabla: nombre, campos elegidos, tipos de datos y <strong>justificación de las decisiones</strong>.</li>
+        <li>Captura de la ventana de relaciones de Access.</li>
+      </ul>
+    </div>
+
+    <div class="deliver-section">
+      <h4>3 · Capturas de las consultas SQL</h4>
+      <ul>
+        <li>Una imagen por consulta (C1 a C7) con el resultado visible y el nombre de la consulta en pantalla.</li>
+      </ul>
+    </div>
+
+    <div class="deliver-section">
+      <h4>4 · Capturas de formularios e informes</h4>
+      <ul>
+        <li>Captura de los dos formularios en modo formulario (con datos reales).</li>
+        <li>Captura de los dos informes en vista previa de impresión.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note-box" style="margin-top:1rem;">
+    <strong>Atención:</strong> Copia, plagio o entrega de trabajos ajenos supone calificación de 0 en la práctica y anotación en el expediente del alumno conforme al reglamento del centro.
+  </div>
+</section>
+
+<!-- ── BLOQUE 5: RÚBRICA ── -->
+<section id="rubrica">
+  <div class="section-label">Bloque 5</div>
+  <div class="section-title">Rúbrica de evaluación</div>
+
+  <div class="rubric-wrap">
+    <table class="rubric">
+      <thead>
+        <tr>
+          <th>Criterio</th>
+          <th>Insuficiente (0–4)</th>
+          <th>Suficiente (5–6)</th>
+          <th>Bien (7–8)</th>
+          <th>Sobresaliente (9–10)</th>
+          <th class="pts">Peso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Diagrama E-R</td>
+          <td>Falta o muy incorrecto</td>
+          <td>Entidades básicas</td>
+          <td>Cardinalidades correctas</td>
+          <td>Todo correcto + justificación</td>
+          <td class="pts">15%</td>
+        </tr>
+        <tr>
+          <td>Tablas y campos</td>
+          <td>&lt;4 tablas o tipos erróneos</td>
+          <td>Tablas básicas OK</td>
+          <td>Todos los campos y tipos</td>
+          <td>Propiedades y validaciones extras</td>
+          <td class="pts">20%</td>
+        </tr>
+        <tr>
+          <td>Relaciones e IR</td>
+          <td>Sin relaciones</td>
+          <td>Algunas relaciones</td>
+          <td>Todas correctas</td>
+          <td>IR activada en todas</td>
+          <td class="pts">15%</td>
+        </tr>
+        <tr>
+          <td>Datos de prueba</td>
+          <td>Sin datos o incoherentes</td>
+          <td>Datos mínimos</td>
+          <td>Datos suficientes</td>
+          <td>Datos ricos y realistas</td>
+          <td class="pts">10%</td>
+        </tr>
+        <tr>
+          <td>Consultas SQL (C1–C7)</td>
+          <td>0–2 funcionan</td>
+          <td>3–4 funcionan</td>
+          <td>5–6 funcionan</td>
+          <td>Las 7 son correctas</td>
+          <td class="pts">25%</td>
+        </tr>
+        <tr>
+          <td>Formularios e informes</td>
+          <td>No entregados</td>
+          <td>1 formulario</td>
+          <td>2 form. + 1 informe</td>
+          <td>Todo completo y con formato</td>
+          <td class="pts">10%</td>
+        </tr>
+        <tr>
+          <td>Documento de diseño</td>
+          <td>No entregado</td>
+          <td>Solo capturas</td>
+          <td>Descripción básica</td>
+          <td>Decisiones justificadas</td>
+          <td class="pts">5%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <span>TechFix SL — Práctica integradora BBDD · AOF · 1.º SMR</span>
+  <span>Módulo 07 · Centro de Recursos BD</span>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+// Active nav on scroll
+const sections = document.querySelectorAll('section[id]');
+const steps = document.querySelectorAll('.pn-step');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      steps.forEach(s => s.classList.remove('active'));
+      const active = document.querySelector('.pn-step[href="#'+e.target.id+'"]');
+      if(active) active.classList.add('active');
+    }
+  });
+},{threshold:0.35});
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

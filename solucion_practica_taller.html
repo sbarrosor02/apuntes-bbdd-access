@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOLUCIÓN — TechFix SL · USO EXCLUSIVO DEL PROFESOR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8fafc; --card:#fff; --s2:#f1f5f9;
+  --border:#e2e8f0; --border2:#cbd5e1;
+  --text:#1e293b; --muted:#64748b; --muted2:#475569;
+  --blue:#1d4ed8; --bl-dim:#dbeafe;
+  --green:#15803d; --gr-dim:#dcfce7;
+  --amber:#b45309; --am-dim:#fef3c7;
+  --red:#b91c1c;   --rd-dim:#fee2e2;
+  --purple:#7c3aed;--pu-dim:#ede9fe;
+  --cyan:#0e7490;  --cy-dim:#cffafe;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.7;}
+
+/* TEACHER BANNER */
+.teacher-banner{background:var(--red);color:#fff;text-align:center;padding:.6rem 1rem;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;position:sticky;top:0;z-index:200;}
+
+.wrap{max-width:1000px;margin:0 auto;padding:1.5rem 2rem 5rem;}
+
+/* HERO */
+.hero{padding:2rem 0 1.5rem;border-bottom:2px solid var(--border2);}
+.hero h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.3rem;}
+.hero h1 em{color:var(--blue);font-style:normal;}
+.hero-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem;}
+.hm-chip{font-family:var(--mono);font-size:.62rem;padding:.2rem .7rem;border-radius:3px;background:var(--s2);border:1px solid var(--border2);color:var(--muted2);}
+
+/* NAV */
+.nav{position:sticky;top:34px;z-index:100;background:#f8fafc;border-bottom:1px solid var(--border);padding:.5rem 0;margin:0 -2rem;padding-left:2rem;display:flex;gap:.4rem;flex-wrap:wrap;}
+.nav a{font-family:var(--mono);font-size:.62rem;color:var(--muted2);text-decoration:none;padding:.25rem .6rem;border-radius:3px;border:1px solid transparent;transition:all .15s;}
+.nav a:hover{border-color:var(--border2);color:var(--blue);}
+
+/* SECTION */
+section{padding-top:2rem;}
+.sec-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:.2rem;}
+.sec-title{font-size:1.4rem;font-weight:700;margin-bottom:.3rem;padding-bottom:.5rem;border-bottom:2px solid var(--blue);}
+.sec-desc{color:var(--muted2);font-size:.88rem;margin-bottom:1.2rem;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:1rem;}
+.card-header{background:var(--s2);border-bottom:1px solid var(--border);padding:.6rem 1rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;}
+.ch-title{font-weight:700;font-size:.92rem;}
+.ch-badge{font-family:var(--mono);font-size:.58rem;padding:.15rem .5rem;border-radius:2px;text-transform:uppercase;letter-spacing:.06em;}
+.card-body{padding:.9rem 1rem;}
+
+/* CODE */
+.code-block{background:#1e293b;color:#e2e8f0;font-family:var(--mono);font-size:.78rem;line-height:1.7;padding:.9rem 1.1rem;border-radius:4px;overflow-x:auto;white-space:pre;}
+.code-block .kw {color:#7dd3fc;font-weight:700;}
+.code-block .fn {color:#c084fc;font-weight:600;}
+.code-block .str{color:#86efac;}
+.code-block .num{color:#fbbf24;}
+.code-block .cmt{color:#64748b;font-style:italic;}
+.code-block .tbl{color:#34d399;font-weight:600;}
+.code-block .op {color:#f87171;font-weight:700;}
+
+/* TABLE */
+.ref-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.ref-table th{background:var(--s2);padding:.4rem .7rem;border:1px solid var(--border2);text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);font-weight:600;}
+.ref-table td{padding:.4rem .7rem;border:1px solid var(--border);vertical-align:top;line-height:1.45;}
+.ref-table td:first-child{font-family:var(--mono);font-size:.75rem;color:var(--blue);font-weight:600;}
+.ref-table tr:nth-child(even) td{background:#f8fafc;}
+.pk{background:var(--cy-dim);color:var(--cyan);font-size:.6rem;padding:.1rem .4rem;border-radius:2px;font-weight:700;text-transform:uppercase;font-family:var(--mono);}
+.fk{background:var(--pu-dim);color:var(--purple);font-size:.6rem;padding:.1rem .4rem;border-radius:2px;font-weight:700;text-transform:uppercase;font-family:var(--mono);}
+.req{color:var(--red);font-size:.7rem;}
+.opt{color:var(--muted);font-size:.7rem;}
+
+/* ALERT BOXES */
+.info{background:var(--bl-dim);border-left:3px solid var(--blue);padding:.75rem 1rem;border-radius:0 4px 4px 0;margin:.75rem 0;font-size:.86rem;}
+.warn{background:var(--am-dim);border-left:3px solid var(--amber);padding:.75rem 1rem;border-radius:0 4px 4px 0;margin:.75rem 0;font-size:.86rem;}
+.ok  {background:var(--gr-dim);border-left:3px solid var(--green);padding:.75rem 1rem;border-radius:0 4px 4px 0;margin:.75rem 0;font-size:.86rem;}
+.info strong,.warn strong,.ok strong{font-weight:700;}
+
+/* VARIANTS */
+.variant-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.5rem;}
+@media(max-width:700px){.variant-grid{grid-template-columns:1fr;}}
+.variant-card{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:.75rem .9rem;}
+.vc-title{font-weight:700;font-size:.82rem;margin-bottom:.3rem;color:var(--blue);}
+.vc-body{font-size:.8rem;color:var(--muted2);line-height:1.5;}
+
+/* GRID 2 col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+@media(max-width:700px){.grid2{grid-template-columns:1fr;}}
+
+section[id]{scroll-margin-top:80px;}
+</style>
+</head>
+<body>
+
+<div class="teacher-banner">🔒 DOCUMENTO DE USO EXCLUSIVO DEL PROFESOR — NO DISTRIBUIR AL ALUMNADO</div>
+
+<div class="wrap">
+
+<header class="hero">
+  <h1>Solución idónea: <em>TechFix SL</em></h1>
+  <p style="color:var(--muted2);font-size:.9rem;">Diseño de BBDD, consultas SQL y variantes aceptables · Práctica UT6 AOF · 1.º SMR</p>
+  <div class="hero-meta">
+    <span class="hm-chip">Solo para el profesor</span>
+    <span class="hm-chip">6 tablas · solución idónea</span>
+    <span class="hm-chip">7 consultas SQL resueltas</span>
+    <span class="hm-chip">Variantes aceptables incluidas</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#er">E-R</a>
+  <a href="#tablas">Tablas</a>
+  <a href="#relaciones">Relaciones</a>
+  <a href="#datos">Datos</a>
+  <a href="#consultas">SQL</a>
+  <a href="#variantes">Variantes</a>
+  <a href="#evaluacion">Evaluación</a>
+</nav>
+
+<!-- ══ 1. DIAGRAMA E-R ══ -->
+<section id="er">
+  <div class="sec-label">Sección 1</div>
+  <div class="sec-title">Diagrama Entidad-Relación</div>
+  <div class="sec-desc">Solución canónica con 6 tablas. Se acepta cualquier solución con estructura equivalente.</div>
+
+  <div class="card">
+    <div class="card-header"><span class="ch-title">Diagrama E-R — Solución idónea</span></div>
+    <div class="card-body">
+      <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" style="width:100%;height:auto;display:block;">
+        <!-- CLIENTES -->
+        <rect x="20" y="120" width="130" height="80" rx="4" fill="#f0f9ff" stroke="#0e7490" stroke-width="1.5"/>
+        <rect x="20" y="120" width="130" height="22" rx="4" fill="#0e7490"/>
+        <text x="85"  y="136" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">CLIENTES</text>
+        <text x="85"  y="156" text-anchor="middle" fill="#475569" font-size="9">IDCliente (PK)</text>
+        <text x="85"  y="168" text-anchor="middle" fill="#475569" font-size="9">NombreCompleto</text>
+        <text x="85"  y="180" text-anchor="middle" fill="#475569" font-size="9">Telefono · Email · …</text>
+
+        <!-- DISPOSITIVOS -->
+        <rect x="210" y="120" width="140" height="80" rx="4" fill="#f0fdf4" stroke="#15803d" stroke-width="1.5"/>
+        <rect x="210" y="120" width="140" height="22" rx="4" fill="#15803d"/>
+        <text x="280" y="136" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">DISPOSITIVOS</text>
+        <text x="280" y="156" text-anchor="middle" fill="#475569" font-size="9">IDDispositivo (PK)</text>
+        <text x="280" y="168" text-anchor="middle" fill="#475569" font-size="9">IDCliente (FK)</text>
+        <text x="280" y="180" text-anchor="middle" fill="#475569" font-size="9">Tipo · Marca · Modelo</text>
+
+        <!-- ORDENES -->
+        <rect x="410" y="100" width="150" height="120" rx="4" fill="#fffbeb" stroke="#b45309" stroke-width="2"/>
+        <rect x="410" y="100" width="150" height="22" rx="4" fill="#b45309"/>
+        <text x="485" y="116" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">ORDENES_TRABAJO</text>
+        <text x="485" y="136" text-anchor="middle" fill="#475569" font-size="9">IDOrden (PK)</text>
+        <text x="485" y="148" text-anchor="middle" fill="#475569" font-size="9">IDDispositivo (FK)</text>
+        <text x="485" y="160" text-anchor="middle" fill="#475569" font-size="9">IDTecnico (FK, nulable)</text>
+        <text x="485" y="172" text-anchor="middle" fill="#475569" font-size="9">FechaEntrada · Estado</text>
+        <text x="485" y="184" text-anchor="middle" fill="#475569" font-size="9">Diagnostico · Trabajo</text>
+        <text x="485" y="196" text-anchor="middle" fill="#475569" font-size="9">CosteManoObra</text>
+
+        <!-- TECNICOS -->
+        <rect x="620" y="30" width="130" height="80" rx="4" fill="#fdf4ff" stroke="#7c3aed" stroke-width="1.5"/>
+        <rect x="620" y="30" width="130" height="22" rx="4" fill="#7c3aed"/>
+        <text x="685" y="46"  text-anchor="middle" fill="#fff" font-size="11" font-weight="700">TECNICOS</text>
+        <text x="685" y="66"  text-anchor="middle" fill="#475569" font-size="9">IDTecnico (PK)</text>
+        <text x="685" y="78"  text-anchor="middle" fill="#475569" font-size="9">Nombre · Especialidad</text>
+        <text x="685" y="90"  text-anchor="middle" fill="#475569" font-size="9">Activo · FechaAlta</text>
+
+        <!-- REPUESTOS -->
+        <rect x="620" y="200" width="130" height="80" rx="4" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+        <rect x="620" y="200" width="130" height="22" rx="4" fill="#ea580c"/>
+        <text x="685" y="216" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">REPUESTOS</text>
+        <text x="685" y="236" text-anchor="middle" fill="#475569" font-size="9">IDRepuesto (PK)</text>
+        <text x="685" y="248" text-anchor="middle" fill="#475569" font-size="9">Nombre · Categoria</text>
+        <text x="685" y="260" text-anchor="middle" fill="#475569" font-size="9">PrecioCoste · PVP · Stock</text>
+
+        <!-- USO_REPUESTOS -->
+        <rect x="800" y="180" width="90" height="70" rx="4" fill="#fdf4ff" stroke="#7c3aed" stroke-width="1.5"/>
+        <rect x="800" y="180" width="90" height="20" rx="4" fill="#7c3aed"/>
+        <text x="845" y="194" text-anchor="middle" fill="#fff" font-size="9.5" font-weight="700">USO_REPUESTOS</text>
+        <text x="845" y="212" text-anchor="middle" fill="#475569" font-size="8.5">IDOrden (FK)</text>
+        <text x="845" y="223" text-anchor="middle" fill="#475569" font-size="8.5">IDRepuesto (FK)</text>
+        <text x="845" y="234" text-anchor="middle" fill="#475569" font-size="8.5">Cantidad · PrecioApl.</text>
+
+        <!-- LINES -->
+        <!-- Clientes → Dispositivos (1:N) -->
+        <line x1="150" y1="160" x2="210" y2="160" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="180" y="153" text-anchor="middle" fill="#64748b" font-size="10">1:N</text>
+        <!-- Dispositivos → Ordenes (1:N) -->
+        <line x1="350" y1="160" x2="410" y2="160" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="380" y="153" text-anchor="middle" fill="#64748b" font-size="10">1:N</text>
+        <!-- Ordenes → Tecnicos (N:1) -->
+        <line x1="560" y1="130" x2="620" y2="80" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="595" y="102" text-anchor="middle" fill="#64748b" font-size="10">N:1</text>
+        <!-- Ordenes → UsoRepuestos (1:N) -->
+        <line x1="560" y1="190" x2="800" y2="210" stroke="#7c3aed" stroke-width="1.2" stroke-dasharray="4,2"/>
+        <!-- Repuestos → UsoRepuestos (1:N) -->
+        <line x1="750" y1="240" x2="800" y2="232" stroke="#7c3aed" stroke-width="1.2" stroke-dasharray="4,2"/>
+        <text x="695" y="178" text-anchor="middle" fill="#7c3aed" font-size="10">N:M →</text>
+        <text x="695" y="190" text-anchor="middle" fill="#7c3aed" font-size="10">tabla intermedia</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="info"><strong>Cardinalidades clave:</strong><br>
+  · Clientes 1:N Dispositivos — un cliente puede tener varios dispositivos<br>
+  · Dispositivos 1:N Ordenes_Trabajo — un dispositivo puede tener varias reparaciones en el tiempo<br>
+  · Tecnicos 1:N Ordenes_Trabajo — un técnico tiene muchas órdenes (la FK en Ordenes es nulable)<br>
+  · Ordenes_Trabajo N:M Repuestos → resuelta con tabla intermedia Uso_Repuestos
+  </div>
+</section>
+
+<!-- ══ 2. TABLAS ══ -->
+<section id="tablas">
+  <div class="sec-label">Sección 2</div>
+  <div class="sec-title">Definición completa de tablas</div>
+
+  <!-- CLIENTES -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">Tabla: CLIENTES</span>
+      <span class="ch-badge" style="background:#cffafe;color:#0e7490;">E1</span>
+    </div>
+    <div class="card-body">
+      <table class="ref-table">
+        <tr><th>Campo</th><th>Tipo Access</th><th>Tamaño</th><th>Obligatorio</th><th>Notas</th></tr>
+        <tr><td>IDCliente <span class="pk">PK</span></td><td>Autonumérico</td><td>Entero largo</td><td class="req">Sí</td><td>Clave primaria, generada automáticamente</td></tr>
+        <tr><td>Nombre</td><td>Texto corto</td><td>50</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Apellidos</td><td>Texto corto</td><td>80</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Telefono</td><td>Texto corto</td><td>15</td><td class="req">Sí</td><td>Texto para admitir +34, espacios…</td></tr>
+        <tr><td>Email</td><td>Texto corto</td><td>100</td><td class="opt">No</td><td>Segunda forma de contacto</td></tr>
+        <tr><td>Localidad</td><td>Texto corto</td><td>60</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Provincia</td><td>Texto corto</td><td>50</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>FechaRegistro</td><td>Fecha/Hora</td><td>—</td><td class="req">Sí</td><td>Valor predeterminado: =Ahora()</td></tr>
+        <tr><td>Activo</td><td>Sí/No</td><td>—</td><td class="req">Sí</td><td>Valor predeterminado: Sí</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- TECNICOS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">Tabla: TECNICOS</span>
+      <span class="ch-badge" style="background:#ede9fe;color:#7c3aed;">E2</span>
+    </div>
+    <div class="card-body">
+      <table class="ref-table">
+        <tr><th>Campo</th><th>Tipo Access</th><th>Tamaño</th><th>Obligatorio</th><th>Notas</th></tr>
+        <tr><td>IDTecnico <span class="pk">PK</span></td><td>Autonumérico</td><td>Entero largo</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Nombre</td><td>Texto corto</td><td>50</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Apellidos</td><td>Texto corto</td><td>80</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Especializacion</td><td>Texto corto</td><td>10</td><td class="req">Sí</td><td>Regla de validación: "hardware" O "software" O "redes"</td></tr>
+        <tr><td>Activo</td><td>Sí/No</td><td>—</td><td class="req">Sí</td><td>Valor predeterminado: Sí</td></tr>
+        <tr><td>FechaAlta</td><td>Fecha/Hora</td><td>—</td><td class="req">Sí</td><td></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- DISPOSITIVOS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">Tabla: DISPOSITIVOS</span>
+      <span class="ch-badge" style="background:#dcfce7;color:#15803d;">E3</span>
+    </div>
+    <div class="card-body">
+      <table class="ref-table">
+        <tr><th>Campo</th><th>Tipo Access</th><th>Tamaño</th><th>Obligatorio</th><th>Notas</th></tr>
+        <tr><td>IDDispositivo <span class="pk">PK</span></td><td>Autonumérico</td><td>Entero largo</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>IDCliente <span class="fk">FK</span></td><td>Número</td><td>Entero largo</td><td class="req">Sí</td><td>Referencia a CLIENTES.IDCliente</td></tr>
+        <tr><td>Tipo</td><td>Texto corto</td><td>20</td><td class="req">Sí</td><td>Lista de valores: Sobremesa;Portátil;Tablet;Smartphone;Impresora;Otro</td></tr>
+        <tr><td>Marca</td><td>Texto corto</td><td>40</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Modelo</td><td>Texto corto</td><td>60</td><td class="opt">No</td><td></td></tr>
+        <tr><td>DescripcionProblema</td><td>Texto largo</td><td>—</td><td class="opt">No</td><td>Lo que describe el cliente al entregar</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ORDENES_TRABAJO -->
+  <div class="card" style="border-color:#b45309;">
+    <div class="card-header" style="background:#fffbeb;">
+      <span class="ch-title" style="color:#b45309;">Tabla: ORDENES_TRABAJO</span>
+      <span class="ch-badge" style="background:#fef3c7;color:#b45309;">CENTRAL · E4</span>
+    </div>
+    <div class="card-body">
+      <table class="ref-table">
+        <tr><th>Campo</th><th>Tipo Access</th><th>Tamaño</th><th>Obligatorio</th><th>Notas</th></tr>
+        <tr><td>IDOrden <span class="pk">PK</span></td><td>Autonumérico</td><td>Entero largo</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>IDDispositivo <span class="fk">FK</span></td><td>Número</td><td>Entero largo</td><td class="req">Sí</td><td>Referencia a DISPOSITIVOS</td></tr>
+        <tr><td>IDTecnico <span class="fk">FK</span></td><td>Número</td><td>Entero largo</td><td class="opt">No</td><td>Nulable: la orden puede crearse sin técnico asignado</td></tr>
+        <tr><td>FechaEntrada</td><td>Fecha/Hora</td><td>—</td><td class="req">Sí</td><td>Predeterminado: =Ahora()</td></tr>
+        <tr><td>FechaEstimadaSalida</td><td>Fecha/Hora</td><td>—</td><td class="opt">No</td><td></td></tr>
+        <tr><td>Estado</td><td>Texto corto</td><td>25</td><td class="req">Sí</td><td>Lista: Recibido;En diagnóstico;En reparación;En espera de piezas;Terminado;Entregado — Predeterminado: Recibido</td></tr>
+        <tr><td>Diagnostico</td><td>Texto largo</td><td>—</td><td class="opt">No</td><td>Notas técnicas del diagnóstico</td></tr>
+        <tr><td>TrabajoRealizado</td><td>Texto largo</td><td>—</td><td class="opt">No</td><td>Descripción del trabajo efectuado</td></tr>
+        <tr><td>CosteManoObra</td><td>Moneda</td><td>—</td><td class="opt">No</td><td>Coste de horas de trabajo, independiente de repuestos</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- REPUESTOS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">Tabla: REPUESTOS</span>
+      <span class="ch-badge" style="background:#fff7ed;color:#ea580c;">E5</span>
+    </div>
+    <div class="card-body">
+      <table class="ref-table">
+        <tr><th>Campo</th><th>Tipo Access</th><th>Tamaño</th><th>Obligatorio</th><th>Notas</th></tr>
+        <tr><td>IDRepuesto <span class="pk">PK</span></td><td>Autonumérico</td><td>Entero largo</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Nombre</td><td>Texto corto</td><td>80</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Referencia</td><td>Texto corto</td><td>30</td><td class="opt">No</td><td>Referencia interna del taller</td></tr>
+        <tr><td>Categoria</td><td>Texto corto</td><td>25</td><td class="req">Sí</td><td>Lista: RAM;Disco/SSD;Pantalla;Teclado;Batería;Fuente;Otro</td></tr>
+        <tr><td>PrecioCoste</td><td>Moneda</td><td>—</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>PrecioVenta</td><td>Moneda</td><td>—</td><td class="req">Sí</td><td></td></tr>
+        <tr><td>Stock</td><td>Número</td><td>Entero</td><td class="req">Sí</td><td>Predeterminado: 0 · Validación: &gt;=0</td></tr>
+        <tr><td>Proveedor</td><td>Texto corto</td><td>80</td><td class="opt">No</td><td></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- USO_REPUESTOS -->
+  <div class="card" style="border-color:#7c3aed;">
+    <div class="card-header" style="background:#fdf4ff;">
+      <span class="ch-title" style="color:#7c3aed;">Tabla: USO_REPUESTOS</span>
+      <span class="ch-badge" style="background:#ede9fe;color:#7c3aed;">Intermedia N:M · E6</span>
+    </div>
+    <div class="card-body">
+      <table class="ref-table">
+        <tr><th>Campo</th><th>Tipo Access</th><th>Tamaño</th><th>Obligatorio</th><th>Notas</th></tr>
+        <tr><td>IDUso <span class="pk">PK</span></td><td>Autonumérico</td><td>Entero largo</td><td class="req">Sí</td><td>O bien PK compuesta (IDOrden + IDRepuesto)</td></tr>
+        <tr><td>IDOrden <span class="fk">FK</span></td><td>Número</td><td>Entero largo</td><td class="req">Sí</td><td>Referencia a ORDENES_TRABAJO</td></tr>
+        <tr><td>IDRepuesto <span class="fk">FK</span></td><td>Número</td><td>Entero largo</td><td class="req">Sí</td><td>Referencia a REPUESTOS</td></tr>
+        <tr><td>Cantidad</td><td>Número</td><td>Entero</td><td class="req">Sí</td><td>Validación: &gt;0</td></tr>
+        <tr><td>PrecioAplicado</td><td>Moneda</td><td>—</td><td class="req">Sí</td><td>Precio en el momento de la reparación (histórico)</td></tr>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══ 3. RELACIONES ══ -->
+<section id="relaciones">
+  <div class="sec-label">Sección 3</div>
+  <div class="sec-title">Relaciones e integridad referencial</div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><span class="ch-title">Relaciones recomendadas</span></div>
+      <div class="card-body">
+        <table class="ref-table" style="font-size:.78rem;">
+          <tr><th>Tabla padre</th><th>Tabla hija</th><th>Campo</th><th>Cascada</th></tr>
+          <tr><td>CLIENTES</td><td>DISPOSITIVOS</td><td>IDCliente</td><td>No eliminar en cascada*</td></tr>
+          <tr><td>DISPOSITIVOS</td><td>ORDENES_TRABAJO</td><td>IDDispositivo</td><td>No eliminar en cascada*</td></tr>
+          <tr><td>TECNICOS</td><td>ORDENES_TRABAJO</td><td>IDTecnico</td><td>No (FK nulable)</td></tr>
+          <tr><td>ORDENES_TRABAJO</td><td>USO_REPUESTOS</td><td>IDOrden</td><td>Sí (eliminar en cascada)</td></tr>
+          <tr><td>REPUESTOS</td><td>USO_REPUESTOS</td><td>IDRepuesto</td><td>No eliminar en cascada*</td></tr>
+        </table>
+        <p style="font-size:.75rem;color:var(--muted2);margin-top:.5rem;">* Marcar como error al intentar eliminar si hay registros hijos.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="ch-title">Justificación de diseño</span></div>
+      <div class="card-body" style="font-size:.83rem;color:var(--muted2);">
+        <p style="margin-bottom:.5rem;">La FK <strong>IDTecnico en ORDENES_TRABAJO es nulable</strong> porque al recibir el equipo puede no haberse asignado técnico todavía. Es un requisito funcional del enunciado.</p>
+        <p style="margin-bottom:.5rem;"><strong>No</strong> se recomienda eliminación en cascada de clientes → dispositivos → órdenes porque en un negocio real conviene mantener el historial aunque el cliente se dé de baja.</p>
+        <p><strong>Sí</strong> se recomienda eliminación en cascada de ORDENES → USO_REPUESTOS porque el uso de repuestos no tiene sentido sin la orden asociada.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4. DATOS DE PRUEBA ══ -->
+<section id="datos">
+  <div class="sec-label">Sección 4</div>
+  <div class="sec-title">Datos de prueba sugeridos</div>
+  <p class="sec-desc">Estos datos aseguran que todas las consultas devuelvan resultados con variedad.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><span class="ch-title">Clientes (mínimo 5)</span></div>
+      <div class="card-body">
+        <div class="code-block">IDCliente | Nombre      | Localidad  | Provincia
+1         | Ana García  | Valencia   | Valencia
+2         | Luis Pérez  | Valencia   | Valencia
+3         | Sara Ruiz   | Gandía     | Valencia
+4         | Tomás Vidal | Alicante   | Alicante
+5         | Marta López | Valencia   | Valencia
+6         | Javi Torres | Valencia   | Valencia</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="ch-title">Técnicos (mínimo 3)</span></div>
+      <div class="card-body">
+        <div class="code-block">IDTecnico | Nombre     | Especialización
+1         | Carlos Mir | hardware
+2         | Elena Font | software
+3         | Rubén Sala | redes
+-- Nota: usar técnico activo e inactivo
+-- para probar el filtro de estado</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info" style="margin-top:.75rem;"><strong>Datos clave para que funcionen las consultas:</strong><br>
+  · C1 necesita órdenes activas de clientes de "Valencia".<br>
+  · C3 necesita al menos 2 técnicos con más de 1 reparación en estado Terminado/Entregado.<br>
+  · C5 necesita un repuesto que aparezca en al menos 2 órdenes distintas.<br>
+  · C6 necesita al menos un cliente con 2+ dispositivos (Ana García y Marta López son buenos candidatos).
+  </div>
+</section>
+
+<!-- ══ 5. CONSULTAS SQL ══ -->
+<section id="consultas">
+  <div class="sec-label">Sección 5</div>
+  <div class="sec-title">Consultas SQL — Solución completa</div>
+  <p class="sec-desc">Sintaxis Access/JET SQL. Diferencias con SQL estándar señaladas en los comentarios.</p>
+
+  <!-- C1 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">C1 — DispositivosPorLocalidad</span>
+      <span class="ch-badge" style="background:var(--gr-dim);color:var(--green);">SELECT + JOIN + WHERE</span>
+    </div>
+    <div class="card-body">
+      <div class="code-block"><span class="kw">SELECT</span>
+    (C.Nombre & <span class="str">' '</span> & C.Apellidos) <span class="kw">AS</span> Cliente,
+    D.Tipo,
+    D.Marca,
+    D.Modelo,
+    O.Estado
+<span class="kw">FROM</span> (<span class="tbl">CLIENTES</span> C
+    <span class="kw">INNER JOIN</span> <span class="tbl">DISPOSITIVOS</span> D <span class="kw">ON</span> C.IDCliente = D.IDCliente)
+    <span class="kw">INNER JOIN</span> <span class="tbl">ORDENES_TRABAJO</span> O <span class="kw">ON</span> D.IDDispositivo = O.IDDispositivo
+<span class="kw">WHERE</span>
+    C.Localidad = <span class="str">'Valencia'</span>
+    <span class="kw">AND</span> O.Estado <span class="op">&lt;&gt;</span> <span class="str">'Entregado'</span>;</div>
+      <div class="warn"><strong>Nota Access:</strong> Los JOIN múltiples necesitan paréntesis en Access/JET. La concatenación es con <code style="font-family:monospace">&</code> en lugar de <code style="font-family:monospace">||</code> o <code style="font-family:monospace">CONCAT()</code>.</div>
+    </div>
+  </div>
+
+  <!-- C2 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">C2 — OrdenesAbiertas</span>
+      <span class="ch-badge" style="background:var(--gr-dim);color:var(--green);">JOIN + WHERE + ORDER BY</span>
+    </div>
+    <div class="card-body">
+      <div class="code-block"><span class="kw">SELECT</span>
+    O.IDOrden,
+    O.FechaEntrada,
+    O.Estado,
+    (T.Nombre & <span class="str">' '</span> & T.Apellidos) <span class="kw">AS</span> Tecnico,
+    D.Tipo,
+    D.Marca
+<span class="kw">FROM</span> (<span class="tbl">ORDENES_TRABAJO</span> O
+    <span class="kw">LEFT JOIN</span> <span class="tbl">TECNICOS</span> T <span class="kw">ON</span> O.IDTecnico = T.IDTecnico)
+    <span class="kw">INNER JOIN</span> <span class="tbl">DISPOSITIVOS</span> D <span class="kw">ON</span> O.IDDispositivo = D.IDDispositivo
+<span class="kw">WHERE</span>
+    O.Estado <span class="op">NOT IN</span> (<span class="str">'Entregado'</span>, <span class="str">'Terminado'</span>)
+<span class="kw">ORDER BY</span>
+    O.FechaEntrada <span class="op">ASC</span>;</div>
+      <div class="info"><strong>LEFT JOIN en Técnicos:</strong> Necesario porque IDTecnico puede ser NULL. Un INNER JOIN excluiría las órdenes sin técnico asignado, lo que no cumple el enunciado.</div>
+    </div>
+  </div>
+
+  <!-- C3 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">C3 — RepPorTecnico</span>
+      <span class="ch-badge" style="background:var(--gr-dim);color:var(--green);">GROUP BY + HAVING + COUNT</span>
+    </div>
+    <div class="card-body">
+      <div class="code-block"><span class="kw">SELECT</span>
+    (T.Nombre & <span class="str">' '</span> & T.Apellidos) <span class="kw">AS</span> Tecnico,
+    T.Especializacion,
+    <span class="fn">COUNT</span>(O.IDOrden) <span class="kw">AS</span> NumReparaciones
+<span class="kw">FROM</span> <span class="tbl">TECNICOS</span> T
+    <span class="kw">INNER JOIN</span> <span class="tbl">ORDENES_TRABAJO</span> O <span class="kw">ON</span> T.IDTecnico = O.IDTecnico
+<span class="kw">WHERE</span>
+    O.Estado <span class="op">IN</span> (<span class="str">'Terminado'</span>, <span class="str">'Entregado'</span>)
+<span class="kw">GROUP BY</span>
+    T.IDTecnico, T.Nombre, T.Apellidos, T.Especializacion
+<span class="kw">HAVING</span>
+    <span class="fn">COUNT</span>(O.IDOrden) > <span class="num">1</span>
+<span class="kw">ORDER BY</span>
+    NumReparaciones <span class="op">DESC</span>;</div>
+      <div class="warn"><strong>WHERE vs HAVING:</strong> El filtro de Estado va en WHERE (filtra filas antes de agrupar), no en HAVING. El HAVING filtra el resultado agregado.</div>
+    </div>
+  </div>
+
+  <!-- C4 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">C4 — IngresosPorOrden</span>
+      <span class="ch-badge" style="background:var(--gr-dim);color:var(--green);">SUM + GROUP BY + JOIN multi-tabla</span>
+    </div>
+    <div class="card-body">
+      <div class="code-block"><span class="kw">SELECT</span>
+    O.IDOrden,
+    O.FechaEntrada,
+    (C.Nombre & <span class="str">' '</span> & C.Apellidos) <span class="kw">AS</span> Cliente,
+    <span class="fn">Nz</span>(O.CosteManoObra, <span class="num">0</span>) + <span class="fn">Nz</span>(<span class="fn">SUM</span>(U.Cantidad * U.PrecioAplicado), <span class="num">0</span>) <span class="kw">AS</span> CosteTotal
+<span class="kw">FROM</span> ((<span class="tbl">ORDENES_TRABAJO</span> O
+    <span class="kw">INNER JOIN</span> <span class="tbl">DISPOSITIVOS</span> D <span class="kw">ON</span> O.IDDispositivo = D.IDDispositivo)
+    <span class="kw">INNER JOIN</span> <span class="tbl">CLIENTES</span> C <span class="kw">ON</span> D.IDCliente = C.IDCliente)
+    <span class="kw">LEFT JOIN</span> <span class="tbl">USO_REPUESTOS</span> U <span class="kw">ON</span> O.IDOrden = U.IDOrden
+<span class="kw">WHERE</span>
+    O.Estado <span class="op">IN</span> (<span class="str">'Terminado'</span>, <span class="str">'Entregado'</span>)
+<span class="kw">GROUP BY</span>
+    O.IDOrden, O.FechaEntrada, C.Nombre, C.Apellidos, O.CosteManoObra
+<span class="kw">ORDER BY</span>
+    CosteTotal <span class="op">DESC</span>;</div>
+      <div class="info"><strong>Nz():</strong> Función Access que convierte NULL a 0. Equivale a COALESCE() en SQL estándar. Necesaria cuando CosteManoObra o el SUM de repuestos puede ser NULL.</div>
+    </div>
+  </div>
+
+  <!-- C5 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">C5 — RepuestoMasUsado</span>
+      <span class="ch-badge" style="background:var(--gr-dim);color:var(--green);">TOP 1 + GROUP BY (sintaxis Access)</span>
+    </div>
+    <div class="card-body">
+      <div class="code-block"><span class="cmt">-- Opción 1: TOP 1 (sintaxis Access)</span>
+<span class="kw">SELECT TOP</span> <span class="num">1</span>
+    R.Nombre <span class="kw">AS</span> Repuesto,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> U.IDOrden) <span class="kw">AS</span> NumOrdenes
+<span class="kw">FROM</span> <span class="tbl">REPUESTOS</span> R
+    <span class="kw">INNER JOIN</span> <span class="tbl">USO_REPUESTOS</span> U <span class="kw">ON</span> R.IDRepuesto = U.IDRepuesto
+<span class="kw">GROUP BY</span> R.IDRepuesto, R.Nombre
+<span class="kw">ORDER BY</span> <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> U.IDOrden) <span class="op">DESC</span>;</div>
+      <div class="warn"><strong>Nota:</strong> COUNT(DISTINCT ...) puede no funcionar en versiones antiguas de Access. Alternativa aceptable: <code style="font-family:monospace">COUNT(U.IDOrden)</code> con datos no duplicados, o usar una subconsulta.</div>
+    </div>
+  </div>
+
+  <!-- C6 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">C6 — ClientesVariosDispositivos</span>
+      <span class="ch-badge" style="background:var(--gr-dim);color:var(--green);">GROUP BY + HAVING + COUNT</span>
+    </div>
+    <div class="card-body">
+      <div class="code-block"><span class="kw">SELECT</span>
+    (C.Nombre & <span class="str">' '</span> & C.Apellidos) <span class="kw">AS</span> Cliente,
+    C.Localidad,
+    <span class="fn">COUNT</span>(D.IDDispositivo) <span class="kw">AS</span> NumDispositivos
+<span class="kw">FROM</span> <span class="tbl">CLIENTES</span> C
+    <span class="kw">INNER JOIN</span> <span class="tbl">DISPOSITIVOS</span> D <span class="kw">ON</span> C.IDCliente = D.IDCliente
+<span class="kw">GROUP BY</span>
+    C.IDCliente, C.Nombre, C.Apellidos, C.Localidad
+<span class="kw">HAVING</span>
+    <span class="fn">COUNT</span>(D.IDDispositivo) > <span class="num">1</span>
+<span class="kw">ORDER BY</span>
+    NumDispositivos <span class="op">DESC</span>;</div>
+    </div>
+  </div>
+
+  <!-- C7 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="ch-title">C7 — StockBajo</span>
+      <span class="ch-badge" style="background:var(--gr-dim);color:var(--green);">SELECT + WHERE simple</span>
+    </div>
+    <div class="card-body">
+      <div class="code-block"><span class="kw">SELECT</span>
+    R.Nombre,
+    R.Categoria,
+    R.PrecioVenta,
+    R.Stock,
+    R.Proveedor
+<span class="kw">FROM</span> <span class="tbl">REPUESTOS</span> R
+<span class="kw">WHERE</span>
+    R.Stock <span class="op">&lt;=</span> <span class="num">3</span>
+<span class="kw">ORDER BY</span>
+    R.Stock <span class="op">ASC</span>;</div>
+      <div class="ok">Esta consulta es la más sencilla. Si el alumno la resuelve con solo SELECT/WHERE/ORDER BY está bien. No requiere GROUP BY ni JOIN.</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══ 6. VARIANTES ══ -->
+<section id="variantes">
+  <div class="sec-label">Sección 6</div>
+  <div class="sec-title">Variantes aceptables en el diseño</div>
+  <p class="sec-desc">Cualquier solución que cumpla los requisitos funcionales es válida. Ejemplos de variantes comunes que deben aceptarse:</p>
+
+  <div class="variant-grid">
+    <div class="variant-card">
+      <div class="vc-title">Tabla CLIENTES con campo Dirección único</div>
+      <div class="vc-body">En lugar de Localidad + Provincia por separado, el alumno puede usar un campo <code style="font-family:monospace">Direccion</code> de texto largo o un campo <code style="font-family:monospace">Localidad</code> que incluya ambos. <strong>Aceptable si se justifica.</strong></div>
+    </div>
+    <div class="variant-card">
+      <div class="vc-title">Nombre + Apellidos como un solo campo</div>
+      <div class="vc-body">Algunos alumnos usarán un campo <code style="font-family:monospace">NombreCompleto</code>. Es funcionalmente válido aunque no sea la mejor práctica. <strong>Aceptable.</strong></div>
+    </div>
+    <div class="variant-card">
+      <div class="vc-title">PK compuesta en USO_REPUESTOS</div>
+      <div class="vc-body">En lugar de IDUso autonumérico, usar PK compuesta (IDOrden, IDRepuesto). Más correcto técnicamente si no se permiten el mismo repuesto dos veces en una orden. <strong>Bonificar.</strong></div>
+    </div>
+    <div class="variant-card">
+      <div class="vc-title">Tabla separada para ESTADOS</div>
+      <div class="vc-body">Crear una tabla auxiliar <code style="font-family:monospace">ESTADOS_ORDEN</code> en lugar de texto fijo. Más normalizado. <strong>Bonificar con +0.5.</strong></div>
+    </div>
+    <div class="variant-card">
+      <div class="vc-title">Tabla ESPECIALIZACIONES</div>
+      <div class="vc-body">Igual que el anterior: tabla auxiliar para las especializaciones de técnicos. <strong>Aceptable y bonificar.</strong></div>
+    </div>
+    <div class="variant-card">
+      <div class="vc-title">Más de 6 tablas</div>
+      <div class="vc-body">Tablas para marcas, proveedores como entidades, tipos de dispositivo, etc. Es un modelo más rico. <strong>Bonificar si está bien relacionado.</strong></div>
+    </div>
+    <div class="variant-card">
+      <div class="vc-title">C2 con INNER JOIN en Técnicos</div>
+      <div class="vc-body">Si el alumno usa INNER JOIN en lugar de LEFT JOIN, la consulta excluirá órdenes sin técnico. <strong>Penalizar levemente (–0.25): incumple el enunciado.</strong></div>
+    </div>
+    <div class="variant-card">
+      <div class="vc-title">C4 sin Nz() — NULL en coste</div>
+      <div class="vc-body">Si no usa Nz() o COALESCE, órdenes sin repuestos mostrarán NULL en el total. <strong>Aceptar si los datos de prueba evitan ese caso.</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 7. EVALUACIÓN ══ -->
+<section id="evaluacion">
+  <div class="sec-label">Sección 7</div>
+  <div class="sec-title">Guía de evaluación por apartados</div>
+
+  <div class="card">
+    <div class="card-body">
+      <table class="ref-table">
+        <tr>
+          <th>Apartado</th><th>Peso</th><th>Qué mirar</th><th>Error frecuente</th>
+        </tr>
+        <tr>
+          <td>Diagrama E-R</td><td>15%</td>
+          <td>Cardinalidades correctas, claves primarias/foráneas, tabla intermedia</td>
+          <td>Olvidar la tabla intermedia USO_REPUESTOS; cardinalidad mal marcada en N:M</td>
+        </tr>
+        <tr>
+          <td>Tablas y campos</td><td>20%</td>
+          <td>Tipos de datos adecuados, campos obligatorios/opcionales, ID autonumérico</td>
+          <td>Usar "Texto corto" para fechas; IDTecnico en Ordenes marcado como obligatorio</td>
+        </tr>
+        <tr>
+          <td>Relaciones e IR</td><td>15%</td>
+          <td>Todas las relaciones establecidas, IR activada, al menos una explicación de cascada</td>
+          <td>No activar IR; no hacer relación Ordenes → UsoRepuestos</td>
+        </tr>
+        <tr>
+          <td>Datos de prueba</td><td>10%</td>
+          <td>Datos suficientes para que las consultas devuelvan resultados visibles</td>
+          <td>Técnicos sin órdenes asignadas (C3 no devuelve nada); todos los estados iguales</td>
+        </tr>
+        <tr>
+          <td>SQL C1–C7</td><td>25%</td>
+          <td>Cada consulta ~3,5 puntos del bloque; comprobar resultados con los datos</td>
+          <td>C2: INNER en Técnicos; C4: no sumar mano de obra; C5: ORDER BY sin TOP 1</td>
+        </tr>
+        <tr>
+          <td>Formularios/Informes</td><td>10%</td>
+          <td>Subformulario en orden de trabajo, informe agrupado, vista de impresión</td>
+          <td>Formularios solo en vista hoja de datos; informes sin agrupación</td>
+        </tr>
+        <tr>
+          <td>Documento diseño</td><td>5%</td>
+          <td>E-R, descripción de tablas, decisiones justificadas</td>
+          <td>Solo capturas de pantalla sin ningún texto explicativo</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="warn" style="margin-top:.75rem;">
+    <strong>Criterio de mínimos:</strong> Para superar la práctica (nota ≥ 5) el alumno debe tener al menos 4 tablas con relaciones correctas y al menos 3 consultas SQL funcionando.
+  </div>
+</section>
+
+<footer style="border-top:1px solid var(--border);padding-top:1.5rem;margin-top:3rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;">
+  <span style="font-family:var(--mono);font-size:.65rem;color:var(--muted);">SOLUCIÓN — Uso exclusivo profesor · TechFix SL · AOF 1.º SMR</span>
+  <span style="font-family:var(--mono);font-size:.65rem;color:var(--muted);">No distribuir al alumnado</span>
+</footer>
+
+</div><!-- /wrap -->
+</body>
+</html>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Infografía SQL — Referencia Rápida</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #ffffff;
+  --c1: #1a1a2e;   /* azul oscuro — títulos */
+  --c2: #0f3460;   /* azul medio */
+  --c3: #16213e;
+  --sel:  #2563eb; --sel-bg:  #dbeafe;
+  --whe:  #7c3aed; --whe-bg:  #ede9fe;
+  --ord:  #059669; --ord-bg:  #d1fae5;
+  --grp:  #d97706; --grp-bg:  #fef3c7;
+  --joi:  #db2777; --joi-bg:  #fce7f3;
+  --fun:  #0891b2; --fun-bg:  #cffafe;
+  --op:   #65a30d; --op-bg:   #ecfccb;
+  --kw:   #1d4ed8;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+}
+
+/* ── PRINT SETUP ── */
+@page {
+  size: A4 portrait;
+  margin: 8mm 7mm 8mm 7mm;
+}
+@media print {
+  html, body { margin: 0; padding: 0; }
+  .no-print { display: none; }
+  .page { box-shadow: none !important; }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 9.5px; }
+body {
+  background: #e5e7eb;
+  font-family: var(--sans);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+}
+
+/* ── PAGE ── */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  max-height: 297mm;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 4px 32px rgba(0,0,0,.18);
+  display: flex;
+  flex-direction: column;
+  padding: 7mm 7mm 5mm 7mm;
+  gap: 3px;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--c1);
+  border-radius: 6px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.header-left { display: flex; align-items: baseline; gap: 8px; }
+.header h1 {
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.header-badge {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  background: #3b82f6;
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: .06em;
+}
+.header-sub {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 400;
+}
+.header-chips {
+  display: flex;
+  gap: 5px;
+}
+.hchip {
+  font-size: 0.6rem;
+  background: rgba(255,255,255,.1);
+  color: #cbd5e1;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  border: 1px solid rgba(255,255,255,.15);
+}
+
+/* ── GRID ── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  flex: 1;
+}
+
+/* ── CARD ── */
+.card {
+  border-radius: 5px;
+  padding: 5px 7px;
+  border: 1.5px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 1px;
+}
+.ct-kw {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.ct-desc {
+  font-size: 0.62rem;
+  color: #64748b;
+  font-weight: 500;
+}
+.ct-num {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  background: rgba(0,0,0,.06);
+  padding: 1px 5px;
+  border-radius: 10px;
+  color: #64748b;
+}
+
+/* ── CODE BLOCK ── */
+.code {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  line-height: 1.55;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+  padding: 4px 6px;
+  white-space: pre;
+  color: #1e293b;
+}
+.code .kw  { color: var(--kw); font-weight: 700; }
+.code .fn  { color: #7c3aed; font-weight: 600; }
+.code .str { color: #059669; }
+.code .num { color: #b45309; }
+.code .cmt { color: #94a3b8; font-style: italic; }
+.code .op  { color: #dc2626; font-weight: 600; }
+.code .tbl { color: #0f766e; font-weight: 600; }
+
+/* ── PILLS ROW ── */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.pill {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* ── TABLE ── */
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.63rem;
+}
+.ref-table th {
+  font-size: 0.57rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 2px 4px;
+  text-align: left;
+  color: #475569;
+  border-bottom: 1.5px solid #e2e8f0;
+}
+.ref-table td {
+  padding: 2px 4px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+  line-height: 1.4;
+}
+.ref-table td:first-child {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--kw);
+  white-space: nowrap;
+}
+.ref-table td:last-child { color: #475569; }
+
+/* ── BULLET LIST ── */
+.blist {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.blist li {
+  font-size: 0.63rem;
+  color: #374151;
+  list-style: none;
+  padding-left: 10px;
+  position: relative;
+  line-height: 1.4;
+}
+.blist li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #94a3b8;
+  font-size: 0.55rem;
+}
+.blist li strong {
+  font-family: var(--mono);
+  color: var(--kw);
+  font-size: 0.62rem;
+}
+
+/* ── SPAN CARDS ── */
+.span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
+
+/* ── COLOR THEMES ── */
+.sel  { border-color: var(--sel);  background: var(--sel-bg);  }
+.sel .ct-kw  { color: var(--sel); }
+.whe  { border-color: var(--whe);  background: var(--whe-bg);  }
+.whe .ct-kw  { color: var(--whe); }
+.ord  { border-color: var(--ord);  background: var(--ord-bg);  }
+.ord .ct-kw  { color: var(--ord); }
+.grp  { border-color: var(--grp);  background: var(--grp-bg);  }
+.grp .ct-kw  { color: var(--grp); }
+.joi  { border-color: var(--joi);  background: var(--joi-bg);  }
+.joi .ct-kw  { color: var(--joi); }
+.fun  { border-color: var(--fun);  background: var(--fun-bg);  }
+.fun .ct-kw  { color: var(--fun); }
+.op   { border-color: var(--op);   background: var(--op-bg);   }
+.op .ct-kw   { color: var(--op); }
+
+/* ── FOOTER ── */
+.footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  background: var(--c1);
+  border-radius: 4px;
+  font-size: 0.56rem;
+  color: #64748b;
+}
+.footer-kws {
+  display: flex;
+  gap: 4px;
+  font-family: var(--mono);
+  color: #94a3b8;
+}
+
+/* PRINT BUTTON */
+.print-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--c1);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  z-index: 100;
+}
+.print-btn:hover { background: #3b82f6; }
+@media print { .print-btn { display: none; } }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+
+<div class="page">
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <div class="header-left">
+      <h1>SQL</h1>
+      <span class="header-badge">Referencia Rápida</span>
+      <span class="header-sub">Bases de Datos · Access / SQL estándar</span>
+    </div>
+    <div class="header-chips">
+      <span class="hchip">SELECT</span>
+      <span class="hchip">WHERE</span>
+      <span class="hchip">ORDER BY</span>
+      <span class="hchip">GROUP BY</span>
+      <span class="hchip">JOIN</span>
+      <span class="hchip">Funciones</span>
+    </div>
+  </div>
+
+  <!-- ══ GRID ══ -->
+  <div class="grid">
+
+    <!-- ── SELECT ── -->
+    <div class="card sel">
+      <div class="card-title">
+        <span class="ct-kw">SELECT</span>
+        <span class="ct-desc">Seleccionar columnas</span>
+        <span class="ct-num">01</span>
+      </div>
+      <div class="code"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">Tabla</span>;
+<span class="kw">SELECT</span> col1, col2 <span class="kw">FROM</span> <span class="tbl">Tabla</span>;
+<span class="kw">SELECT DISTINCT</span> col <span class="kw">FROM</span> <span class="tbl">Tabla</span>;
+<span class="kw">SELECT</span> col <span class="kw">AS</span> Alias <span class="kw">FROM</span> <span class="tbl">Tabla</span>;</div>
+      <ul class="blist">
+        <li><strong>*</strong> → todas las columnas</li>
+        <li><strong>DISTINCT</strong> → elimina duplicados</li>
+        <li><strong>AS</strong> → renombra columna (alias)</li>
+      </ul>
+    </div>
+
+    <!-- ── WHERE ── -->
+    <div class="card whe">
+      <div class="card-title">
+        <span class="ct-kw">WHERE</span>
+        <span class="ct-desc">Filtrar filas</span>
+        <span class="ct-num">02</span>
+      </div>
+      <div class="code"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">T</span>
+<span class="kw">WHERE</span> col = <span class="str">'valor'</span>
+  <span class="kw">AND</span> edad > <span class="num">18</span>
+  <span class="kw">OR</span>  pais = <span class="str">'ES'</span>;</div>
+      <div class="pills">
+        <span class="pill" style="background:#ede9fe;color:#6d28d9;">=  &lt;&gt;  &lt;  &gt;  &lt;=  &gt;=</span>
+        <span class="pill" style="background:#ede9fe;color:#6d28d9;">AND  OR  NOT</span>
+      </div>
+    </div>
+
+    <!-- ── OPERADORES WHERE ── -->
+    <div class="card op">
+      <div class="card-title">
+        <span class="ct-kw">Operadores especiales</span>
+        <span class="ct-desc">en WHERE</span>
+        <span class="ct-num">03</span>
+      </div>
+      <table class="ref-table">
+        <tr><th>Operador</th><th>Uso</th></tr>
+        <tr><td>LIKE</td><td>Patrón de texto <code style="font-family:monospace;font-size:.6rem">%</code>=varios, <code style="font-family:monospace;font-size:.6rem">_</code>=uno</td></tr>
+        <tr><td>BETWEEN</td><td>Rango: <code style="font-family:monospace;font-size:.6rem">col BETWEEN 10 AND 20</code></td></tr>
+        <tr><td>IN</td><td>Lista: <code style="font-family:monospace;font-size:.6rem">col IN ('A','B')</code></td></tr>
+        <tr><td>IS NULL</td><td>Valor vacío / nulo</td></tr>
+        <tr><td>NOT</td><td>Niega la condición</td></tr>
+      </table>
+    </div>
+
+    <!-- ── ORDER BY ── -->
+    <div class="card ord">
+      <div class="card-title">
+        <span class="ct-kw">ORDER BY</span>
+        <span class="ct-desc">Ordenar resultados</span>
+        <span class="ct-num">04</span>
+      </div>
+      <div class="code"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">T</span>
+<span class="kw">ORDER BY</span> col1 <span class="op">ASC</span>;  <span class="cmt">-- ascendente</span>
+<span class="kw">ORDER BY</span> col1 <span class="op">DESC</span>; <span class="cmt">-- descendente</span>
+<span class="kw">ORDER BY</span> col1, col2 <span class="op">ASC</span>;</div>
+      <ul class="blist">
+        <li><strong>ASC</strong> → de menor a mayor (defecto)</li>
+        <li><strong>DESC</strong> → de mayor a menor</li>
+        <li>Se pueden ordenar por varias columnas</li>
+      </ul>
+    </div>
+
+    <!-- ── GROUP BY ── -->
+    <div class="card grp">
+      <div class="card-title">
+        <span class="ct-kw">GROUP BY + HAVING</span>
+        <span class="ct-desc">Agrupar datos</span>
+        <span class="ct-num">05</span>
+      </div>
+      <div class="code"><span class="kw">SELECT</span> col, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total
+<span class="kw">FROM</span> <span class="tbl">Tabla</span>
+<span class="kw">GROUP BY</span> col
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">2</span>;</div>
+      <ul class="blist">
+        <li><strong>GROUP BY</strong> → agrupa filas iguales</li>
+        <li><strong>HAVING</strong> → filtra grupos (≠ WHERE)</li>
+        <li>Columnas en SELECT deben estar en GROUP BY o en función</li>
+      </ul>
+    </div>
+
+    <!-- ── FUNCIONES AGREGADAS ── -->
+    <div class="card fun">
+      <div class="card-title">
+        <span class="ct-kw">Funciones Agregadas</span>
+        <span class="ct-desc">Cálculos sobre grupos</span>
+        <span class="ct-num">06</span>
+      </div>
+      <table class="ref-table">
+        <tr><th>Función</th><th>Descripción</th></tr>
+        <tr><td>COUNT(*)</td><td>Número de filas</td></tr>
+        <tr><td>SUM(col)</td><td>Suma de valores</td></tr>
+        <tr><td>AVG(col)</td><td>Media aritmética</td></tr>
+        <tr><td>MAX(col)</td><td>Valor máximo</td></tr>
+        <tr><td>MIN(col)</td><td>Valor mínimo</td></tr>
+      </table>
+    </div>
+
+    <!-- ── INNER JOIN ── -->
+    <div class="card joi span-2">
+      <div class="card-title">
+        <span class="ct-kw">JOIN</span>
+        <span class="ct-desc">Combinar tablas relacionadas</span>
+        <span class="ct-num">07</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+        <div>
+          <div class="code"><span class="kw">SELECT</span> A.col1, B.col2
+<span class="kw">FROM</span> <span class="tbl">TablaA</span> A
+<span class="kw">INNER JOIN</span> <span class="tbl">TablaB</span> B
+  <span class="kw">ON</span> A.ID = B.IDForeign;</div>
+          <ul class="blist" style="margin-top:3px">
+            <li><strong>INNER JOIN</strong> → solo filas coincidentes en ambas tablas</li>
+            <li><strong>ON</strong> → condición de unión (PK = FK)</li>
+            <li>Usar <strong>alias</strong> (A, B) para abreviar nombres</li>
+          </ul>
+        </div>
+        <div>
+          <div style="background:#fff0f6;border:1px solid #fda4af;border-radius:4px;padding:4px 6px;font-size:.62rem;color:#881337;line-height:1.5;">
+            <strong style="display:block;font-size:.58rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;color:#be123c;">Tipos de JOIN</strong>
+            <b style="font-family:monospace;">INNER JOIN</b> — solo coincidencias<br>
+            <b style="font-family:monospace;">LEFT JOIN</b> — todas las de la izq. + coincidencias<br>
+            <b style="font-family:monospace;">RIGHT JOIN</b> — todas las de la der. + coincidencias
+          </div>
+          <div class="code" style="margin-top:3px;font-size:.63rem"><span class="cmt">-- JOIN múltiple</span>
+<span class="kw">FROM</span> <span class="tbl">A</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">B</span> <span class="kw">ON</span> A.id=B.id
+<span class="kw">INNER JOIN</span> <span class="tbl">C</span> <span class="kw">ON</span> B.id=C.id</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LIKE EJEMPLOS ── -->
+    <div class="card op">
+      <div class="card-title">
+        <span class="ct-kw">LIKE</span>
+        <span class="ct-desc">Búsqueda de texto</span>
+        <span class="ct-num">08</span>
+      </div>
+      <div class="code"><span class="cmt">-- Empieza por "A"</span>
+<span class="kw">WHERE</span> nombre <span class="kw">LIKE</span> <span class="str">'A%'</span>
+<span class="cmt">-- Contiene "SQL"</span>
+<span class="kw">WHERE</span> nombre <span class="kw">LIKE</span> <span class="str">'%SQL%'</span>
+<span class="cmt">-- 2ª letra es "o"</span>
+<span class="kw">WHERE</span> nombre <span class="kw">LIKE</span> <span class="str">'_o%'</span></div>
+    </div>
+
+    <!-- ── ESTRUCTURA COMPLETA ── -->
+    <div class="card sel span-2" style="border-color:#1d4ed8;background:#eff6ff;">
+      <div class="card-title">
+        <span class="ct-kw" style="color:#1d4ed8;">Estructura completa de una consulta SELECT</span>
+        <span class="ct-desc">Orden obligatorio de las cláusulas</span>
+        <span class="ct-num">09</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+        <div class="code" style="font-size:.68rem;"><span class="kw">SELECT</span>   columnas / funciones
+<span class="kw">FROM</span>     tabla(s) / JOIN
+<span class="kw">WHERE</span>    condición de filas
+<span class="kw">GROUP BY</span> columna(s)
+<span class="kw">HAVING</span>   condición de grupos
+<span class="kw">ORDER BY</span> columna [ASC|DESC];</div>
+        <div style="display:flex;flex-direction:column;gap:2px;justify-content:center;">
+          <div style="display:flex;align-items:center;gap:4px;font-size:.61rem;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#2563eb;flex-shrink:0;"></span>
+            <span style="color:#374151;"><b style="font-family:monospace;color:#1d4ed8">SELECT</b> → qué mostrar</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:.61rem;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#0f766e;flex-shrink:0;"></span>
+            <span style="color:#374151;"><b style="font-family:monospace;color:#0f766e">FROM</b> → de dónde obtener datos</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:.61rem;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#7c3aed;flex-shrink:0;"></span>
+            <span style="color:#374151;"><b style="font-family:monospace;color:#7c3aed">WHERE</b> → filtro ANTES de agrupar</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:.61rem;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#d97706;flex-shrink:0;"></span>
+            <span style="color:#374151;"><b style="font-family:monospace;color:#d97706">GROUP BY</b> → agrupa filas iguales</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:.61rem;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#dc2626;flex-shrink:0;"></span>
+            <span style="color:#374151;"><b style="font-family:monospace;color:#dc2626">HAVING</b> → filtro DESPUÉS de agrupar</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:.61rem;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#059669;flex-shrink:0;"></span>
+            <span style="color:#374151;"><b style="font-family:monospace;color:#059669">ORDER BY</b> → ordena el resultado final</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EJEMPLO COMPLETO ── -->
+    <div class="card grp">
+      <div class="card-title">
+        <span class="ct-kw">Ejemplo real</span>
+        <span class="ct-desc">Consulta completa</span>
+        <span class="ct-num">10</span>
+      </div>
+      <div class="code" style="font-size:.65rem;"><span class="kw">SELECT</span> Pais, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> Jugadores,
+       <span class="fn">AVG</span>(Puntuacion) <span class="kw">AS</span> Media
+<span class="kw">FROM</span> <span class="tbl">Jugadores</span>
+<span class="kw">WHERE</span> CuentaActiva = <span class="str">True</span>
+<span class="kw">GROUP BY</span> Pais
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) >= <span class="num">2</span>
+<span class="kw">ORDER BY</span> Media <span class="op">DESC</span>;</div>
+    </div>
+
+    <!-- ── DML ── -->
+    <div class="card sel">
+      <div class="card-title">
+        <span class="ct-kw">INSERT / UPDATE / DELETE</span>
+        <span class="ct-desc">Modificar datos (DML)</span>
+        <span class="ct-num">11</span>
+      </div>
+      <div class="code" style="font-size:.63rem;"><span class="kw">INSERT INTO</span> <span class="tbl">T</span> (c1,c2)
+  <span class="kw">VALUES</span> (<span class="str">'val'</span>,<span class="num">99</span>);
+
+<span class="kw">UPDATE</span> <span class="tbl">T</span> <span class="kw">SET</span> c1=<span class="str">'nuevo'</span>
+  <span class="kw">WHERE</span> ID=<span class="num">1</span>;
+
+<span class="kw">DELETE FROM</span> <span class="tbl">T</span>
+  <span class="kw">WHERE</span> ID=<span class="num">1</span>;</div>
+    </div>
+
+    <!-- ── DDL ── -->
+    <div class="card fun">
+      <div class="card-title">
+        <span class="ct-kw">CREATE / ALTER / DROP</span>
+        <span class="ct-desc">Definir tablas (DDL)</span>
+        <span class="ct-num">12</span>
+      </div>
+      <div class="code" style="font-size:.61rem;"><span class="kw">CREATE TABLE</span> <span class="tbl">Tabla</span> (
+  ID     <span class="fn">INT</span> <span class="kw">PRIMARY KEY</span>,
+  Nombre <span class="fn">VARCHAR</span>(<span class="num">50</span>),
+  IDFk   <span class="fn">INT</span> <span class="kw">REFERENCES</span> <span class="tbl">Otra</span>(ID)
+);
+<span class="kw">DROP TABLE</span> <span class="tbl">Tabla</span>;</div>
+    </div>
+
+    <!-- ── SUBCONSULTAS ── -->
+    <div class="card whe">
+      <div class="card-title">
+        <span class="ct-kw">Subconsultas</span>
+        <span class="ct-desc">SELECT dentro de SELECT</span>
+        <span class="ct-num">13</span>
+      </div>
+      <div class="code" style="font-size:.63rem;"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">T</span>
+<span class="kw">WHERE</span> col = (
+  <span class="kw">SELECT MAX</span>(col)
+  <span class="kw">FROM</span> <span class="tbl">T</span>
+);
+
+<span class="kw">WHERE</span> ID <span class="kw">IN</span> (
+  <span class="kw">SELECT</span> ID <span class="kw">FROM</span> <span class="tbl">Otra</span>
+);</div>
+    </div>
+
+    <!-- ── DIFERENCIAS WHERE vs HAVING ── -->
+    <div class="card grp span-2">
+      <div class="card-title">
+        <span class="ct-kw">WHERE vs HAVING</span>
+        <span class="ct-desc">¿Cuándo usar cada uno?</span>
+        <span class="ct-num">14</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+        <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:3px;padding:4px 6px;">
+          <div style="font-family:monospace;font-size:.65rem;font-weight:700;color:#b91c1c;margin-bottom:2px;">WHERE</div>
+          <ul class="blist">
+            <li>Filtra filas <strong style="color:#374151">individuales</strong></li>
+            <li>Se ejecuta <strong style="color:#374151">antes</strong> del GROUP BY</li>
+            <li><strong style="color:#374151">No</strong> puede usar funciones agregadas</li>
+            <li>Ejemplo: <code style="font-family:monospace;font-size:.6rem;color:#b91c1c">WHERE edad &gt; 18</code></li>
+          </ul>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:3px;padding:4px 6px;">
+          <div style="font-family:monospace;font-size:.65rem;font-weight:700;color:#92400e;margin-bottom:2px;">HAVING</div>
+          <ul class="blist">
+            <li>Filtra <strong style="color:#374151">grupos</strong> ya formados</li>
+            <li>Se ejecuta <strong style="color:#374151">después</strong> del GROUP BY</li>
+            <li><strong style="color:#374151">Sí</strong> puede usar funciones agregadas</li>
+            <li>Ejemplo: <code style="font-family:monospace;font-size:.6rem;color:#92400e">HAVING COUNT(*) &gt; 2</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TIPOS DE DATOS ── -->
+    <div class="card fun">
+      <div class="card-title">
+        <span class="ct-kw">Tipos de datos</span>
+        <span class="ct-desc">Access / SQL</span>
+        <span class="ct-num">15</span>
+      </div>
+      <table class="ref-table">
+        <tr><th>Tipo</th><th>Descripción</th></tr>
+        <tr><td>TEXT / VARCHAR</td><td>Cadena de texto</td></tr>
+        <tr><td>INT / NUMBER</td><td>Número entero</td></tr>
+        <tr><td>DECIMAL / FLOAT</td><td>Número decimal</td></tr>
+        <tr><td>DATE / DATETIME</td><td>Fecha y hora</td></tr>
+        <tr><td>BIT / BOOLEAN</td><td>Verdadero / Falso</td></tr>
+      </table>
+    </div>
+
+    <!-- ── CLAVES ── -->
+    <div class="card joi">
+      <div class="card-title">
+        <span class="ct-kw">Claves PK y FK</span>
+        <span class="ct-desc">Integridad referencial</span>
+        <span class="ct-num">16</span>
+      </div>
+      <ul class="blist" style="margin-bottom:3px">
+        <li><strong>PRIMARY KEY (PK)</strong> → identifica cada fila de forma única, no puede ser NULL ni repetirse</li>
+        <li><strong>FOREIGN KEY (FK)</strong> → referencia a la PK de otra tabla, crea la relación</li>
+        <li><strong>Integridad referencial</strong> → no puedes insertar un FK que no exista como PK</li>
+      </ul>
+      <div class="code" style="font-size:.6rem;"><span class="cmt">-- Relación 1 a N</span>
+<span class="tbl">Clientes</span>(IDCliente <span class="kw">PK</span>) ← <span class="tbl">Pedidos</span>(IDCliente <span class="kw">FK</span>)</div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- ══ FOOTER ══ -->
+  <div class="footer">
+    <span style="color:#94a3b8;font-size:.55rem;">Bases de Datos · AOF BBD · SQL Cheat Sheet</span>
+    <div class="footer-kws">
+      <span>SELECT</span><span>·</span><span>FROM</span><span>·</span><span>WHERE</span><span>·</span>
+      <span>JOIN</span><span>·</span><span>GROUP BY</span><span>·</span><span>HAVING</span><span>·</span>
+      <span>ORDER BY</span><span>·</span><span>INSERT</span><span>·</span><span>UPDATE</span><span>·</span><span>DELETE</span>
+    </div>
+    <span style="color:#64748b;font-size:.55rem;">Imprimir: Ctrl+P → Sin márgenes</span>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

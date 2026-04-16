@@ -1,0 +1,397 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+% ── Colores ─────────────────────────────────────────────────────────────────
+\definecolor{azulSMR}  {RGB}{0,90,170}
+\definecolor{grisCard} {RGB}{245,247,250}
+\definecolor{grisOsc}  {RGB}{80,80,100}
+\definecolor{rojoEntr} {RGB}{180,30,30}
+\definecolor{verdeOK}  {RGB}{0,120,70}
+\definecolor{ambarInfo}{RGB}{145,95,0}
+
+% ── Cajas tcolorbox ──────────────────────────────────────────────────────────
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{contextobox}{
+  enhanced, breakable,
+  colback=azulSMR!6, colframe=azulSMR,
+  arc=3pt, boxrule=0.8pt,
+  fonttitle=\bfseries\color{white},
+  coltitle=white, attach boxed title to top left={yshift=-2mm,xshift=4mm},
+  boxed title style={colback=azulSMR, arc=2pt, boxrule=0pt},
+  title=Contexto del proyecto
+}
+
+\newtcolorbox{tablabox}[1]{
+  enhanced, breakable,
+  colback=grisCard, colframe=grisOsc!60,
+  arc=3pt, boxrule=0.7pt,
+  fonttitle=\bfseries,
+  title=#1,
+  left=4pt, right=4pt, top=4pt, bottom=4pt
+}
+
+\newtcolorbox{consultabox}{
+  enhanced, breakable,
+  colback=verdeOK!5, colframe=verdeOK,
+  arc=3pt, boxrule=0.8pt,
+  fonttitle=\bfseries\color{white},
+  coltitle=white, attach boxed title to top left={yshift=-2mm,xshift=4mm},
+  boxed title style={colback=verdeOK, arc=2pt, boxrule=0pt},
+  title=Bloque 3 — Consultas SQL requeridas
+}
+
+\newtcolorbox{entregabox}{
+  enhanced,
+  colback=rojoEntr!6, colframe=rojoEntr,
+  arc=3pt, boxrule=1pt,
+  fonttitle=\bfseries\color{white},
+  coltitle=white, attach boxed title to top left={yshift=-2mm,xshift=4mm},
+  boxed title style={colback=rojoEntr, arc=2pt, boxrule=0pt},
+  title=ENTREGABLE — Qué debes presentar
+}
+
+\newtcolorbox{notabox}{
+  colback=ambarInfo!8, colframe=ambarInfo,
+  arc=3pt, boxrule=0.7pt,
+  fonttitle=\bfseries\color{ambarInfo},
+  title=Nota del profesor
+}
+
+% ── Cabecera/pie ─────────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{grisOsc} Módulo AOF — Bases de Datos con Access}
+\fancyhead[R]{\small\color{grisOsc} 1.º SMR · IES\,---}
+\fancyfoot[C]{\small\thepage}
+\fancyfoot[R]{\small\color{grisOsc} Práctica: TechFix SL}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.2pt}
+
+% ── Secciones ────────────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\large\bfseries\color{azulSMR}}{}{0em}{\thesection.\ }[\vspace{-4pt}\color{azulSMR}\rule{\linewidth}{0.6pt}]
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{grisOsc}}{}{0em}{\thesubsection\ }
+
+\setlist[itemize]{leftmargin=1.6em, itemsep=1pt, topsep=3pt}
+\setlist[enumerate]{leftmargin=1.6em, itemsep=3pt, topsep=3pt}
+
+\hypersetup{colorlinks=true, linkcolor=azulSMR, urlcolor=azulSMR, pdfborder={0 0 0}}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+% ── PORTADA ──────────────────────────────────────────────────────────────────
+\begin{center}
+  {\color{azulSMR}\rule{\linewidth}{2.5pt}}\\[10pt]
+  {\Huge\bfseries\color{azulSMR} PRÁCTICA INTEGRADORA}\\[4pt]
+  {\LARGE\bfseries Bases de Datos con Microsoft Access}\\[6pt]
+  {\large\color{grisOsc} Diseño · Implementación · Consultas SQL}\\[10pt]
+  {\color{azulSMR}\rule{\linewidth}{1pt}}\\[8pt]
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{@{}ll}
+    \bfseries Módulo:       & Aplicaciones Ofimáticas (AOF) \\
+    \bfseries Ciclo:        & Técnico en Sistemas Microinformáticos y Redes (SMR) \\
+    \bfseries Curso:        & 1.º \\
+    \bfseries Unidad:       & UT6 — Utilización de Bases de Datos Ofimáticas \\
+    \bfseries Modalidad:    & Individual, entregable \\
+    \bfseries Calificación: & Hasta 10 puntos (ver rúbrica) \\
+  \end{tabular}\\[8pt]
+  \colorbox{azulSMR!15}{\parbox{0.85\textwidth}{\centering\small
+    Rellena los datos antes de entregar:\\[4pt]
+    \textbf{Nombre y apellidos:}\enspace\underline{\hspace{7cm}}
+    \quad \textbf{Grupo:}\enspace\underline{\hspace{1.5cm}}
+  }}
+\end{center}
+
+\vspace{0.4cm}
+
+% ── 1. CONTEXTO ──────────────────────────────────────────────────────────────
+\section{Contexto del proyecto}
+
+\begin{contextobox}
+\textbf{TechFix SL} es un pequeño taller de reparación de equipos informáticos situado en el centro
+de la ciudad. El negocio atiende a particulares y pequeñas empresas y necesita digitalizar su gestión.
+Actualmente lleva el control en papel y quiere pasar a una base de datos que le permita:
+
+\begin{itemize}
+  \item Registrar los clientes y los dispositivos que traen a reparar.
+  \item Asignar órdenes de trabajo a los técnicos del taller.
+  \item Controlar el inventario de repuestos y vincularlos a cada reparación.
+  \item Consultar el historial de reparaciones y generar informes.
+\end{itemize}
+
+\textbf{Tu misión} es diseñar e implementar esta base de datos completa en Microsoft Access,
+redactar la documentación técnica y escribir las consultas SQL que el taller necesita.
+\end{contextobox}
+
+\vspace{0.3cm}
+
+% ── 2. DISEÑO ────────────────────────────────────────────────────────────────
+\section{Bloque 1 — Diseño de la base de datos}
+
+\subsection{Requisitos de las entidades}
+
+Debes identificar las tablas necesarias y definir sus campos, tipos de dato y claves.
+A continuación se describen los \textbf{requisitos funcionales} de cada entidad.
+\textbf{No se especifican los nombres exactos de los campos}: tú decides el nombre, el tipo
+y si es obligatorio u opcional.
+
+\vspace{0.3cm}
+
+\begin{tablabox}{Entidad 1 — Clientes}
+\begin{itemize}
+  \item Cada cliente debe tener un identificador único generado automáticamente.
+  \item Debe almacenarse el nombre completo (nombre y apellidos).
+  \item Se necesitan \textbf{al menos dos formas de contacto} (p.\ ej.\ teléfono y correo).
+  \item Se debe registrar la localización: como mínimo localidad y provincia.
+  \item Ha de quedar constancia de cuándo se registró por primera vez en el taller.
+  \item Debe ser posible saber si el cliente está activo (acepta comunicaciones) o no.
+\end{itemize}
+\end{tablabox}
+
+\vspace{0.25cm}
+
+\begin{tablabox}{Entidad 2 — Técnicos}
+\begin{itemize}
+  \item Identificador único y datos personales básicos.
+  \item Cada técnico tiene \textbf{una única especialización principal}: hardware, software o redes.
+  \item Debe reflejarse si está activo o de baja en la empresa.
+  \item Se registra la fecha en que se incorporó al taller.
+  \item No es necesario almacenar contraseñas ni accesos al sistema.
+\end{itemize}
+\end{tablabox}
+
+\vspace{0.25cm}
+
+\begin{tablabox}{Entidad 3 — Dispositivos (equipos)}
+\begin{itemize}
+  \item Cada dispositivo pertenece a \textbf{un único cliente} (un cliente puede tener varios).
+  \item Se clasifica por tipo: ordenador de sobremesa, portátil, tablet, smartphone, impresora u otro.
+  \item Se almacenan la marca y el modelo del fabricante.
+  \item El cliente describe brevemente el problema al traer el equipo (campo de texto libre).
+  \item Un mismo dispositivo puede traerse a reparar en distintas ocasiones.
+\end{itemize}
+\end{tablabox}
+
+\vspace{0.25cm}
+
+\begin{tablabox}{Entidad 4 — Órdenes de trabajo (tabla central)}
+\begin{itemize}
+  \item Es la entidad central del sistema: vincula un dispositivo con un técnico asignado.
+  \item Debe registrarse la fecha y hora de entrada del equipo al taller.
+  \item Se indica una fecha estimada de entrega al cliente.
+  \item El estado de la orden debe ser uno de los siguientes: \textit{Recibido, En diagnóstico,
+        En reparación, En espera de piezas, Terminado, Entregado}.
+  \item El técnico debe poder añadir notas de diagnóstico y descripción del trabajo realizado
+        (pueden ser dos campos distintos).
+  \item Se registra el coste de la mano de obra de forma independiente al coste de los repuestos.
+  \item Una orden de trabajo puede no tener técnico asignado inicialmente.
+\end{itemize}
+\end{tablabox}
+
+\vspace{0.25cm}
+
+\begin{tablabox}{Entidad 5 — Repuestos}
+\begin{itemize}
+  \item Catálogo de piezas disponibles en el taller.
+  \item Cada repuesto tiene un nombre, una referencia interna y una categoría
+        (RAM, disco duro/SSD, pantalla, teclado, batería, fuente de alimentación, otro).
+  \item Se distingue entre el precio de coste (lo que paga el taller) y el precio de venta al cliente.
+  \item Se controla el stock: número de unidades disponibles en almacén.
+  \item Incluye el nombre del proveedor habitual.
+\end{itemize}
+\end{tablabox}
+
+\vspace{0.25cm}
+
+\begin{tablabox}{Entidad 6 — Uso de repuestos en órdenes (tabla intermedia)}
+\begin{itemize}
+  \item Registra qué repuestos se han utilizado en cada orden de trabajo.
+  \item Una misma orden puede usar varios repuestos distintos; un mismo repuesto puede
+        aparecer en múltiples órdenes: relación \textbf{N:M}.
+  \item Se almacena la cantidad de unidades del repuesto usadas en esa orden.
+  \item Se guarda el precio de venta aplicado en el momento de la reparación (puede diferir
+        del precio actual del catálogo).
+\end{itemize}
+\end{tablabox}
+
+\vspace{0.4cm}
+
+\subsection{Diagrama Entidad-Relación}
+
+Antes de crear las tablas en Access, elabora el \textbf{diagrama E-R} de la base de datos.
+Puedes dibujarlo a mano en papel cuadriculado o con cualquier herramienta (draw.io, Lucidchart,
+papel y escáner\ldots). Debe mostrar:
+
+\begin{itemize}
+  \item Todas las entidades y sus atributos principales.
+  \item Todas las relaciones entre entidades con su cardinalidad (1:1, 1:N, N:M).
+  \item Indicación de claves primarias y claves foráneas.
+\end{itemize}
+
+\vspace{0.4cm}
+
+% ── 3. IMPLEMENTACIÓN ────────────────────────────────────────────────────────
+\section{Bloque 2 — Implementación en Microsoft Access}
+
+\begin{enumerate}[label=\bfseries\arabic{enumi}.]
+  \item \textbf{Crear la base de datos} en Access con el nombre \texttt{TechFix\_Apellido.accdb}.
+  \item \textbf{Crear todas las tablas} con sus campos, tipos de datos y propiedades
+        (tamaño, formato, valor predeterminado, requerido\ldots).
+  \item \textbf{Definir las claves primarias} en cada tabla.
+  \item \textbf{Establecer las relaciones} entre tablas en la ventana de relaciones de Access,
+        activando la \textbf{integridad referencial} en todas ellas.
+  \item \textbf{Introducir datos de prueba}: al menos 5 clientes, 3 técnicos, 8 dispositivos,
+        10 órdenes de trabajo en distintos estados, y 6 repuestos con usos en varias órdenes.
+  \item \textbf{Crear como mínimo los siguientes elementos de interfaz}:
+        \begin{itemize}
+          \item \textbf{Formulario de alta de cliente} (con todos sus campos).
+          \item \textbf{Formulario de nueva orden de trabajo} (con subformulario de repuestos usados).
+          \item \textbf{Informe de órdenes abiertas} agrupado por técnico, con nombre del cliente
+                y dispositivo.
+          \item \textbf{Informe de factura} para una orden concreta: muestra datos del cliente,
+                dispositivo, trabajo realizado, repuestos y coste total.
+        \end{itemize}
+\end{enumerate}
+
+\vspace{0.4cm}
+
+% ── 4. CONSULTAS ─────────────────────────────────────────────────────────────
+\section{Bloque 3 — Consultas SQL}
+
+\begin{consultabox}
+Crea en Access las siguientes consultas en \textbf{vista SQL}. Guarda cada una con el nombre
+indicado y haz una captura de pantalla con los resultados usando tus datos de prueba.
+
+\vspace{0.3cm}
+\begin{enumerate}[label=\bfseries C\arabic*.]
+
+  \item \textbf{[C1\_DispositivosPorLocalidad]} —
+        Lista el nombre del cliente, tipo de dispositivo y marca de todos los equipos
+        traídos por clientes de una localidad concreta (pon la tuya o invéntate una).
+        Muestra solo aquellos cuya orden tenga estado distinto de \textit{Entregado}.
+
+  \item \textbf{[C2\_OrdenesAbiertas]} —
+        Muestra todas las órdenes de trabajo que no están en estado \textit{Entregado} ni
+        \textit{Terminado}, ordenadas de más antigua a más reciente por fecha de entrada.
+        Incluye el nombre del técnico asignado (puede ser \texttt{NULL} si no hay ninguno).
+
+  \item \textbf{[C3\_RepPorTecnico]} —
+        Cuenta el número de reparaciones completadas (estado \textit{Terminado} o
+        \textit{Entregado}) que ha realizado cada técnico.
+        Muestra solo los técnicos con \textbf{más de 1} reparación completada,
+        ordenados de mayor a menor número.
+
+  \item \textbf{[C4\_IngresosPorOrden]} —
+        Calcula el coste total de cada orden de trabajo sumando la mano de obra más
+        el importe de todos los repuestos usados (cantidad $\times$ precio aplicado).
+        Muestra solo órdenes en estado \textit{Terminado} o \textit{Entregado},
+        ordenadas por coste total descendente.
+
+  \item \textbf{[C5\_RepuestoMasUsado]} —
+        Obtén el nombre del repuesto que más veces ha aparecido en órdenes de trabajo
+        (mayor número de órdenes distintas en las que se ha utilizado).
+
+  \item \textbf{[C6\_ClientesVariosDispositivos]} —
+        Lista los clientes que han traído \textbf{más de un dispositivo} distinto al taller,
+        mostrando nombre completo y número de dispositivos.
+
+  \item \textbf{[C7\_StockBajo]} —
+        Muestra todos los repuestos cuyo stock sea igual o inferior a 3 unidades,
+        ordenados por cantidad disponible de menor a mayor.
+
+\end{enumerate}
+\end{consultabox}
+
+\vspace{0.4cm}
+
+% ── 5. ENTREGABLE ────────────────────────────────────────────────────────────
+\section{Entregable y criterios de evaluación}
+
+\begin{entregabox}
+Comprime todo en un único archivo \texttt{ZIP} con el nombre \texttt{TechFix\_Apellido.zip}
+y entrégalo en la plataforma antes de la fecha indicada por el profesor. Debe contener:
+
+\begin{enumerate}
+  \item \textbf{Archivo de base de datos} \texttt{TechFix\_Apellido.accdb} con datos de prueba.
+  \item \textbf{Documento de diseño} (PDF o Word) con:
+    \begin{itemize}
+      \item Diagrama E-R (foto o imagen del dibujo a mano también es válido).
+      \item Descripción de cada tabla: nombre, campos elegidos, tipos de datos y justificación
+            de las decisiones tomadas.
+      \item Diagrama de relaciones (captura de la ventana de relaciones de Access).
+    \end{itemize}
+  \item \textbf{Capturas de pantalla} de los resultados de cada una de las 7 consultas SQL
+        con tus datos de prueba (una imagen por consulta, con el nombre de la consulta visible).
+  \item \textbf{Capturas de pantalla} de los dos formularios y los dos informes en funcionamiento.
+\end{enumerate}
+\end{entregabox}
+
+\vspace{0.4cm}
+
+% ── 6. RÚBRICA ───────────────────────────────────────────────────────────────
+\section{Rúbrica de evaluación}
+
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\linewidth}{@{}X c c c c@{}}
+  \toprule
+  \textbf{Criterio} & \textbf{Insuf.} & \textbf{Suf.} & \textbf{Bien} & \textbf{Sobres.} \\
+   & \small(0--4) & \small(5--6) & \small(7--8) & \small(9--10) \\
+  \midrule
+  Diagrama E-R correcto y completo
+    & Falta o muy incorrecto & Entidades y relaciones básicas & Cardinalidades correctas
+    & Todo correcto + justificación \\
+  \addlinespace
+  Tablas, campos y tipos correctos (Access)
+    & $<$4 tablas o tipos erróneos & Tablas básicas correctas & Todos los campos y tipos
+    & Propiedades y validaciones extras \\
+  \addlinespace
+  Relaciones e integridad referencial
+    & Sin relaciones & Algunas relaciones & Todas correctas & IR activada en todas \\
+  \addlinespace
+  Datos de prueba coherentes
+    & Sin datos o incoherentes & Datos mínimos & Datos suficientes & Datos ricos y realistas \\
+  \addlinespace
+  Consultas SQL (C1--C7)
+    & 0--2 funcionan & 3--4 funcionan & 5--6 funcionan & Las 7 funcionan correctamente \\
+  \addlinespace
+  Formularios e informes
+    & No entregados & 1 formulario & 2 formularios + 1 informe & Todo completo y con formato \\
+  \addlinespace
+  Documento de diseño
+    & No entregado & Solo capturas & Descripción básica & Justificación de decisiones \\
+  \bottomrule
+\end{tabularx}
+
+\vspace{0.5cm}
+
+\begin{notabox}
+No existe una única solución correcta para el diseño de la base de datos. Se valorará la
+\textbf{coherencia} de las decisiones tomadas y que el alumno sea capaz de \textbf{justificarlas}.
+Por ejemplo: puede haber más o menos tablas que las descritas si existe una razón técnica válida.
+Lo importante es que el modelo sea correcto, normalizado y funcional.
+
+\medskip
+Copia, plagio o entrega de trabajos ajenos supone \textbf{calificación de 0} en la práctica
+y anotación en el expediente del alumno conforme al reglamento del centro.
+\end{notabox}
+
+\end{document}

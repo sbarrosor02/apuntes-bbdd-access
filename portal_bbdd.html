@@ -125,6 +125,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
 .card:nth-child(6) .c-cta{color:#ffa940;}
 .nt:nth-child(6).active{border-bottom-color:#ffa940;background:#ffa94018;}
 .nt:nth-child(6).active .ni{background:#ffa94022;color:#ffa940;}
+.card:nth-child(7)::before{background:#f43f5e;}
+.card:nth-child(7):hover{border-color:#f43f5e;box-shadow:0 12px 50px #f43f5e22;}
+.card:nth-child(7) .c-cta{color:#f43f5e;}
+.nt:nth-child(7).active{border-bottom-color:#f43f5e;background:#f43f5e18;}
+.nt:nth-child(7).active .ni{background:#f43f5e22;color:#f43f5e;}
 </style>
 
 <div id="topbar">
@@ -136,6 +141,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
     <button class="nt" id="tab-3" onclick="openApp(3)"><span class="ni">04</span><span style="font-size:1.05rem">🔍</span>Consultas SQL</button>
     <button class="nt" id="tab-4" onclick="openApp(4)"><span class="ni">05</span><span style="font-size:1.05rem">📋</span>Formularios e Informes</button>
     <button class="nt" id="tab-5" onclick="openApp(5)"><span class="ni">06</span><span style="font-size:1.05rem">💻</span>Ejercicios SQL</button>
+    <button class="nt" id="tab-6" onclick="openApp(6)"><span class="ni">07</span><span style="font-size:1.05rem">🛠️</span>Práctica: TechFix</button>
   </div>
   <div class="tb-end"><button class="home-btn" onclick="goHome()">&#8962; Inicio</button></div>
 </div>
@@ -188,6 +194,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
     <div class="c-desc">Practica SELECT, WHERE, ORDER BY y GROUP BY con ejercicios</div>
     <div class="c-cta">Abrir →</div>
   </div>
+  <div class="card" onclick="openApp(6)">
+    <div class="c-icon">🛠️</div>
+    <div class="c-num">Módulo 07</div>
+    <div class="c-title">Práctica: TechFix SL</div>
+    <div class="c-desc">Diseña e implementa una BBDD completa para un taller de reparaciones</div>
+    <div class="c-cta">Ver enunciado →</div>
+  </div>
   </div>
 </div>
 <div id="frames">
@@ -197,6 +210,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
   <iframe class="frame" id="frame-3" title="Módulo 4 — Consultas SQL"></iframe>
   <iframe class="frame" id="frame-4" title="Módulo 5 — Formularios e Informes"></iframe>
   <iframe class="frame" id="frame-5" title="Módulo 6 — Ejercicios SQL"></iframe>
+  <iframe class="frame" id="frame-6" title="Módulo 7 — Práctica TechFix"></iframe>
   <div id="loader">
     <div class="ld-spin"></div>
     <div class="ld-txt" id="ldTxt">Cargando...</div>
@@ -5299,6 +5313,7 @@ const APPS=[
     "ICBpZiAoZS5rZXkgPT09ICJFbnRlciIgJiYgKGUuY3RybEtleSB8fCBlLm1ldGFLZXkpKSB7CiAgICAgIGNvbnN0IGlkID0gdGEu"+
     "aWQucmVwbGFjZSgic3FsIiwgIiIpOwogICAgICBydW5FeGVyY2lzZShwYXJzZUludChpZCkpOwogICAgfQogIH0pOwp9KTsKPC9z"+
     "Y3JpcHQ+CjwvYm9keT4KPC9odG1sPgo="}
+  ,{title:"Práctica: TechFix SL", url:"practica_taller.html"}
 ];
 
 function b64ToBlob(b64){
@@ -5307,7 +5322,7 @@ function b64ToBlob(b64){
   return new Blob([bytes],{type:"text/html;charset=utf-8"});
 }
 
-const blobUrls=new Array(6).fill(null);
+const blobUrls=new Array(7).fill(null);
 let current=-1;
 
 function showLoader(title){
@@ -5340,9 +5355,14 @@ function openApp(n){
   if(!blobUrls[n]){
     const iv=showLoader(APPS[n].title);
     frame.onload=()=>hideLoader(iv);
-    const url=URL.createObjectURL(b64ToBlob(APPS[n].b64));
-    blobUrls[n]=url;
-    frame.src=url;
+    if(APPS[n].url){
+      frame.src=APPS[n].url;
+      blobUrls[n]=APPS[n].url;
+    } else {
+      const url=URL.createObjectURL(b64ToBlob(APPS[n].b64));
+      blobUrls[n]=url;
+      frame.src=url;
+    }
   } else {
     frame.classList.add("on");
   }
