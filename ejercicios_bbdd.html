@@ -662,7 +662,12 @@ async function downloadPDF() {
   btn.disabled = true;
   btn.textContent = 'Generando PDF…';
 
+  // Volver al inicio para que html2canvas capture desde arriba
+  window.scrollTo(0, 0);
+  await new Promise(r => requestAnimationFrame(r));
+
   const element = document.querySelector('.wrap');
+  const fullHeight = element.scrollHeight;
 
   const opt = {
     margin:   [10, 8, 10, 8],
@@ -674,7 +679,8 @@ async function downloadPDF() {
       logging: false,
       backgroundColor: '#ffffff',
       scrollX: 0,
-      scrollY: -window.scrollY,
+      scrollY: 0,
+      height: fullHeight,
       onclone: (doc) => {
         const style = doc.createElement('style');
         style.textContent = `
@@ -689,10 +695,10 @@ async function downloadPDF() {
             --red:#b91c1c!important;--rd-dim:#fff1f2!important;
             --text:#111!important;--muted:#555!important;--muted2:#444!important;
           }
-          html,body{background:#fff!important;color:#111!important;margin:0!important;padding:0!important;}
+          html,body{background:#fff!important;color:#111!important;margin:0!important;padding:0!important;height:auto!important;overflow:visible!important;}
           body::before{display:none!important;}
           .no-print,.progress-bar-wrap,.hint-btn,.hint-box,.dl-btn,.download-section{display:none!important;}
-          .wrap{max-width:100%!important;margin:0!important;padding:.5rem 1.2rem!important;}
+          .wrap{max-width:100%!important;margin:0!important;padding:.5rem 1.2rem!important;height:auto!important;overflow:visible!important;}
           .ex-card{page-break-inside:avoid;break-inside:avoid;}
           .schema em{font-style:italic;color:#444!important;}
         `;
