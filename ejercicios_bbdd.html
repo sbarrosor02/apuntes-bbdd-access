@@ -650,11 +650,10 @@ function showToast(msg) {
 }
 
 async function downloadPDF() {
-  const nombre = document.getElementById('inp-nombre').value.trim() || 'Alumno';
-  const grupo  = document.getElementById('inp-grupo').value.trim();
+  const nombre = document.getElementById('inp-nombre').value.trim();
   const btn    = document.getElementById('dlBtn');
 
-  if (!document.getElementById('inp-nombre').value.trim()) {
+  if (!nombre) {
     showToast('⚠️ Escribe tu nombre antes de descargar');
     document.getElementById('inp-nombre').focus();
     return;
@@ -663,83 +662,41 @@ async function downloadPDF() {
   btn.disabled = true;
   btn.textContent = 'Generando PDF…';
 
-  // Temporarily hide no-print elements and show pdf-only
-  document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
-  document.querySelectorAll('.hint-box').forEach(el => el.style.display = 'none');
-
-  const element = document.getElementById('printable-area') || document.querySelector('.wrap');
+  const element = document.querySelector('.wrap');
 
   const opt = {
-    margin:      [8, 8, 8, 8],
-    filename:    `Ejercicios_BBDD_${nombre.replace(/\s+/g,'_')}.pdf`,
-    image:       { type: 'jpeg', quality: 0.92 },
+    margin:   [10, 8, 10, 8],
+    filename: `Ejercicios_BBDD_${nombre.replace(/\s+/g,'_')}.pdf`,
+    image:    { type: 'jpeg', quality: 0.92 },
     html2canvas: {
       scale: 1.5,
       useCORS: true,
+      logging: false,
       backgroundColor: '#ffffff',
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: 900,
       onclone: (doc) => {
-        const b = doc.body;
-        b.style.background = '#ffffff';
-        b.style.color = '#000000';
-        b.querySelector('style') && null;
-        // Apply light theme to cloned doc
-        doc.querySelectorAll('*').forEach(el => {
-          const s = el.style;
-          const cs = window.getComputedStyle(el);
-          // override dark backgrounds
-          if (cs.backgroundColor && cs.backgroundColor.includes('rgb(7, 9, 15)') ||
-              cs.backgroundColor && cs.backgroundColor.includes('rgb(13, 16, 24)') ||
-              cs.backgroundColor && cs.backgroundColor.includes('rgb(19, 22, 34)') ||
-              cs.backgroundColor && cs.backgroundColor.includes('rgb(22, 27, 40)')) {
-            el.style.backgroundColor = '#ffffff';
-          }
-          if (cs.color && cs.color.includes('rgb(220, 230, 245)')) {
-            el.style.color = '#000000';
-          }
-        });
-        // Style overrides for print
+        // Override CSS variables at :root so every element inherits light theme
         const style = doc.createElement('style');
         style.textContent = `
-          body{background:#fff!important;color:#000!important;}
+          :root{
+            --bg:#fff!important;--s1:#f5f5f5!important;--s2:#ededed!important;
+            --card:#fff!important;--border:#ddd!important;--border2:#ccc!important;
+            --cyan:#0055bb!important;--cy-dim:#e6f0ff!important;
+            --green:#15803d!important;--gr-dim:#e6fff2!important;
+            --amber:#92400e!important;--am-dim:#fffbeb!important;
+            --pink:#7c3aed!important;--pk-dim:#f3e8ff!important;
+            --purple:#6d28d9!important;--pu-dim:#ede9fe!important;
+            --red:#b91c1c!important;--rd-dim:#fff1f2!important;
+            --text:#111!important;--muted:#555!important;--muted2:#444!important;
+          }
+          body{background:#fff!important;color:#111!important;}
           body::before{display:none!important;}
-          .no-print,.progress-bar-wrap,.hint-btn,.dl-btn,.download-section{display:none!important;}
-          .hero{background:#fff;padding:1rem 0 .75rem;border-bottom:1px solid #ccc;}
-          .hero h1{font-size:1.6rem;color:#000;}
-          .hero h1 em{color:#0066cc;}
-          .hero-eyebrow{color:#0066cc;}
-          .hero-sub,.ex-body p{color:#333;}
-          .chips{display:none;}
-          .student-box{background:#f5f7fa;border:1px solid #ccc;border-top:2px solid #0066cc;}
-          .student-box input{background:#fff;border:1px solid #aaa;color:#000;}
-          .student-box label{color:#333;}
-          .block-header{padding:.6rem 0 .4rem;}
-          .bh-num{background:#e8e8e8;color:#555;border-color:#aaa;}
-          .bh-title{color:#000;}
-          .bh-line{background:#ccc;}
-          .ex-card{background:#fff;border:1px solid #ccc;margin-bottom:.6rem;page-break-inside:avoid;}
-          .ex-card.answered{border-color:#15803d;}
-          .ex-header{background:#f5f5f5;border-color:#ddd;}
-          .ex-num{background:#e8e8e8;color:#555;}
-          .ex-card.answered .ex-num{background:#d1fae5;color:#15803d;}
-          .ex-title{color:#000;}
-          .ex-badge{color:#555;background:#eee!important;border:1px solid #ccc;}
-          .schema{background:#f9f9f9;border:1px solid #ddd;color:#333;}
-          .schema .tbl{color:#b45309;}
-          .schema .pk{color:#0369a1;}
-          .schema .fk{color:#9333ea;}
-          .ans-area{background:#f9f9f9;border:1px solid #aaa;color:#000;}
-          .ans-label{color:#555;}
-          .choice{border-color:#ccc;color:#333;}
-          .choice.selected{border-color:#0066cc;background:#eff6ff;}
-          .sub-q{background:#f5f5f5;border-color:#ddd;}
-          .sub-q .sq-label{color:#000;}
-          .match-sel{border-color:#aaa;background:#f5f5f5;color:#000;}
-          .code-display{background:#f0f0f0;border-color:#ccc;color:#000;}
-          .code-display .kw{color:#1d4ed8;}
-          .code-display .fn{color:#7c3aed;}
-          .code-display .tbl{color:#15803d;}
-          .code-display .str{color:#15803d;}
-          .code-display .err{color:#dc2626;}
+          .no-print,.progress-bar-wrap,.hint-btn,.hint-box,.dl-btn,.download-section{display:none!important;}
+          .wrap{max-width:100%!important;padding:.5rem 1rem!important;}
+          .ex-card{page-break-inside:avoid;break-inside:avoid;}
+          .schema em{font-style:italic;color:#444!important;}
         `;
         doc.head.appendChild(style);
       }
@@ -748,15 +705,13 @@ async function downloadPDF() {
   };
 
   try {
-    await html2pdf().set(opt).from(document.querySelector('.wrap')).save();
+    await html2pdf().set(opt).from(element).save();
     showToast('✅ PDF generado correctamente');
-  } catch(e) {
-    showToast('Error al generar el PDF. Usa Ctrl+P → Guardar como PDF');
+  } catch (e) {
+    showToast('Error al generar. Usa Ctrl+P para imprimir como PDF');
     console.error(e);
   }
 
-  // Restore hidden elements
-  document.querySelectorAll('.no-print').forEach(el => el.style.display = '');
   btn.disabled = false;
   btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar PDF con mis respuestas`;
 }
