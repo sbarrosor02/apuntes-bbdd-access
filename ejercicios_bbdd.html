@@ -674,10 +674,8 @@ async function downloadPDF() {
       logging: false,
       backgroundColor: '#ffffff',
       scrollX: 0,
-      scrollY: 0,
-      windowWidth: 900,
+      scrollY: -window.scrollY,
       onclone: (doc) => {
-        // Override CSS variables at :root so every element inherits light theme
         const style = doc.createElement('style');
         style.textContent = `
           :root{
@@ -691,10 +689,10 @@ async function downloadPDF() {
             --red:#b91c1c!important;--rd-dim:#fff1f2!important;
             --text:#111!important;--muted:#555!important;--muted2:#444!important;
           }
-          body{background:#fff!important;color:#111!important;}
+          html,body{background:#fff!important;color:#111!important;margin:0!important;padding:0!important;}
           body::before{display:none!important;}
           .no-print,.progress-bar-wrap,.hint-btn,.hint-box,.dl-btn,.download-section{display:none!important;}
-          .wrap{max-width:100%!important;padding:.5rem 1rem!important;}
+          .wrap{max-width:100%!important;margin:0!important;padding:.5rem 1.2rem!important;}
           .ex-card{page-break-inside:avoid;break-inside:avoid;}
           .schema em{font-style:italic;color:#444!important;}
         `;
