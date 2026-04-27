@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ejercicios de Bases de Datos — Diseño y SQL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+/* ═══════════════════════════════ SCREEN THEME ═══════════════════════════════ */
+:root{
+  --bg:#07090f;--s1:#0d1018;--s2:#131622;--card:#161b28;
+  --border:#1d2235;--border2:#272e48;
+  --cyan:#00d4ff;--cy-dim:#00d4ff15;
+  --green:#3dffa0;--gr-dim:#3dffa012;
+  --amber:#ffb340;--am-dim:#ffb34015;
+  --pink:#ff4d8f; --pk-dim:#ff4d8f12;
+  --purple:#c084fc;--pu-dim:#c084fc12;
+  --red:#ff5c5c;  --rd-dim:#ff5c5c12;
+  --text:#dce6f5;--muted:#4a5580;--muted2:#8a9ab8;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.7;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,#1e2d3d 1px,transparent 1px);background-size:26px 26px;opacity:.3;pointer-events:none;z-index:0;}
+
+.wrap{max-width:860px;margin:0 auto;padding:0 1.75rem 5rem;position:relative;z-index:1;}
+
+/* ── HEADER ── */
+.hero{padding:3rem 0 2rem;border-bottom:1px solid var(--border2);}
+.hero-eyebrow{font-family:var(--mono);font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem;}
+.hero-eyebrow::before{content:'';width:18px;height:2px;background:var(--cyan);}
+.hero h1{font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:800;line-height:1.1;letter-spacing:-.02em;}
+.hero h1 em{color:var(--cyan);font-style:normal;}
+.hero-sub{margin-top:.7rem;font-size:.92rem;color:var(--muted2);max-width:580px;}
+.chips{margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;}
+.chip{font-family:var(--mono);font-size:.62rem;padding:.25rem .7rem;border-radius:2px;border:1px solid var(--border2);color:var(--muted2);background:var(--s2);}
+
+/* ── STUDENT BOX ── */
+.student-box{background:var(--s1);border:1px solid var(--border2);border-top:2px solid var(--cyan);border-radius:4px;padding:1rem 1.2rem;margin:1.5rem 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;}
+.student-box label{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted2);display:block;margin-bottom:.3rem;font-family:var(--mono);}
+.student-box input{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:.88rem;padding:.45rem .7rem;border-radius:3px;outline:none;transition:border-color .2s;}
+.student-box input:focus{border-color:var(--cyan);}
+@media(max-width:600px){.student-box{grid-template-columns:1fr 1fr;}}
+
+/* ── PROGRESS ── */
+.progress-bar-wrap{position:sticky;top:0;z-index:100;background:#07090fdd;backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:.6rem 0;display:flex;align-items:center;gap:1rem;}
+.pb-label{font-family:var(--mono);font-size:.65rem;color:var(--muted2);white-space:nowrap;}
+.pb-track{flex:1;height:5px;background:var(--border2);border-radius:3px;overflow:hidden;}
+.pb-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:3px;transition:width .4s ease;width:0%;}
+.pb-count{font-family:var(--mono);font-size:.65rem;color:var(--cyan);white-space:nowrap;}
+
+/* ── BLOCK HEADER ── */
+.block-header{display:flex;align-items:center;gap:.8rem;padding:1.8rem 0 1rem;}
+.bh-num{font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);background:var(--s2);border:1px solid var(--border2);padding:.25rem .6rem;border-radius:2px;}
+.bh-title{font-size:1.3rem;font-weight:700;letter-spacing:-.01em;}
+.bh-line{flex:1;height:1px;background:var(--border2);}
+
+/* ── EXERCISE CARD ── */
+.ex-card{background:var(--card);border:1px solid var(--border2);border-radius:5px;margin-bottom:1rem;overflow:hidden;transition:border-color .2s;}
+.ex-card.answered{border-color:var(--green);}
+.ex-header{display:flex;align-items:flex-start;gap:.75rem;padding:.75rem 1rem;background:var(--s2);border-bottom:1px solid var(--border);}
+.ex-num{font-family:var(--mono);font-size:.6rem;background:var(--border2);color:var(--muted2);padding:.2rem .5rem;border-radius:2px;flex-shrink:0;margin-top:2px;}
+.ex-card.answered .ex-num{background:var(--gr-dim);color:var(--green);}
+.ex-title{font-size:.9rem;font-weight:600;line-height:1.4;}
+.ex-badge{margin-left:auto;font-family:var(--mono);font-size:.55rem;padding:.15rem .5rem;border-radius:2px;text-transform:uppercase;letter-spacing:.07em;flex-shrink:0;margin-top:2px;}
+.ex-body{padding:.9rem 1rem;}
+.ex-body p{font-size:.88rem;color:var(--muted2);margin-bottom:.75rem;line-height:1.6;}
+.ex-body p strong{color:var(--text);}
+
+/* ── SCHEMA BOX ── */
+.schema{background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:.7rem .9rem;margin-bottom:.75rem;font-family:var(--mono);font-size:.75rem;color:var(--muted2);line-height:1.7;}
+.schema .tbl{color:var(--amber);font-weight:700;}
+.schema .pk{color:var(--cyan);}
+.schema .fk{color:var(--pink);}
+
+/* ── TEXTAREA ── */
+.ans-area{width:100%;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:.86rem;padding:.6rem .8rem;border-radius:3px;outline:none;resize:vertical;min-height:70px;transition:border-color .2s;line-height:1.6;}
+.ans-area:focus{border-color:var(--cyan);}
+.ans-area.code{font-family:var(--mono);font-size:.78rem;min-height:90px;}
+.ans-label{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.3rem;display:block;}
+
+/* ── RADIO / CHOICE ── */
+.choices{display:flex;flex-direction:column;gap:.4rem;margin-top:.25rem;}
+.choice{display:flex;align-items:center;gap:.6rem;padding:.45rem .7rem;border-radius:3px;border:1px solid var(--border);cursor:pointer;transition:all .15s;font-size:.86rem;}
+.choice:hover{border-color:var(--border2);background:var(--s2);}
+.choice input[type=radio]{accent-color:var(--cyan);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.choice.selected{border-color:var(--cyan);background:var(--cy-dim);}
+.choice.selected-wrong{border-color:var(--red);background:var(--rd-dim);}
+
+/* Sub-question group */
+.sub-q{background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:.65rem .9rem;margin-bottom:.6rem;}
+.sub-q .sq-label{font-size:.82rem;font-weight:600;margin-bottom:.4rem;color:var(--text);}
+.sub-q .choices{flex-direction:row;flex-wrap:wrap;gap:.35rem;}
+.sub-q .choice{padding:.3rem .65rem;font-size:.8rem;}
+
+/* ── MATCH TABLE ── */
+.match-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem .75rem;align-items:center;margin-top:.25rem;}
+.match-left{font-size:.84rem;color:var(--text);}
+.match-arrow{color:var(--muted);font-size:.75rem;}
+.match-sel{background:var(--s2);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:.82rem;padding:.35rem .5rem;border-radius:3px;outline:none;cursor:pointer;min-width:130px;}
+.match-sel:focus{border-color:var(--cyan);}
+
+/* ── ERROR CODE ── */
+.code-display{background:#000;border:1px solid var(--border2);border-radius:3px;padding:.75rem .9rem;font-family:var(--mono);font-size:.76rem;line-height:1.75;margin-bottom:.6rem;white-space:pre-wrap;}
+.code-display .kw{color:#7dd3fc;font-weight:700;}
+.code-display .fn{color:#c084fc;}
+.code-display .tbl{color:#34d399;font-weight:600;}
+.code-display .str{color:#86efac;}
+.code-display .num{color:#fbbf24;}
+.code-display .err{color:#f87171;text-decoration:underline wavy #f87171;}
+
+/* ── HINT ── */
+.hint-btn{font-family:var(--mono);font-size:.62rem;background:none;border:1px solid var(--border);color:var(--muted);padding:.3rem .7rem;border-radius:2px;cursor:pointer;transition:all .15s;margin-top:.4rem;}
+.hint-btn:hover{border-color:var(--amber);color:var(--amber);}
+.hint-box{display:none;background:var(--am-dim);border:1px solid var(--amber);border-radius:3px;padding:.6rem .8rem;margin-top:.5rem;font-size:.82rem;color:var(--muted2);}
+.hint-box.show{display:block;}
+.hint-box strong{color:var(--amber);}
+
+/* ── DOWNLOAD BTN ── */
+.download-section{text-align:center;padding:2.5rem 0 1rem;border-top:1px solid var(--border2);margin-top:2rem;}
+.dl-title{font-size:1.1rem;font-weight:700;margin-bottom:.3rem;}
+.dl-sub{font-size:.84rem;color:var(--muted2);margin-bottom:1.2rem;}
+.dl-btn{display:inline-flex;align-items:center;gap:.6rem;background:var(--cyan);color:#000;font-weight:700;font-family:var(--sans);font-size:.9rem;padding:.75rem 2rem;border-radius:4px;border:none;cursor:pointer;transition:all .2s;}
+.dl-btn:hover{background:#4de8ff;transform:translateY(-1px);}
+.dl-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.dl-note{font-size:.75rem;color:var(--muted);margin-top:.75rem;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-weight:700;padding:.6rem 1.4rem;border-radius:4px;font-size:.85rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* ══════════════════════════════ PRINT / PDF STYLES ══════════════════════════ */
+.pdf-only{display:none;}
+@media print{
+  body{background:#fff!important;color:#000!important;}
+  body::before{display:none;}
+  .no-print,.progress-bar-wrap,.hint-btn,.hint-box,.dl-btn,.download-section{display:none!important;}
+  .pdf-only{display:block;}
+  .wrap{max-width:100%;padding:0;}
+  .hero{background:#fff;border-color:#ccc;padding:1rem 0 .75rem;}
+  .hero h1{font-size:1.5rem;color:#000;}
+  .hero h1 em{color:#0066cc;}
+  .hero-eyebrow{color:#0066cc;}
+  .hero-sub{color:#444;}
+  .chips{display:none;}
+  .student-box{background:#f5f5f5;border:1px solid #ccc;padding:.75rem;}
+  .student-box input{border:1px solid #aaa;background:#fff;color:#000;}
+  .student-box label{color:#333;}
+  .block-header{padding:.75rem 0 .5rem;}
+  .bh-num{background:#e8e8e8;border-color:#aaa;color:#555;}
+  .bh-title{color:#000;}
+  .bh-line{background:#ccc;}
+  .ex-card{background:#fff;border:1px solid #ccc;margin-bottom:.75rem;break-inside:avoid;}
+  .ex-card.answered{border-color:#15803d;}
+  .ex-header{background:#f5f5f5;border-color:#ddd;}
+  .ex-num{background:#e8e8e8;color:#555;border:none;}
+  .ex-card.answered .ex-num{background:#d1fae5;color:#15803d;}
+  .ex-title{color:#000;}
+  .ex-badge{border:1px solid #aaa;}
+  .ex-body p{color:#333;}
+  .ex-body p strong{color:#000;}
+  .schema{background:#f9f9f9;border:1px solid #ddd;color:#333;}
+  .schema .tbl{color:#b45309;}
+  .schema .pk{color:#0369a1;}
+  .schema .fk{color:#9333ea;}
+  .ans-area{background:#f9f9f9;border:1px solid #aaa;color:#000;min-height:60px;}
+  .ans-area.code{font-family:monospace;background:#f0f0f0;}
+  .ans-label{color:#444;}
+  .choice{border-color:#ccc;}
+  .choice.selected{border-color:#0066cc;background:#eff6ff;}
+  .sub-q{background:#f5f5f5;border-color:#ddd;}
+  .sub-q .sq-label{color:#000;}
+  .match-sel{border-color:#aaa;background:#f5f5f5;color:#000;}
+  .code-display{background:#f0f0f0;border-color:#ccc;color:#000;}
+  .code-display .kw{color:#1d4ed8;}
+  .code-display .fn{color:#7c3aed;}
+  .code-display .tbl{color:#15803d;}
+  .code-display .str{color:#15803d;}
+  .code-display .err{color:#dc2626;}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-eyebrow">Actividad de evaluación · Bases de Datos</div>
+  <h1>Ejercicios de <em>Diseño y SQL</em></h1>
+  <p class="hero-sub">Completa todos los bloques y descarga el PDF con tus respuestas para entregarlo al profesor.</p>
+  <div class="chips">
+    <span class="chip">Módulo AOF</span>
+    <span class="chip">1.º SMR</span>
+    <span class="chip">12 ejercicios</span>
+    <span class="chip">Diseño · SQL · Access</span>
+  </div>
+</header>
+
+<!-- ── STUDENT INFO ── -->
+<div class="student-box" id="student-box">
+  <div>
+    <label for="inp-nombre">Nombre y apellidos</label>
+    <input type="text" id="inp-nombre" placeholder="Tu nombre completo" oninput="updatePDF()">
+  </div>
+  <div>
+    <label for="inp-grupo">Grupo</label>
+    <input type="text" id="inp-grupo" placeholder="p.ej. 1º SMR A" oninput="updatePDF()">
+  </div>
+  <div>
+    <label for="inp-fecha">Fecha</label>
+    <input type="date" id="inp-fecha" oninput="updatePDF()">
+  </div>
+</div>
+
+<!-- ── PROGRESS ── -->
+<div class="progress-bar-wrap no-print">
+  <span class="pb-label">Progreso</span>
+  <div class="pb-track"><div class="pb-fill" id="pbFill"></div></div>
+  <span class="pb-count" id="pbCount">0 / 12</span>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     BLOQUE 1 — DISEÑO DE BASES DE DATOS
+═════════════════════════════════════════════════════ -->
+<div class="block-header">
+  <span class="bh-num">Bloque 1</span>
+  <span class="bh-title" style="color:var(--amber);">Diseño de Bases de Datos</span>
+  <span class="bh-line"></span>
+</div>
+
+<!-- E1 -->
+<div class="ex-card" id="card-1">
+  <div class="ex-header">
+    <span class="ex-num">E1</span>
+    <span class="ex-title">Identifica entidades y atributos</span>
+    <span class="ex-badge" style="background:var(--am-dim);color:var(--amber);">Diseño</span>
+  </div>
+  <div class="ex-body">
+    <p>Lee el siguiente texto y responde a las preguntas:</p>
+    <div class="schema">
+      <em style="color:var(--muted2);font-style:italic;">"Una academia de idiomas imparte cursos. Cada curso tiene un idioma, nivel y precio mensual. Los alumnos se matriculan en cursos —cada matrícula tiene una fecha de inicio— y pueden estar matriculados en varios cursos a la vez. Los profesores imparten uno o varios cursos, pero cada curso lo imparte un único profesor."</em>
+    </div>
+    <p><strong>a)</strong> Lista las tablas que crearías y sus campos más importantes (escribe al menos 3 tablas):</p>
+    <span class="ans-label">Tu respuesta</span>
+    <textarea class="ans-area" id="ans-1a" rows="5" placeholder="Tabla ALUMNOS: IDAlumno, Nombre, …&#10;Tabla CURSOS: IDCurso, Idioma, …&#10;…" oninput="checkAnswered('1')"></textarea>
+    <p style="margin-top:.75rem;"><strong>b)</strong> ¿Qué tipo de relación existe entre ALUMNOS y CURSOS? ¿Por qué?</p>
+    <span class="ans-label">Tu respuesta</span>
+    <textarea class="ans-area" id="ans-1b" rows="3" placeholder="La relación es… porque un alumno puede…" oninput="checkAnswered('1')"></textarea>
+    <button class="hint-btn no-print" onclick="toggleHint('h1')">💡 Pista</button>
+    <div class="hint-box" id="h1"><strong>Pista:</strong> Cuando un alumno puede estar en muchos cursos Y un curso puede tener muchos alumnos, necesitas una tabla intermedia (tabla de unión). ¿Qué relación es esa?</div>
+  </div>
+</div>
+
+<!-- E2 -->
+<div class="ex-card" id="card-2">
+  <div class="ex-header">
+    <span class="ex-num">E2</span>
+    <span class="ex-title">Cardinalidades — relaciona cada par de entidades</span>
+    <span class="ex-badge" style="background:var(--am-dim);color:var(--amber);">Diseño</span>
+  </div>
+  <div class="ex-body">
+    <p>Indica qué tipo de relación (1:1, 1:N o N:M) existe entre cada par de entidades:</p>
+
+    <div class="sub-q">
+      <div class="sq-label">a) Un <strong>Cliente</strong> y sus <strong>Pedidos</strong></div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="card2a" value="1:1" onchange="markChoice(this,'card2a');checkAnswered('2')"> 1:1 — Un cliente tiene un único pedido</label>
+        <label class="choice"><input type="radio" name="card2a" value="1:N" onchange="markChoice(this,'card2a');checkAnswered('2')"> 1:N — Un cliente puede tener varios pedidos</label>
+        <label class="choice"><input type="radio" name="card2a" value="N:M" onchange="markChoice(this,'card2a');checkAnswered('2')"> N:M — Varios clientes comparten cada pedido</label>
+      </div>
+    </div>
+
+    <div class="sub-q">
+      <div class="sq-label">b) Un <strong>Médico</strong> y sus <strong>Pacientes</strong> (un médico atiende a muchos pacientes y un paciente puede tener varios médicos)</div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="card2b" value="1:1" onchange="markChoice(this,'card2b');checkAnswered('2')"> 1:1</label>
+        <label class="choice"><input type="radio" name="card2b" value="1:N" onchange="markChoice(this,'card2b');checkAnswered('2')"> 1:N</label>
+        <label class="choice"><input type="radio" name="card2b" value="N:M" onchange="markChoice(this,'card2b');checkAnswered('2')"> N:M</label>
+      </div>
+    </div>
+
+    <div class="sub-q">
+      <div class="sq-label">c) Una <strong>Persona</strong> y su <strong>DNI</strong></div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="card2c" value="1:1" onchange="markChoice(this,'card2c');checkAnswered('2')"> 1:1 — Cada persona tiene un único DNI y viceversa</label>
+        <label class="choice"><input type="radio" name="card2c" value="1:N" onchange="markChoice(this,'card2c');checkAnswered('2')"> 1:N — Una persona puede tener varios DNI</label>
+        <label class="choice"><input type="radio" name="card2c" value="N:M" onchange="markChoice(this,'card2c');checkAnswered('2')"> N:M</label>
+      </div>
+    </div>
+
+    <div class="sub-q">
+      <div class="sq-label">d) Un <strong>Vuelo</strong> y sus <strong>Pasajeros</strong></div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="card2d" value="1:1" onchange="markChoice(this,'card2d');checkAnswered('2')"> 1:1</label>
+        <label class="choice"><input type="radio" name="card2d" value="1:N" onchange="markChoice(this,'card2d');checkAnswered('2')"> 1:N — Un vuelo tiene muchos pasajeros (pero el pasajero solo va en un vuelo por reserva)</label>
+        <label class="choice"><input type="radio" name="card2d" value="N:M" onchange="markChoice(this,'card2d');checkAnswered('2')"> N:M — Un vuelo tiene muchos pasajeros y un pasajero puede tener muchos vuelos</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- E3 -->
+<div class="ex-card" id="card-3">
+  <div class="ex-header">
+    <span class="ex-num">E3</span>
+    <span class="ex-title">Identifica claves primarias y foráneas</span>
+    <span class="ex-badge" style="background:var(--am-dim);color:var(--amber);">Diseño</span>
+  </div>
+  <div class="ex-body">
+    <p>Dadas estas tres tablas, indica el tipo de cada campo marcado:</p>
+    <div class="schema">
+<span class="tbl">EMPLEADOS</span>(<span class="pk">IDEmpleado</span>, Nombre, IDDepartamento, Salario)
+<span class="tbl">DEPARTAMENTOS</span>(<span class="pk">IDDepartamento</span>, NombreDepto, IDJefe)
+<span class="tbl">PROYECTOS</span>(<span class="pk">IDProyecto</span>, Nombre, IDEmpleadoResponsable)</div>
+
+    <div class="sub-q">
+      <div class="sq-label">¿Qué tipo de clave es <code style="font-family:var(--mono);font-size:.8rem;color:var(--amber)">IDDepartamento</code> en la tabla EMPLEADOS?</div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="card3a" value="pk" onchange="markChoice(this,'card3a');checkAnswered('3')"> Clave Primaria (PK) — identifica únicamente a cada empleado</label>
+        <label class="choice"><input type="radio" name="card3a" value="fk" onchange="markChoice(this,'card3a');checkAnswered('3')"> Clave Foránea (FK) — referencia a la tabla DEPARTAMENTOS</label>
+        <label class="choice"><input type="radio" name="card3a" value="none" onchange="markChoice(this,'card3a');checkAnswered('3')"> No es ningún tipo de clave especial</label>
+      </div>
+    </div>
+
+    <div class="sub-q">
+      <div class="sq-label">¿Qué tipo de clave es <code style="font-family:var(--mono);font-size:.8rem;color:var(--amber)">IDJefe</code> en la tabla DEPARTAMENTOS?</div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="card3b" value="pk" onchange="markChoice(this,'card3b');checkAnswered('3')"> Clave Primaria (PK)</label>
+        <label class="choice"><input type="radio" name="card3b" value="fk-self" onchange="markChoice(this,'card3b');checkAnswered('3')"> Clave Foránea (FK) — referencia a EMPLEADOS (el jefe es un empleado)</label>
+        <label class="choice"><input type="radio" name="card3b" value="none" onchange="markChoice(this,'card3b');checkAnswered('3')"> Campo normal, sin relación con otras tablas</label>
+      </div>
+    </div>
+
+    <p><strong>¿Qué problema podría ocurrir</strong> si se elimina un departamento sin eliminar primero los empleados que pertenecen a él? ¿Cómo se evita?</p>
+    <span class="ans-label">Tu respuesta</span>
+    <textarea class="ans-area" id="ans-3c" rows="3" placeholder="El problema sería… y se evita con…" oninput="checkAnswered('3')"></textarea>
+  </div>
+</div>
+
+<!-- E4 -->
+<div class="ex-card" id="card-4">
+  <div class="ex-header">
+    <span class="ex-num">E4</span>
+    <span class="ex-title">Detecta el error de diseño — Tabla no normalizada</span>
+    <span class="ex-badge" style="background:var(--am-dim);color:var(--amber);">Diseño</span>
+  </div>
+  <div class="ex-body">
+    <p>Un compañero ha diseñado esta tabla para gestionar pedidos de una tienda:</p>
+    <div class="schema"><span class="tbl">PEDIDOS</span>(IDPedido, FechaPedido, <span style="color:var(--red)">ClienteNombre, ClienteEmail, ClienteTelefono</span>, <span style="color:var(--red)">ProductoNombre, ProductoCategoria, ProductoPrecio</span>, Cantidad)</div>
+    <p><strong>a)</strong> ¿Cuántos problemas de diseño ves? Descríbelos:</p>
+    <span class="ans-label">Tu respuesta</span>
+    <textarea class="ans-area" id="ans-4a" rows="4" placeholder="Problema 1: Los datos del cliente se repiten en cada pedido del mismo cliente…&#10;Problema 2: …" oninput="checkAnswered('4')"></textarea>
+    <p><strong>b)</strong> Propón cómo dividirías esta tabla para arreglar los problemas:</p>
+    <span class="ans-label">Diseño corregido</span>
+    <textarea class="ans-area" id="ans-4b" rows="4" placeholder="Tabla CLIENTES(IDCliente, Nombre, Email, Telefono)&#10;Tabla PRODUCTOS(…)&#10;Tabla PEDIDOS(…)" oninput="checkAnswered('4')"></textarea>
+    <button class="hint-btn no-print" onclick="toggleHint('h4')">💡 Pista</button>
+    <div class="hint-box" id="h4"><strong>Pista:</strong> ¿Qué pasa si el cliente cambia su teléfono? ¿Cuántas filas habría que actualizar? La solución es separar los datos en tablas independientes y usar claves foráneas para relacionarlas.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     BLOQUE 2 — CONSULTAS SQL
+═════════════════════════════════════════════════════ -->
+<div class="block-header">
+  <span class="bh-num">Bloque 2</span>
+  <span class="bh-title" style="color:var(--green);">Consultas SQL</span>
+  <span class="bh-line"></span>
+</div>
+
+<div class="ex-body" style="padding:0 0 .75rem;">
+  <p style="font-size:.86rem;color:var(--muted2);">Para todos los ejercicios de SQL usa el siguiente esquema de base de datos de una tienda online:</p>
+  <div class="schema">
+<span class="tbl">PRODUCTOS</span>   (<span class="pk">IDProducto</span>, Nombre, Precio, Stock, <span class="fk">IDCategoria</span>)
+<span class="tbl">CATEGORIAS</span>  (<span class="pk">IDCategoria</span>, NombreCategoria)
+<span class="tbl">CLIENTES</span>    (<span class="pk">IDCliente</span>, NombreCompleto, Email, Ciudad)
+<span class="tbl">PEDIDOS</span>     (<span class="pk">IDPedido</span>, <span class="fk">IDCliente</span>, FechaPedido, Estado)
+<span class="tbl">LINEAS_PED</span>  (<span class="pk">IDLinea</span>, <span class="fk">IDPedido</span>, <span class="fk">IDProducto</span>, Cantidad, PrecioUnitario)</div>
+</div>
+
+<!-- E5 -->
+<div class="ex-card" id="card-5">
+  <div class="ex-header">
+    <span class="ex-num">E5</span>
+    <span class="ex-title">SELECT con WHERE y ORDER BY</span>
+    <span class="ex-badge" style="background:var(--gr-dim);color:var(--green);">SQL básico</span>
+  </div>
+  <div class="ex-body">
+    <p>Escribe una consulta SQL que muestre el <strong>nombre y precio</strong> de todos los productos con <strong>stock superior a 10 unidades</strong> y cuyo precio sea <strong>inferior a 100 €</strong>, ordenados de <strong>mayor a menor precio</strong>.</p>
+    <span class="ans-label">Tu consulta SQL</span>
+    <textarea class="ans-area code" id="ans-5" rows="5" placeholder="SELECT ...&#10;FROM ...&#10;WHERE ...&#10;ORDER BY ..." oninput="checkAnswered('5')"></textarea>
+  </div>
+</div>
+
+<!-- E6 -->
+<div class="ex-card" id="card-6">
+  <div class="ex-header">
+    <span class="ex-num">E6</span>
+    <span class="ex-title">WHERE con LIKE, BETWEEN e IN</span>
+    <span class="ex-badge" style="background:var(--gr-dim);color:var(--green);">SQL básico</span>
+  </div>
+  <div class="ex-body">
+    <p>Escribe las siguientes consultas sobre la tabla <code style="font-family:var(--mono);color:var(--amber)">CLIENTES</code>:</p>
+    <p><strong>a)</strong> Clientes cuyo nombre empieza por la letra <strong>"A"</strong>:</p>
+    <textarea class="ans-area code" id="ans-6a" rows="3" placeholder="SELECT ... FROM CLIENTES WHERE ..." oninput="checkAnswered('6')"></textarea>
+    <p style="margin-top:.6rem;"><strong>b)</strong> Clientes de las ciudades <strong>Madrid</strong>, <strong>Barcelona</strong> o <strong>Valencia</strong>:</p>
+    <textarea class="ans-area code" id="ans-6b" rows="3" placeholder="SELECT ... FROM CLIENTES WHERE Ciudad IN (...)" oninput="checkAnswered('6')"></textarea>
+    <p style="margin-top:.6rem;"><strong>c)</strong> Pedidos realizados entre el <strong>1 de enero de 2024</strong> y el <strong>31 de marzo de 2024</strong>:</p>
+    <textarea class="ans-area code" id="ans-6c" rows="3" placeholder="SELECT ... FROM PEDIDOS WHERE FechaPedido BETWEEN ..." oninput="checkAnswered('6')"></textarea>
+  </div>
+</div>
+
+<!-- E7 -->
+<div class="ex-card" id="card-7">
+  <div class="ex-header">
+    <span class="ex-num">E7</span>
+    <span class="ex-title">GROUP BY, HAVING y funciones de agregado</span>
+    <span class="ex-badge" style="background:var(--gr-dim);color:var(--green);">SQL agrupación</span>
+  </div>
+  <div class="ex-body">
+    <p><strong>a)</strong> Escribe una consulta que muestre <strong>cuántos productos</strong> hay en cada categoría (nombre de la categoría y número de productos), mostrando solo las categorías con <strong>más de 3 productos</strong>:</p>
+    <textarea class="ans-area code" id="ans-7a" rows="6" placeholder="SELECT ...&#10;FROM CATEGORIAS INNER JOIN PRODUCTOS ON ...&#10;GROUP BY ...&#10;HAVING ..." oninput="checkAnswered('7')"></textarea>
+    <p style="margin-top:.6rem;"><strong>b)</strong> Escribe la diferencia entre WHERE y HAVING en una frase:</p>
+    <textarea class="ans-area" id="ans-7b" rows="2" placeholder="WHERE filtra… mientras que HAVING filtra…" oninput="checkAnswered('7')"></textarea>
+  </div>
+</div>
+
+<!-- E8 -->
+<div class="ex-card" id="card-8">
+  <div class="ex-header">
+    <span class="ex-num">E8</span>
+    <span class="ex-title">INNER JOIN — Combinar tablas</span>
+    <span class="ex-badge" style="background:var(--gr-dim);color:var(--green);">SQL JOIN</span>
+  </div>
+  <div class="ex-body">
+    <p>Escribe una consulta que muestre el <strong>nombre del cliente</strong>, la <strong>fecha del pedido</strong> y el <strong>nombre del producto</strong> de cada línea de pedido. Necesitarás unir <strong>tres tablas</strong>.</p>
+    <textarea class="ans-area code" id="ans-8" rows="8" placeholder="SELECT C.NombreCompleto, P.FechaPedido, PR.Nombre AS Producto&#10;FROM ...&#10;INNER JOIN ... ON ...&#10;INNER JOIN ... ON ..." oninput="checkAnswered('8')"></textarea>
+    <button class="hint-btn no-print" onclick="toggleHint('h8')">💡 Pista</button>
+    <div class="hint-box" id="h8"><strong>Pista:</strong> Necesitas: CLIENTES → PEDIDOS (por IDCliente) → LINEAS_PED (por IDPedido) → PRODUCTOS (por IDProducto). En Access, cada JOIN necesita ir entre paréntesis.</div>
+  </div>
+</div>
+
+<!-- E9 -->
+<div class="ex-card" id="card-9">
+  <div class="ex-header">
+    <span class="ex-num">E9</span>
+    <span class="ex-title">Lee y explica — ¿Qué devuelve esta consulta?</span>
+    <span class="ex-badge" style="background:var(--gr-dim);color:var(--green);">SQL lectura</span>
+  </div>
+  <div class="ex-body">
+    <p>Lee esta consulta y explica en español qué información devuelve y qué hace cada cláusula:</p>
+    <div class="code-display"><span class="kw">SELECT</span>
+    C.Ciudad,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> P.IDPedido) <span class="kw">AS</span> TotalPedidos,
+    <span class="fn">SUM</span>(L.Cantidad * L.PrecioUnitario) <span class="kw">AS</span> Ingresos
+<span class="kw">FROM</span> ((<span class="tbl">CLIENTES</span> C
+    <span class="kw">INNER JOIN</span> <span class="tbl">PEDIDOS</span> P <span class="kw">ON</span> C.IDCliente = P.IDCliente)
+    <span class="kw">INNER JOIN</span> <span class="tbl">LINEAS_PED</span> L <span class="kw">ON</span> P.IDPedido = L.IDPedido)
+<span class="kw">WHERE</span> P.Estado = <span class="str">'Entregado'</span>
+<span class="kw">GROUP BY</span> C.Ciudad
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(L.Cantidad * L.PrecioUnitario) > <span class="num">1000</span>
+<span class="kw">ORDER BY</span> Ingresos <span class="kw">DESC</span>;</div>
+    <span class="ans-label">Tu explicación</span>
+    <textarea class="ans-area" id="ans-9" rows="5" placeholder="Esta consulta muestra… agrupando por…&#10;El WHERE filtra…&#10;El HAVING muestra solo las ciudades con…" oninput="checkAnswered('9')"></textarea>
+  </div>
+</div>
+
+<!-- E10 -->
+<div class="ex-card" id="card-10">
+  <div class="ex-header">
+    <span class="ex-num">E10</span>
+    <span class="ex-title">Corrige el error SQL</span>
+    <span class="ex-badge" style="background:var(--gr-dim);color:var(--green);">SQL depuración</span>
+  </div>
+  <div class="ex-body">
+    <p>La siguiente consulta tiene <strong>dos errores</strong>. Encuéntralos y escribe la versión corregida:</p>
+    <div class="code-display"><span class="kw">SELECT</span> C.NombreCategoria, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> NumProductos
+<span class="kw">FROM</span> <span class="tbl">CATEGORIAS</span> C <span class="kw">INNER JOIN</span> <span class="tbl">PRODUCTOS</span> P
+    <span class="kw">ON</span> <span class="err">C.IDCategoria = C.IDCategoria</span>
+<span class="kw">WHERE</span> <span class="err">NumProductos > 2</span>
+<span class="kw">GROUP BY</span> C.NombreCategoria;</div>
+    <p><strong>a)</strong> Describe los dos errores:</p>
+    <span class="ans-label">Error 1</span>
+    <textarea class="ans-area" id="ans-10a" rows="2" placeholder="El primer error está en… porque…" oninput="checkAnswered('10')"></textarea>
+    <span class="ans-label" style="margin-top:.5rem;display:block;">Error 2</span>
+    <textarea class="ans-area" id="ans-10b" rows="2" placeholder="El segundo error está en… porque…" oninput="checkAnswered('10')"></textarea>
+    <p style="margin-top:.6rem;"><strong>b)</strong> Escribe la consulta corregida:</p>
+    <textarea class="ans-area code" id="ans-10c" rows="6" placeholder="SELECT ...&#10;FROM ...&#10;..." oninput="checkAnswered('10')"></textarea>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     BLOQUE 3 — ACCESS PRÁCTICO
+═════════════════════════════════════════════════════ -->
+<div class="block-header">
+  <span class="bh-num">Bloque 3</span>
+  <span class="bh-title" style="color:var(--cyan);">Access Práctico</span>
+  <span class="bh-line"></span>
+</div>
+
+<!-- E11 -->
+<div class="ex-card" id="card-11">
+  <div class="ex-header">
+    <span class="ex-num">E11</span>
+    <span class="ex-title">¿Qué tipo de campo usarías en Access?</span>
+    <span class="ex-badge" style="background:var(--cy-dim);color:var(--cyan);">Access</span>
+  </div>
+  <div class="ex-body">
+    <p>Selecciona el tipo de campo de Access más adecuado para cada dato:</p>
+
+    <div class="sub-q">
+      <div class="sq-label">El precio de un producto (p. ej. 24,99 €)</div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="c11a" value="a" onchange="markChoice(this,'c11a');checkAnswered('11')"> Texto corto</label>
+        <label class="choice"><input type="radio" name="c11a" value="b" onchange="markChoice(this,'c11a');checkAnswered('11')"> Moneda</label>
+        <label class="choice"><input type="radio" name="c11a" value="c" onchange="markChoice(this,'c11a');checkAnswered('11')"> Número (entero)</label>
+        <label class="choice"><input type="radio" name="c11a" value="d" onchange="markChoice(this,'c11a');checkAnswered('11')"> Fecha/Hora</label>
+      </div>
+    </div>
+
+    <div class="sub-q">
+      <div class="sq-label">Si un empleado está activo o no (solo dos opciones posibles)</div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="c11b" value="a" onchange="markChoice(this,'c11b');checkAnswered('11')"> Número</label>
+        <label class="choice"><input type="radio" name="c11b" value="b" onchange="markChoice(this,'c11b');checkAnswered('11')"> Texto corto ("Sí" o "No")</label>
+        <label class="choice"><input type="radio" name="c11b" value="c" onchange="markChoice(this,'c11b');checkAnswered('11')"> Sí/No</label>
+        <label class="choice"><input type="radio" name="c11b" value="d" onchange="markChoice(this,'c11b');checkAnswered('11')"> Autonumérico</label>
+      </div>
+    </div>
+
+    <div class="sub-q">
+      <div class="sq-label">El identificador único de cada registro generado automáticamente</div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="c11c" value="a" onchange="markChoice(this,'c11c');checkAnswered('11')"> Texto corto</label>
+        <label class="choice"><input type="radio" name="c11c" value="b" onchange="markChoice(this,'c11c');checkAnswered('11')"> Número (entero largo)</label>
+        <label class="choice"><input type="radio" name="c11c" value="c" onchange="markChoice(this,'c11c');checkAnswered('11')"> Autonumérico</label>
+        <label class="choice"><input type="radio" name="c11c" value="d" onchange="markChoice(this,'c11c');checkAnswered('11')"> Moneda</label>
+      </div>
+    </div>
+
+    <div class="sub-q">
+      <div class="sq-label">Una descripción larga del producto (puede ser muy extensa)</div>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="c11d" value="a" onchange="markChoice(this,'c11d');checkAnswered('11')"> Texto corto (máx. 255 caracteres)</label>
+        <label class="choice"><input type="radio" name="c11d" value="b" onchange="markChoice(this,'c11d');checkAnswered('11')"> Texto largo (memo)</label>
+        <label class="choice"><input type="radio" name="c11d" value="c" onchange="markChoice(this,'c11d');checkAnswered('11')"> Hipervínculo</label>
+        <label class="choice"><input type="radio" name="c11d" value="d" onchange="markChoice(this,'c11d');checkAnswered('11')"> Número</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- E12 -->
+<div class="ex-card" id="card-12">
+  <div class="ex-header">
+    <span class="ex-num">E12</span>
+    <span class="ex-title">Integridad referencial y relaciones en Access</span>
+    <span class="ex-badge" style="background:var(--cy-dim);color:var(--cyan);">Access</span>
+  </div>
+  <div class="ex-body">
+    <p><strong>a)</strong> Explica paso a paso cómo crear una relación con <strong>integridad referencial</strong> entre dos tablas en Microsoft Access:</p>
+    <span class="ans-label">Pasos</span>
+    <textarea class="ans-area" id="ans-12a" rows="6" placeholder="Paso 1: Ir a la pestaña …&#10;Paso 2: …&#10;Paso 3: Arrastrar el campo … hacia …&#10;Paso 4: Activar la casilla …&#10;Paso 5: …" oninput="checkAnswered('12')"></textarea>
+
+    <p><strong>b)</strong> ¿Qué ocurre si intentas insertar un registro en una tabla hija con un valor de clave foránea que <strong>no existe</strong> en la tabla padre, cuando la integridad referencial está activada?</p>
+    <div class="choices">
+      <label class="choice"><input type="radio" name="c12b" value="a" onchange="markChoice(this,'c12b');checkAnswered('12')"> Access lo acepta sin problema y crea el registro</label>
+      <label class="choice"><input type="radio" name="c12b" value="b" onchange="markChoice(this,'c12b');checkAnswered('12')"> Access muestra un error e impide la inserción</label>
+      <label class="choice"><input type="radio" name="c12b" value="c" onchange="markChoice(this,'c12b');checkAnswered('12')"> Access crea automáticamente el registro en la tabla padre</label>
+      <label class="choice"><input type="radio" name="c12b" value="d" onchange="markChoice(this,'c12b');checkAnswered('12')"> Access lo acepta pero marca el campo con un aviso</label>
+    </div>
+
+    <p style="margin-top:.75rem;"><strong>c)</strong> ¿En qué se diferencia un <strong>Formulario</strong> de un <strong>Informe</strong> en Access?</p>
+    <textarea class="ans-area" id="ans-12c" rows="3" placeholder="Un formulario sirve para… mientras que un informe sirve para…" oninput="checkAnswered('12')"></textarea>
+    <button class="hint-btn no-print" onclick="toggleHint('h12')">💡 Pista</button>
+    <div class="hint-box" id="h12"><strong>Pista:</strong> Piensa en si el usuario puede <em>introducir o modificar</em> datos, o solo <em>visualizarlos / imprimirlos</em>.</div>
+  </div>
+</div>
+
+<!-- ── DOWNLOAD SECTION ── -->
+<div class="download-section no-print">
+  <div class="dl-title">¿Listo para entregar?</div>
+  <div class="dl-sub">Asegúrate de haber rellenado tu nombre y grupo arriba. El PDF incluirá todas tus respuestas.</div>
+  <button class="dl-btn" id="dlBtn" onclick="downloadPDF()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Descargar PDF con mis respuestas
+  </button>
+  <div class="dl-note">Se generará un archivo PDF con tu nombre. Entrégalo al profesor según las indicaciones.</div>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════ SCRIPT ════════════════════════════════ -->
+<script>
+// Set today's date
+document.getElementById('inp-fecha').valueAsDate = new Date();
+
+const TOTAL = 12;
+
+function checkAnswered(n) {
+  const card = document.getElementById('card-' + n);
+  let filled = false;
+
+  // textareas
+  card.querySelectorAll('textarea').forEach(ta => {
+    if (ta.value.trim().length > 3) filled = true;
+  });
+  // radios — check if any radio group in this card has a selection
+  const groups = new Set();
+  card.querySelectorAll('input[type=radio]').forEach(r => groups.add(r.name));
+  let allGroupsAnswered = groups.size > 0;
+  groups.forEach(gname => {
+    if (!card.querySelector(`input[name="${gname}"]:checked`)) allGroupsAnswered = false;
+  });
+  if (groups.size > 0 && allGroupsAnswered) filled = true;
+
+  card.classList.toggle('answered', filled);
+  updateProgress();
+}
+
+function updateProgress() {
+  const done = document.querySelectorAll('.ex-card.answered').length;
+  document.getElementById('pbFill').style.width = (done / TOTAL * 100) + '%';
+  document.getElementById('pbCount').textContent = done + ' / ' + TOTAL;
+}
+
+function markChoice(radio, name) {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+    r.closest('.choice').classList.remove('selected');
+  });
+  radio.closest('.choice').classList.add('selected');
+}
+
+function toggleHint(id) {
+  const h = document.getElementById(id);
+  h.classList.toggle('show');
+}
+
+function updatePDF() { /* placeholder for live update */ }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function downloadPDF() {
+  const nombre = document.getElementById('inp-nombre').value.trim() || 'Alumno';
+  const grupo  = document.getElementById('inp-grupo').value.trim();
+  const btn    = document.getElementById('dlBtn');
+
+  if (!document.getElementById('inp-nombre').value.trim()) {
+    showToast('⚠️ Escribe tu nombre antes de descargar');
+    document.getElementById('inp-nombre').focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Generando PDF…';
+
+  // Temporarily hide no-print elements and show pdf-only
+  document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.hint-box').forEach(el => el.style.display = 'none');
+
+  const element = document.getElementById('printable-area') || document.querySelector('.wrap');
+
+  const opt = {
+    margin:      [8, 8, 8, 8],
+    filename:    `Ejercicios_BBDD_${nombre.replace(/\s+/g,'_')}.pdf`,
+    image:       { type: 'jpeg', quality: 0.92 },
+    html2canvas: {
+      scale: 1.5,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      onclone: (doc) => {
+        const b = doc.body;
+        b.style.background = '#ffffff';
+        b.style.color = '#000000';
+        b.querySelector('style') && null;
+        // Apply light theme to cloned doc
+        doc.querySelectorAll('*').forEach(el => {
+          const s = el.style;
+          const cs = window.getComputedStyle(el);
+          // override dark backgrounds
+          if (cs.backgroundColor && cs.backgroundColor.includes('rgb(7, 9, 15)') ||
+              cs.backgroundColor && cs.backgroundColor.includes('rgb(13, 16, 24)') ||
+              cs.backgroundColor && cs.backgroundColor.includes('rgb(19, 22, 34)') ||
+              cs.backgroundColor && cs.backgroundColor.includes('rgb(22, 27, 40)')) {
+            el.style.backgroundColor = '#ffffff';
+          }
+          if (cs.color && cs.color.includes('rgb(220, 230, 245)')) {
+            el.style.color = '#000000';
+          }
+        });
+        // Style overrides for print
+        const style = doc.createElement('style');
+        style.textContent = `
+          body{background:#fff!important;color:#000!important;}
+          body::before{display:none!important;}
+          .no-print,.progress-bar-wrap,.hint-btn,.dl-btn,.download-section{display:none!important;}
+          .hero{background:#fff;padding:1rem 0 .75rem;border-bottom:1px solid #ccc;}
+          .hero h1{font-size:1.6rem;color:#000;}
+          .hero h1 em{color:#0066cc;}
+          .hero-eyebrow{color:#0066cc;}
+          .hero-sub,.ex-body p{color:#333;}
+          .chips{display:none;}
+          .student-box{background:#f5f7fa;border:1px solid #ccc;border-top:2px solid #0066cc;}
+          .student-box input{background:#fff;border:1px solid #aaa;color:#000;}
+          .student-box label{color:#333;}
+          .block-header{padding:.6rem 0 .4rem;}
+          .bh-num{background:#e8e8e8;color:#555;border-color:#aaa;}
+          .bh-title{color:#000;}
+          .bh-line{background:#ccc;}
+          .ex-card{background:#fff;border:1px solid #ccc;margin-bottom:.6rem;page-break-inside:avoid;}
+          .ex-card.answered{border-color:#15803d;}
+          .ex-header{background:#f5f5f5;border-color:#ddd;}
+          .ex-num{background:#e8e8e8;color:#555;}
+          .ex-card.answered .ex-num{background:#d1fae5;color:#15803d;}
+          .ex-title{color:#000;}
+          .ex-badge{color:#555;background:#eee!important;border:1px solid #ccc;}
+          .schema{background:#f9f9f9;border:1px solid #ddd;color:#333;}
+          .schema .tbl{color:#b45309;}
+          .schema .pk{color:#0369a1;}
+          .schema .fk{color:#9333ea;}
+          .ans-area{background:#f9f9f9;border:1px solid #aaa;color:#000;}
+          .ans-label{color:#555;}
+          .choice{border-color:#ccc;color:#333;}
+          .choice.selected{border-color:#0066cc;background:#eff6ff;}
+          .sub-q{background:#f5f5f5;border-color:#ddd;}
+          .sub-q .sq-label{color:#000;}
+          .match-sel{border-color:#aaa;background:#f5f5f5;color:#000;}
+          .code-display{background:#f0f0f0;border-color:#ccc;color:#000;}
+          .code-display .kw{color:#1d4ed8;}
+          .code-display .fn{color:#7c3aed;}
+          .code-display .tbl{color:#15803d;}
+          .code-display .str{color:#15803d;}
+          .code-display .err{color:#dc2626;}
+        `;
+        doc.head.appendChild(style);
+      }
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    await html2pdf().set(opt).from(document.querySelector('.wrap')).save();
+    showToast('✅ PDF generado correctamente');
+  } catch(e) {
+    showToast('Error al generar el PDF. Usa Ctrl+P → Guardar como PDF');
+    console.error(e);
+  }
+
+  // Restore hidden elements
+  document.querySelectorAll('.no-print').forEach(el => el.style.display = '');
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar PDF con mis respuestas`;
+}
+</script>
+</body>
+</html>

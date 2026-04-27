@@ -130,6 +130,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
 .card:nth-child(7) .c-cta{color:#f43f5e;}
 .nt:nth-child(7).active{border-bottom-color:#f43f5e;background:#f43f5e18;}
 .nt:nth-child(7).active .ni{background:#f43f5e22;color:#f43f5e;}
+.card:nth-child(8)::before{background:#a3e635;}
+.card:nth-child(8):hover{border-color:#a3e635;box-shadow:0 12px 50px #a3e63522;}
+.card:nth-child(8) .c-cta{color:#a3e635;}
+.nt:nth-child(8).active{border-bottom-color:#a3e635;background:#a3e63518;}
+.nt:nth-child(8).active .ni{background:#a3e63522;color:#a3e635;}
 </style>
 
 <div id="topbar">
@@ -142,6 +147,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
     <button class="nt" id="tab-4" onclick="openApp(4)"><span class="ni">05</span><span style="font-size:1.05rem">📋</span>Formularios e Informes</button>
     <button class="nt" id="tab-5" onclick="openApp(5)"><span class="ni">06</span><span style="font-size:1.05rem">💻</span>Ejercicios SQL</button>
     <button class="nt" id="tab-6" onclick="openApp(6)"><span class="ni">07</span><span style="font-size:1.05rem">🛠️</span>Práctica: TechFix</button>
+    <button class="nt" id="tab-7" onclick="openApp(7)"><span class="ni">08</span><span style="font-size:1.05rem">✏️</span>Ejercicios evaluables</button>
   </div>
   <div class="tb-end"><button class="home-btn" onclick="goHome()">&#8962; Inicio</button></div>
 </div>
@@ -201,6 +207,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
     <div class="c-desc">Diseña e implementa una BBDD completa para un taller de reparaciones</div>
     <div class="c-cta">Ver enunciado →</div>
   </div>
+  <div class="card" onclick="openApp(7)">
+    <div class="c-icon">✏️</div>
+    <div class="c-num">Módulo 08</div>
+    <div class="c-title">Ejercicios evaluables</div>
+    <div class="c-desc">12 ejercicios de diseño, SQL y Access con descarga de PDF de respuestas</div>
+    <div class="c-cta">Empezar →</div>
+  </div>
   </div>
 </div>
 <div id="frames">
@@ -211,6 +224,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
   <iframe class="frame" id="frame-4" title="Módulo 5 — Formularios e Informes"></iframe>
   <iframe class="frame" id="frame-5" title="Módulo 6 — Ejercicios SQL"></iframe>
   <iframe class="frame" id="frame-6" title="Módulo 7 — Práctica TechFix"></iframe>
+  <iframe class="frame" id="frame-7" title="Módulo 8 — Ejercicios evaluables"></iframe>
   <div id="loader">
     <div class="ld-spin"></div>
     <div class="ld-txt" id="ldTxt">Cargando...</div>
@@ -5314,6 +5328,7 @@ const APPS=[
     "aWQucmVwbGFjZSgic3FsIiwgIiIpOwogICAgICBydW5FeGVyY2lzZShwYXJzZUludChpZCkpOwogICAgfQogIH0pOwp9KTsKPC9z"+
     "Y3JpcHQ+CjwvYm9keT4KPC9odG1sPgo="}
   ,{title:"Práctica: TechFix SL", url:"practica_taller.html"}
+  ,{title:"Ejercicios evaluables", url:"ejercicios_bbdd.html"}
 ];
 
 function b64ToBlob(b64){
@@ -5322,7 +5337,7 @@ function b64ToBlob(b64){
   return new Blob([bytes],{type:"text/html;charset=utf-8"});
 }
 
-const blobUrls=new Array(7).fill(null);
+const blobUrls=new Array(8).fill(null);
 let current=-1;
 
 function showLoader(title){
